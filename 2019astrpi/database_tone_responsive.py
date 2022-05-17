@@ -89,7 +89,7 @@ for indRow, dbRow in celldb.iterrows():
     firingRateEachCellBase[indCell] = spikesEachTrialEachPeriod[0].mean()/periodDuration[0]
     
     # NOTE: Selecting by intensity reduces the number of trials and in this case
-    #       it generally yields higher p-values.
+    #       it generally yields less reliable results.
     #trialsHighIntensity = bdata['currentIntensity'] > 50
     meanFiringRateBase = np.empty(nFreq)
     meanFiringRateResp = np.empty(nFreq)
