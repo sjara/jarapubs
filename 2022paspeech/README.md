@@ -6,9 +6,9 @@ The file `studyparams.py` contains the list of animals used in this study as wel
 relevant file paths and statistical parameters for the database calculations
 
 ## `database_generation.py`
-* `database_tone_responsive.py`: Estimate responses to pure tones. It creates `SUBJECT_astrpi_tones_pval.h5` (it takes X min)
+* `database_tone_responsive.py`: Estimate responses to pure tones. It creates `SUBJECT_paspeech_tones_pval.h5` (it takes 2.6 min)
+* `database_freq_tuning.py`: Estimate frequency tuning. It creates `SUBJECT_paspeech_freq_tuning.h5` (it takes 1 min)
 * `database_am_responsiveness.py`: Estimate responses to AM sounds. It creates `SUBJECT_astrpi_am_pval.h5` (it takes X min)
-* `database_freq_tuning.py`: Estimate frequency tuning. It creates `SUBJECT_astrpi_freq_tuning.h5` (it takes X min)
 * `database_am_tuning.py`: Estimate tuning to AM rate. It creates `SUBJECT_astrpi_am_tuning.h5` (it takes Xs)
 
 

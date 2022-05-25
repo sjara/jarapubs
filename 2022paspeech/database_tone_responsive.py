@@ -30,7 +30,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
     celldb = celldatabase.load_hdf(dbPath)
     nCells = len(celldb)
 
-    newdbPath = os.path.join('tmp',f'{subject}_paspeech_tones_pval.h5')#'/tmp/paspeech_tones_pval.h5'
+    newdbPath = os.path.join('/tmp',f'{subject}_paspeech_tones_pval.h5')
 
     periodsName = ['base200', 'resp100']
     allPeriods = [ [-0.2, 0], [0, 0.1] ]
