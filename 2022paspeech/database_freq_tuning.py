@@ -36,28 +36,12 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
     newdbPath = os.path.join('/tmp', f'{subject}_paspeech_freq_tuning.h5')
 
-    #periodsName = ['base200', 'resp100']
-    #allPeriods = [ [-0.2, 0], [0, 0.1] ]
-    #periodDuration = [x[1]-x[0] for x in allPeriods]
-    #meanFiringEachPeriodEachCell = np.empty((nCells, len(allPeriods)))
-
     responsePeriod = [0, 0.1]
     respPeriodDuration = responsePeriod[1]-responsePeriod[0]
 
     N_FREQ = 16 # HARDCODED
 
     correctedAlpha = 0.05/N_FREQ
-
-    '''
-    toneSelectivityPvalEachCell = np.full(nCells, np.nan)
-    toneIntensityThresholdEachCell = np.full(nCells, np.nan)
-    toneCharactFreqEachCell = np.full(nCells, np.nan)
-    toneGaussianRsquare = np.full(nCells, np.nan)
-    toneGaussianSigma = np.full(nCells, np.nan)
-    toneGaussianX0 = np.full(nCells, np.nan)
-    toneGaussianA = np.full(nCells, np.nan)
-    toneGaussianY0 = np.full(nCells, np.nan)
-    '''
 
     celldbResp = celldb[celldb.toneMinPval < correctedAlpha]
 
@@ -71,14 +55,6 @@ for indMouse, thisMouse in enumerate(allSubjects):
     celldb['toneGaussianA'] = np.nan
     celldb['toneGaussianY0'] = np.nan
 
-    #celldbResp = celldbResp.loc[2858:]
-    #celldbResp = celldbResp.loc[516:]
-    #celldbResp = celldbResp.loc[650:]
-    #celldbResp = celldbResp.loc[739:]
-    #celldbResp = celldbResp.loc[926:]  # Gives an error
-    #celldbResp = celldbResp.loc[1317:]  # Good test
-    #celldbResp = celldbResp.loc[1381:]  # Inverted test
-    #celldbResp = celldbResp.loc[717:]  # Gives an error
 
     indCell = -1
     for indRow, dbRow in celldbResp.iterrows():
@@ -142,8 +118,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
         fra, respThreshold = studyutils.calculate_fra(firingRateRespMap, firingRateBaseline)
         intenThresholdInd, cfInd = studyutils.calculate_intensity_threshold(fra)
         #print(intenThresholdInd, cfInd)
-        #toneIntensityThresholdEachCell[indRow] = intenThresholdInd
-        #toneCharactFreqEachCell[indRow] = cfInd
+        toneIntensityThresholdEachCell[indRow] = intenThresholdInd
+        toneCharactFreqEachCell[indRow] = cfInd
 
         '''
         # -- Fit a Gaussian to a specific intensity --
