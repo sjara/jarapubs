@@ -9,7 +9,7 @@ relevant file paths and statistical parameters for the database calculations
 * `database_tone_responsive.py`: Estimate responses to pure tones. It creates `SUBJECT_paspeech_tones_pval.h5` (it takes 3 min)
 * `database_freq_tuning.py`: Estimate frequency tuning. It creates `SUBJECT_paspeech_freq_tuning.h5` (it takes 1 min)
 * `database_am_responsiveness.py`: Estimate responses to AM sounds. It creates `SUBJECT_paspeech_am_pval.h5` (it takes 2 min)
-* `database_am_tuning.py`: Estimate tuning to AM rate. It creates `SUBJECT_paspeech_am_tuning.h5` (it takes Xs)
+* `database_am_tuning.py`: Estimate tuning to AM rate. It creates `SUBJECT_paspeech_am_tuning.h5` (it takes 42s)
 
 
 ## `database_generation_funcs.py`

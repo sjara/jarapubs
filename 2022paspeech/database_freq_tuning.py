@@ -118,8 +118,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
         fra, respThreshold = studyutils.calculate_fra(firingRateRespMap, firingRateBaseline)
         intenThresholdInd, cfInd = studyutils.calculate_intensity_threshold(fra)
         #print(intenThresholdInd, cfInd)
-        toneIntensityThresholdEachCell[indRow] = intenThresholdInd
-        toneCharactFreqEachCell[indRow] = cfInd
+        #toneIntensityThresholdEachCell[indRow] = intenThresholdInd
+        #toneCharactFreqEachCell[indRow] = cfInd
 
         '''
         # -- Fit a Gaussian to a specific intensity --

@@ -25,10 +25,11 @@ reload(studyutils)
 
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
+allSubjects = studyparams.EPHYS_MICE
 
 for indMouse, thisMouse in enumerate(allSubjects):
     subject = thisMouse
-    dbPath = os.path.join(figuresDataDir, f'{subject}_paspeech_am_pval.h5')
+    dbPath = os.path.join(databaseDir, f'{subject}_paspeech_am_pval.h5')
 
     celldb = celldatabase.load_hdf(dbPath)
     nCells = len(celldb)
@@ -93,8 +94,14 @@ for indMouse, thisMouse in enumerate(allSubjects):
             nSpikesEachRate = []
             for indcond, thisCond in enumerate(possibleRate):
                 nSpikesEachRate.append(nSpikesEachTrial[trialsEachCond[:,indcond]])
-            kStat, pValKruskal = stats.kruskal(*nSpikesEachRate)
-            amSelectivityPvalOnset[indPeriod] = pValKruskal
+
+            if np.all(spikeCountMat == 0):
+                kStat = None
+                pValKruskal = None
+                print(f'{oneCell} no spikes for AM session')
+            else:
+                kStat, pValKruskal = stats.kruskal(*nSpikesEachRate)
+                amSelectivityPvalOnset[indPeriod] = pValKruskal
 
             # -- Evaluate synchronization (during sustained) --
             if indPeriod==1:

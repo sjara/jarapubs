@@ -26,7 +26,7 @@ allSubjects = studyparams.EPHYS_MICE
 for indMouse, thisMouse in enumerate(allSubjects):
     subject = thisMouse
 
-    dbPath = os.path.join('/tmp', f'{subject}_paspeech_freq_tuning.h5'
+    dbPath = os.path.join(databaseDir, f'{subject}_paspeech_freq_tuning.h5')
     celldb = celldatabase.load_hdf(dbPath)
     nCells = len(celldb)
 
