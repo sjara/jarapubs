@@ -20,8 +20,8 @@ reload(extraplots)
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 
-#allSubjects = studyparams.EPHYS_MICE
-allSubjects = studyparams.TEST_MOUSE
+allSubjects = studyparams.EPHYS_MICE
+#allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -31,7 +31,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
     celldb = celldatabase.load_hdf(dbPath)
     nCells = len(celldb)
 
-    newdbPath = os.path.join(settings.DATABASE_PATH, f'{subject}_paspeech_speech_pval.h5')
+    newdbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
 
     periodsName = ['base200', 'respOnset', 'respSustained']
     allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ]
