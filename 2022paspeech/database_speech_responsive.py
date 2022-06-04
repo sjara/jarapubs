@@ -20,8 +20,8 @@ reload(extraplots)
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 
-allSubjects = studyparams.EPHYS_MICE
-#subject = 'feat004'
+#allSubjects = studyparams.EPHYS_MICE
+allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -36,41 +36,27 @@ for indMouse, thisMouse in enumerate(allSubjects):
     periodsName = ['base200', 'respOnset', 'respSustained']
     allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ]
     periodDuration = [x[1]-x[0] for x in allPeriods]
+
+    #N_stim = 12
     N_FT = 4 # HARDCODED
-    N_VOT = 4 #HARDCODED
+    N_VOT = 4 #HARDCODE
 
-    pValsEachCellOnsetFT = np.empty((nCells, N_FT))
-    pValsEachCellSustainFT = np.empty((nCells, N_FT))
-    minPvalEachCellOnsetFT = np.full(nCells, np.nan)
-    minPvalEachCellSustainFT = np.full(nCells, np.nan)
-    minPvalIndexEachCellOnsetFT = np.full(nCells, -1)
-    minPvalIndexEachCellSustainFT = np.full(nCells, -1)
-
-    pValsEachCellOnsetVOT = np.empty((nCells, N_VOT))
-    pValsEachCellSustainVOT = np.empty((nCells, N_VOT))
-    minPvalEachCellOnsetVOT = np.full(nCells, np.nan)
-    minPvalEachCellSustainVOT = np.full(nCells, np.nan)
-    minPvalIndexEachCellOnsetVOT = np.full(nCells, -1)
-    minPvalIndexEachCellSustainVOT = np.full(nCells, -1)
-
+    pValsEachCellOnset = np.empty((nCells, N_FT, N_VOT))
+    pValsEachCellSustain = np.empty((nCells, N_FT, N_VOT))
+    minPvalEachCellOnset = np.full(nCells, np.nan)
+    minPvalEachCellSustain = np.full(nCells, np.nan)
+    minPvalIndexEachCellOnset = np.full((nCells,2), -1)
+    minPvalIndexEachCellSustain = np.full((nCells,2), -1)
     firingRateEachCellBase = np.full(nCells, np.nan)
-    bestFiringRateEachCellOnsetFT = np.full(nCells, np.nan)
-    bestFiringRateEachCellSustainFT = np.full(nCells, np.nan)
-    bestIndexEachCellOnsetFT = np.full(nCells, -1)
-    bestIndexEachCellSustainFT = np.full(nCells, -1)
-    maxFiringRateEachCellOnsetFT = np.full(nCells, np.nan)
-    minFiringRateEachCellOnsetFT = np.full(nCells, np.nan)
-    maxFiringRateEachCellSustainFT = np.full(nCells, np.nan)
-    minFiringRateEachCellSustainFT = np.full(nCells, np.nan)
+    bestFiringRateEachCellOnset = np.full(nCells, np.nan)
+    bestFiringRateEachCellSustain = np.full(nCells, np.nan)
+    bestIndexEachCellOnset = np.full((nCells,2), -1)
+    bestIndexEachCellSustain = np.full((nCells,2), -1)
+    maxFiringRateEachCellOnset = np.full(nCells, np.nan)
+    minFiringRateEachCellOnset = np.full(nCells, np.nan)
+    maxFiringRateEachCellSustain = np.full(nCells, np.nan)
+    minFiringRateEachCellSustain = np.full(nCells, np.nan)
 
-    bestFiringRateEachCellOnsetVOT = np.full(nCells, np.nan)
-    bestFiringRateEachCellSustainVOT = np.full(nCells, np.nan)
-    bestIndexEachCellOnsetVOT = np.full(nCells, -1)
-    bestIndexEachCellSustainVOT = np.full(nCells, -1)
-    maxFiringRateEachCellOnsetVOT = np.full(nCells, np.nan)
-    minFiringRateEachCellOnsetVOT = np.full(nCells, np.nan)
-    maxFiringRateEachCellSustainVOT = np.full(nCells, np.nan)
-    minFiringRateEachCellSustainVOT = np.full(nCells, np.nan)
 
     indCell = -1
     for indRow, dbRow in celldb.iterrows():
@@ -87,26 +73,26 @@ for indMouse, thisMouse in enumerate(allSubjects):
         eventOnsetTimes = ephysData['events']['stimOn']
         timeRange = [-0.4, 0.55]  # In seconds
 
+        FTParamsEachTrial = bdata['targetFTpercent']
+
         # -- Test if trials from behavior don't match ephys --
-        ''' shouldn't need this for speech
-        if (len(rateEachTrial) > len(eventOnsetTimes)) or \
-           (len(rateEachTrial) < len(eventOnsetTimes)-1):
+        if (len(FTParamsEachTrial) > len(eventOnsetTimes)) or \
+           (len(FTParamsEachTrial) < len(eventOnsetTimes)-1):
             print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
                   f'EphysTrials ({len(eventOnsetTimes)})')
             continue
-        if len(rateEachTrial) == len(eventOnsetTimes)-1:
-            eventOnsetTimes = eventOnsetTimes[:len(rateEachTrial)]
-        '''
+        if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
+            eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
 
-        FTParamsEachTrial = bdata['targetFTpercent']
+
         possibleFTParams = np.unique(FTParamsEachTrial)
         nFT = len(possibleFTParams)
-        trialsEachFTCond = behavioranalysis.find_trials_each_type(FTParamsEachTrial, possibleFTParams)
-
         VOTParamsEachTrial = bdata['targetVOTpercent']
         possibleVOTParams = np.unique(VOTParamsEachTrial)
         nVOT = len(possibleVOTParams)
-        trialsEachVOTCond = behavioranalysis.find_trials_each_type(VOTParamsEachTrial, possibleVOTParams)
+        nStim = 12
+
+        trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
 
         (spikeTimesFromEventOnset,trialIndexForEachSpike,indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
@@ -121,120 +107,71 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         firingRateEachCellBase[indCell] = spikesEachTrialEachPeriod[0].mean()/periodDuration[0]
 
-        # Calculate mean firing rates and responsiveness for each FT
-        meanFiringRateBaseFT = np.empty(nFT)
-        meanFiringRateOnsetFT = np.empty(nFT)
-        pValEachCondOnsetFT = np.empty(nFT)
-        meanFiringRateSustainFT = np.empty(nFT)
-        pValEachCondSustainFT = np.empty(nFT)
-        for indcond, thisCond in enumerate(possibleFTParams):
-            trialsThisCond = trialsEachFTCond[:,indcond]
-            firingRateBase = spikesEachTrialEachPeriod[0][trialsThisCond]/periodDuration[0]
-            firingRateOnset = spikesEachTrialEachPeriod[1][trialsThisCond]/periodDuration[1]
-            firingRateSustain = spikesEachTrialEachPeriod[2][trialsThisCond]/periodDuration[2]
-            try:
-                wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateOnset)
-            except ValueError:
-                pValThisCond = 1
-            pValEachCondOnsetFT[indcond] = pValThisCond
-            try:
-                wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateSustain)
-            except ValueError:
-                pValThisCond = 1
-            pValEachCondSustainFT[indcond] = pValThisCond
-            meanFiringRateOnsetFT[indcond] = firingRateOnset.mean()
-            meanFiringRateSustainFT[indcond] = firingRateSustain.mean()
+        # Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
+        meanFiringRateBase = np.empty([nFT, nVOT])
+        meanFiringRateOnset = np.empty([nFT, nVOT])
+        pValEachCondOnset = np.empty([nFT, nVOT])
+        meanFiringRateSustain = np.empty([nFT, nVOT])
+        pValEachCondSustain = np.empty([nFT, nVOT])
 
-        indMinPvalOnset = np.argmin(pValEachCondOnsetFT)
-        minPvalEachCellOnsetFT[indCell] = pValEachCondOnsetFT[indMinPvalOnset]
-        minPvalIndexEachCellOnsetFT[indCell] = indMinPvalOnset
-        indBestOnset = np.argmax(np.abs(meanFiringRateOnsetFT-firingRateEachCellBase[indCell]))
-        bestFiringRateEachCellOnsetFT[indCell] = meanFiringRateOnsetFT[indBestOnset]
-        bestIndexEachCellOnsetFT[indCell] = indBestOnset
-        maxFiringRateEachCellOnsetFT[indCell] = np.max(meanFiringRateOnsetFT)
-        minFiringRateEachCellOnsetFT[indCell] = np.min(meanFiringRateOnsetFT)
+        for indFT, thisFT in enumerate(possibleFTParams):
+            for indVOT, thisVOT in enumerate(possibleVOTParams):
+                trialsThisCond = trialsEachCond[:, indFT, indVOT]
+                firingRateBase = spikesEachTrialEachPeriod[0][trialsThisCond]/periodDuration[0]
+                firingRateOnset = spikesEachTrialEachPeriod[1][trialsThisCond]/periodDuration[1]
+                firingRateSustain = spikesEachTrialEachPeriod[2][trialsThisCond]/periodDuration[2]
 
-        indMinPvalSustain = np.argmin(pValEachCondSustainFT)
-        minPvalEachCellSustainFT[indCell] = pValEachCondSustainFT[indMinPvalSustain]
-        minPvalIndexEachCellSustainFT[indCell] = indMinPvalSustain
-        indBestSustain = np.argmax(np.abs(meanFiringRateSustainFT-firingRateEachCellBase[indCell]))
-        bestFiringRateEachCellSustainFT[indCell] = meanFiringRateSustainFT[indBestSustain]
-        bestIndexEachCellSustainFT[indCell] = indBestSustain
-        maxFiringRateEachCellSustainFT[indCell] = np.max(meanFiringRateSustainFT)
-        minFiringRateEachCellSustainFT[indCell] = np.min(meanFiringRateSustainFT)
+                try:
+                    wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateOnset)
+                except ValueError:
+                    pValThisCond = 1
+                pValEachCondOnset[indFT, indVOT] = pValThisCond
+                try:
+                    wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateSustain)
+                except ValueError:
+                    pValThisCond = 1
+
+                pValEachCondSustain[indFT, indVOT] = pValThisCond
+                meanFiringRateOnset[indFT, indVOT] = firingRateOnset.mean()
+                meanFiringRateSustain[indFT, indVOT] = firingRateSustain.mean()
+                meanFiringRateBase[indFT, indVOT] = firingRateBase.mean()
 
 
-        # Calculate mean firing rates and responsiveness for each VOT
-        meanFiringRateBaseVOT = np.empty(nVOT)
-        meanFiringRateOnsetVOT = np.empty(nVOT)
-        pValEachCondOnsetVOT = np.empty(nVOT)
-        meanFiringRateSustainVOT = np.empty(nVOT)
-        pValEachCondSustainVOT = np.empty(nVOT)
-        for indcond, thisCond in enumerate(possibleVOTParams):
-            trialsThisCond = trialsEachVOTCond[:,indcond]
-            firingRateBase = spikesEachTrialEachPeriod[0][trialsThisCond]/periodDuration[0]
-            firingRateOnset = spikesEachTrialEachPeriod[1][trialsThisCond]/periodDuration[1]
-            firingRateSustain = spikesEachTrialEachPeriod[2][trialsThisCond]/periodDuration[2]
-            try:
-                wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateOnset)
-            except ValueError:
-                pValThisCond = 1
-            pValEachCondOnsetVOT[indcond] = pValThisCond
-            try:
-                wStat, pValThisCond = stats.wilcoxon(firingRateBase, firingRateSustain)
-            except ValueError:
-                pValThisCond = 1
-            pValEachCondSustainVOT[indcond] = pValThisCond
-            meanFiringRateOnsetVOT[indcond] = firingRateOnset.mean()
-            meanFiringRateSustainVOT[indcond] = firingRateSustain.mean()
+        indMinPvalOnset = np.unravel_index(np.argmin(pValEachCondOnset), pValEachCondOnset.shape)
+        minPvalEachCellOnset[indCell] = pValEachCondOnset[indMinPvalOnset]
+        minPvalIndexEachCellOnset[indCell,:] = indMinPvalOnset
+        indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset-firingRateEachCellBase[indCell])), meanFiringRateOnset.shape)
+        bestFiringRateEachCellOnset[indCell] = meanFiringRateOnset[indBestOnset]
+        bestIndexEachCellOnset[indCell,:] = indBestOnset
+        maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
+        minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
 
-        indMinPvalOnset = np.argmin(pValEachCondOnsetVOT)
-        minPvalEachCellOnsetVOT[indCell] = pValEachCondOnsetVOT[indMinPvalOnset]
-        minPvalIndexEachCellOnsetVOT[indCell] = indMinPvalOnset
-        indBestOnset = np.argmax(np.abs(meanFiringRateOnsetVOT-firingRateEachCellBase[indCell]))
-        bestFiringRateEachCellOnsetVOT[indCell] = meanFiringRateOnsetVOT[indBestOnset]
-        bestIndexEachCellOnsetVOT[indCell] = indBestOnset
-        maxFiringRateEachCellOnsetVOT[indCell] = np.max(meanFiringRateOnsetVOT)
-        minFiringRateEachCellOnsetVOT[indCell] = np.min(meanFiringRateOnsetVOT)
-
-        indMinPvalSustain = np.argmin(pValEachCondSustainVOT)
-        minPvalEachCellSustainVOT[indCell] = pValEachCondSustainVOT[indMinPvalSustain]
-        minPvalIndexEachCellSustainVOT[indCell] = indMinPvalSustain
-        indBestSustain = np.argmax(np.abs(meanFiringRateSustainVOT-firingRateEachCellBase[indCell]))
-        bestFiringRateEachCellSustainVOT[indCell] = meanFiringRateSustainVOT[indBestSustain]
-        bestIndexEachCellSustainVOT[indCell] = indBestSustain
-        maxFiringRateEachCellSustainVOT[indCell] = np.max(meanFiringRateSustainVOT)
-        minFiringRateEachCellSustainVOT[indCell] = np.min(meanFiringRateSustainVOT)
+        indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain), pValEachCondSustain.shape)
+        minPvalEachCellSustain[indCell] = pValEachCondSustain[indMinPvalSustain]
+        minPvalIndexEachCellSustain[indCell,:] = indMinPvalSustain
+        indBestSustain = np.unravel_index(np.nanargmax(np.abs(meanFiringRateSustain-firingRateEachCellBase[indCell])), meanFiringRateSustain.shape)
+        bestFiringRateEachCellSustain[indCell] = meanFiringRateSustain[indBestSustain]
+        bestIndexEachCellSustain[indCell,:] = indBestSustain
+        maxFiringRateEachCellSustain[indCell] = np.nanmax(meanFiringRateSustain)
+        minFiringRateEachCellSustain[indCell] = np.nanmin(meanFiringRateSustain)
 
 
-
-
-    celldb['FTMinPvalOnset'] = minPvalEachCellOnsetFT
-    celldb['FTIndexMinPvalOnset'] = minPvalIndexEachCellOnsetFT
-    celldb['FTMinPvalSustain'] = minPvalEachCellSustainFT
-    celldb['FTIndexMinPvalOnset'] = minPvalIndexEachCellSustainFT
-    celldb['VOTMinPvalOnset'] = minPvalEachCellOnsetVOT
-    celldb['VOTIndexMinPvalOnset'] = minPvalIndexEachCellOnsetVOT
-    celldb['VOTMinPvalSustain'] = minPvalEachCellSustainVOT
-    celldb['VOTIndexMinPvalOnset'] = minPvalIndexEachCellSustainVOT
-
+    celldb['speechMinPvalOnset'] = minPvalEachCellOnset
+    celldb['ftIndexMinPvalOnset'] = minPvalIndexEachCellOnset[:,0]
+    celldb['votIndexMinPvalOnset'] = minPvalIndexEachCellOnset[:,1]
+    celldb['speechMinPvalSustain'] = minPvalEachCellSustain
+    celldb['ftIndexMinPvalSustain'] = minPvalIndexEachCellSustain[:,0]
+    celldb['votIndexMinPvalSustain'] = minPvalIndexEachCellSustain[:,1]
     celldb['speechFiringRateBaseline'] = firingRateEachCellBase
-    celldb['FTFiringRateBestOnset'] = bestFiringRateEachCellOnsetFT
-    celldb['FTIndexBestOnset'] = bestIndexEachCellOnsetFT
-    celldb['FTFiringRateBestSustain'] = bestFiringRateEachCellSustainFT
-    celldb['FTIndexBestSustain'] = bestIndexEachCellSustainFT
-    celldb['VOTFiringRateBestOnset'] = bestFiringRateEachCellOnsetVOT
-    celldb['VOTIndexBestOnset'] = bestIndexEachCellOnsetVOT
-    celldb['VOTFiringRateBestSustain'] = bestFiringRateEachCellSustainVOT
-    celldb['VOTIndexBestSustain'] = bestIndexEachCellSustainVOT
-
-    celldb['FTFiringRateMaxOnset'] = maxFiringRateEachCellOnsetFT
-    celldb['FTFiringRateMinOnset'] = minFiringRateEachCellOnsetFT
-    celldb['FtFiringRateMaxSustain'] = maxFiringRateEachCellSustainFT
-    celldb['FTFiringRateMinSustain'] = minFiringRateEachCellSustainFT
-    celldb['VOTFiringRateMaxOnset'] = maxFiringRateEachCellOnsetVOT
-    celldb['VOTFiringRateMinOnset'] = minFiringRateEachCellOnsetVOT
-    celldb['VOTFiringRateMaxSustain'] = maxFiringRateEachCellSustainVOT
-    celldb['VOTFiringRateMinSustain'] = minFiringRateEachCellSustainVOT
+    celldb['speechFiringRateBestOnset'] = bestFiringRateEachCellOnset
+    celldb['ftIndexBestOnset'] = bestIndexEachCellOnset[:,0]
+    celldb['votIndexBestOnset'] = bestIndexEachCellOnset[:,1]
+    celldb['speechFiringRateBestSustain'] = bestFiringRateEachCellSustain
+    celldb['ftIndexBestSustain'] = bestIndexEachCellSustain[:,0]
+    celldb['votIndexBestSustain'] = bestIndexEachCellSustain[:,1]
+    celldb['speechFiringRateMaxOnset'] = maxFiringRateEachCellOnset
+    celldb['speechFiringRateMinOnset'] = minFiringRateEachCellOnset
+    celldb['speechFiringRateMaxSustain'] = maxFiringRateEachCellSustain
+    celldb['speechFiringRateMinSustain'] = minFiringRateEachCellSustain
 
     celldatabase.save_hdf(celldb, newdbPath)
