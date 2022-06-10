@@ -6,6 +6,7 @@ STUDY_NAME = '2022paspeech'
 
 # List of animals used in this study
 EPHYS_MICE = ['feat004', 'feat005', 'feat006', 'feat007', 'feat008']
+TEST_MOUSE = ['feat004']
 
 VOT_BEHAVIOR_MICE = ['bili034', 'bili035', 'bili036', 'bili037', 'bili038', 'bili039', 'bili040', 'bili041', 'bili042']
 

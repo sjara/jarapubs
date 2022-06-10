@@ -25,142 +25,169 @@ reload(studyutils)
 
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
-#allSubjects = studyparams.EPHYS_MICE
-subject = 'feat004'
-
-#for indMouse, thisMouse in enumerate(allSubjects):
-#    subject = thisMouse
-dbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
-
-celldb = celldatabase.load_hdf(dbPath)
-
-nCells = len(celldb)
-
-newdbPath = os.path.join(settings.DATABASE_PATH, f'{subject}_paspeech_speech_tuning.h5')
+allSubjects = studyparams.EPHYS_MICE
+#allSubjects = studyparams.TEST_MOUSE
 
 
-periodsName = ['respOnset', 'respSustained']
-allPeriods = [ [0, 0.12] , [0.12, 0.24] ]
-periodDuration = [x[1]-x[0] for x in allPeriods]
-N_FT = 4 # HARDCODED
-N_VOT = 4 #HARDCODED
+for indMouse, thisMouse in enumerate(allSubjects):
+    subject = thisMouse
+    dbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
+
+    celldb = celldatabase.load_hdf(dbPath)
+
+    nCells = len(celldb)
+
+    newdbPath = os.path.join(databaseDir , f'{subject}_paspeech_speech_tuning.h5')
 
 
-correctedAlpha = 0.05/N_FT
-celldbRespFT = celldb[(celldb.FTMinPvalOnset < correctedAlpha) |
-                    (celldb.FTMinPvalSustain < correctedAlpha)]
-
-celldbRespVOT = celldb[(celldb.VOTMinPvalOnset < correctedAlpha) |
-                    (celldb.VOTMinPvalSustain < correctedAlpha)]
-
-celldb['FTSelectivityPvalOnset'] = np.nan
-celldb['FTSelectivityPvalSustain'] = np.nan
-
-celldb['VOTSelectivityPvalOnset'] = np.nan
-celldb['VOTSelectivityPvalSustain'] = np.nan
-#celldb['amMaxSyncRate'] = np.nan
-
-indCell = -1
-for indRow, dbRow in celldbRespFT.iterrows():
-    #dbRow = celldb.loc[570]
-    indCell += 1
-    oneCell = ephyscore.Cell(dbRow)
-
-    ephysData, bdata = oneCell.load('FTVOTBorders')
-
-    spikeTimes = ephysData['spikeTimes']
-    eventOnsetTimes = ephysData['events']['stimOn']
-    timeRange = [-0.4, 0.55]  # In seconds
-
-    #rateEachTrial = bdata['currentFreq']
-    # Remove last stim from ephys if not saved in behavior file
-    ''' Shouldn't need for speech data.
-    if len(rateEachTrial) == len(eventOnsetTimes)-1:
-        eventOnsetTimes = eventOnsetTimes[:len(rateEachTrial)]
-    '''
-
-    #possibleRate = np.unique(rateEachTrial)
-    #nRate = len(possibleRate)
-    #trialsEachCond = behavioranalysis.find_trials_each_type(rateEachTrial, possibleRate)
-
-    FTParamsEachTrial = bdata['targetFTpercent']
-    possibleFTParams = np.unique(FTParamsEachTrial)
-    nFT = len(possibleFTParams)
-    trialsEachFTCond = behavioranalysis.find_trials_each_type(FTParamsEachTrial, possibleFTParams)
-
-    VOTParamsEachTrial = bdata['targetVOTpercent']
-    possibleVOTParams = np.unique(VOTParamsEachTrial)
-    nVOT = len(possibleVOTParams)
-    trialsEachVOTCond = behavioranalysis.find_trials_each_type(VOTParamsEachTrial, possibleVOTParams)
-
-    FTSelectivityPval = np.full(len(allPeriods), np.nan)
-
-    # calculate selectvitiy to FT
-    for indPeriod, period in enumerate(allPeriods):
-        (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
-            spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
-
-        spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset,
-                                                                 indexLimitsEachTrial,
-                                                                 period)
-        nSpikesEachTrial = spikeCountMat[:,0]  # Flatten it
-
-        # -- Calculate nSpikes for each rate to test selectivity --
-        nSpikesEachFT = []
-        for indcond, thisCond in enumerate(possibleFTParams):
-            nSpikesEachFT.append(nSpikesEachTrial[trialsEachFTCond[:,indcond]])
-
-        if np.all(spikeCountMat == 0):
-            kStat = None
-            pValKruskal = None
-            print(f'{oneCell} no spikes for FT-VOT session')
-        else:
-            kStat, pValKruskal = stats.kruskal(*nSpikesEachFT)
-            FTSelectivityPval[indPeriod] = pValKruskal
-
-# calculate selectvitiy to VOT
-indCell = -1
-for indRow, dbRow in celldbRespVOT.iterrows():
-    #dbRow = celldb.loc[570]
-    indCell += 1
-    oneCell = ephyscore.Cell(dbRow)
-
-    ephysData, bdata = oneCell.load('FTVOTBorders')
-
-    spikeTimes = ephysData['spikeTimes']
-    eventOnsetTimes = ephysData['events']['stimOn']
-    timeRange = [-0.4, 0.55]  # In seconds
-    VOTSelectivityPval = np.full(len(allPeriods), np.nan)
-
-    for indPeriod, period in enumerate(allPeriods):
-        (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
-            spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
-
-        spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset,
-                                                                 indexLimitsEachTrial,
-                                                                 period)
-        nSpikesEachTrial = spikeCountMat[:,0]  # Flatten it
-
-        # -- Calculate nSpikes for each rate to test selectivity --
-        nSpikesEachVOT = []
-        for indcond, thisCond in enumerate(possibleVOTParams):
-            nSpikesEachVOT.append(nSpikesEachTrial[trialsEachVOTCond[:,indcond]])
-
-        if np.all(spikeCountMat == 0):
-            kStat = None
-            pValKruskal = None
-            print(f'{oneCell} no spikes for VOT-VOT session')
-        else:
-            kStat, pValKruskal = stats.kruskal(*nSpikesEachVOT)
-            VOTSelectivityPval[indPeriod] = pValKruskal
+    periodsName = ['respOnset', 'respSustained']
+    allPeriods = [ [0, 0.12] , [0.12, 0.24] ]
+    periodDuration = [x[1]-x[0] for x in allPeriods]
+    N_FT = 4 # HARDCODED
+    N_VOT = 4 #HARDCODED
+    N_SPEECH = 12 #HARDCODED
 
 
-celldb.at[indRow, 'FTSelectivityPvalOnset'] = FTSelectivityPval[0]
-celldb.at[indRow, 'FTSelectivityPvalSustain'] = FTSelectivityPval[1]
-celldb.at[indRow, 'VOTSelectivityPvalOnset'] = VOTSelectivityPval[0]
-celldb.at[indRow, 'VOTSelectivityPvalSustain'] = VOTSelectivityPval[1]
+    correctedAlpha = 0.05/N_SPEECH
+    celldbResp = celldb[(celldb.speechMinPvalOnset < correctedAlpha) |
+                        (celldb.speechMinPvalSustain < correctedAlpha)]
 
 
-#celldb.at[indRow, 'amMaxSyncRate'] = maxSyncRate
+    celldb['ftSelectivityVotMaxPvalOnset'] = np.nan
+    celldb['ftSelectivityVotMaxPvalSustain'] = np.nan
+    celldb['ftSelectivityVotMinPvalOnset'] = np.nan
+    celldb['ftSelectivityVotMinPvalSustain'] = np.nan
 
-#celldatabase.save_hdf(celldb, newdbPath)
+    celldb['votSelectivityFtMaxPvalOnset'] = np.nan
+    celldb['votSelectivityFtMaxPvalSustain'] = np.nan
+    celldb['votSelectivityFtMinPvalOnset'] = np.nan
+    celldb['votSelectivityFtMinPvalSustain'] = np.nan
+
+
+    indCell = -1
+    for indRow, dbRow in celldbResp.iterrows():
+        #dbRow = celldb.loc[570]
+        indCell += 1
+        oneCell = ephyscore.Cell(dbRow)
+
+        ephysData, bdata = oneCell.load('FTVOTBorders')
+
+        spikeTimes = ephysData['spikeTimes']
+        eventOnsetTimes = ephysData['events']['stimOn']
+        timeRange = [-0.4, 0.55]  # In seconds
+
+        #rateEachTrial = bdata['currentFreq']
+        # Remove last stim from ephys if not saved in behavior file
+        ''' Shouldn't need for speech data.
+        if len(rateEachTrial) == len(eventOnsetTimes)-1:
+            eventOnsetTimes = eventOnsetTimes[:len(rateEachTrial)]
+        '''
+
+
+        FTParamsEachTrial = bdata['targetFTpercent']
+        possibleFTParams = np.unique(FTParamsEachTrial)
+        VOTParamsEachTrial = bdata['targetVOTpercent']
+        possibleVOTParams = np.unique(VOTParamsEachTrial)
+        nFT = len(possibleFTParams)
+        nVOT = len(possibleVOTParams)
+        minVOT = [np.min(possibleVOTParams)]
+        maxVOT = np.max(possibleVOTParams)
+        minFT = np.min(possibleFTParams)
+        maxFT = np.max(possibleFTParams)
+
+        trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
+
+        FTSelectivity_VOTMin_Pval = np.full(len(allPeriods), np.nan)
+        FTSelectivity_VOTMax_Pval = np.full(len(allPeriods), np.nan)
+        VOTSelectivity_FTMin_Pval = np.full(len(allPeriods), np.nan)
+        VOTSelectivity_FTMax_Pval = np.full(len(allPeriods), np.nan)
+
+        # calculate selectvitiy to FT
+        for indPeriod, period in enumerate(allPeriods):
+            (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
+                spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
+
+            spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset,
+                                                                     indexLimitsEachTrial,
+                                                                     period)
+            nSpikesEachTrial = spikeCountMat[:,0]  # Flatten it
+
+            # -- Calculate nSpikes for each FT @ VOTmin and VOTmax, and each VOT @ FTmin and FTmax
+
+            nSpikesEachFT_VOTmin = []
+            nSpikesEachFT_VOTmax = []
+            nSpikesEachVOT_FTmin = []
+            nSpikesEachVOT_FTmax = []
+
+            for indcond, thisCond in enumerate(possibleFTParams):
+                nSpikesEachFT_VOTmin.append(nSpikesEachTrial[trialsEachCond[:,indcond,0]])
+                nSpikesEachFT_VOTmax.append(nSpikesEachTrial[trialsEachCond[:,indcond,3]])
+                nSpikesEachVOT_FTmin.append(nSpikesEachTrial[trialsEachCond[:,0,indcond]])
+                nSpikesEachVOT_FTmax.append(nSpikesEachTrial[trialsEachCond[:,3,indcond]])
+
+            if np.all(spikeCountMat == 0):
+                kStat = None
+                pValKruskal = None
+                print(f'{oneCell} no spikes for FT-VOT session')
+            else:
+                kStat, pValKruskalFT_VOTmin = stats.kruskal(*nSpikesEachFT_VOTmin)
+                FTSelectivity_VOTMin_Pval[indPeriod] = pValKruskalFT_VOTmin
+                kStat, pValKruskalFT_VOTmax = stats.kruskal(*nSpikesEachFT_VOTmax)
+                FTSelectivity_VOTMax_Pval[indPeriod] = pValKruskalFT_VOTmax
+
+                kStat, pValKruskalVOT_FTmin = stats.kruskal(*nSpikesEachVOT_FTmin)
+                VOTSelectivity_FTMin_Pval[indPeriod] = pValKruskalVOT_FTmin
+                kStat, pValKruskalVOT_FTmax = stats.kruskal(*nSpikesEachVOT_FTmax)
+                VOTSelectivity_FTMax_Pval[indPeriod] = pValKruskalVOT_FTmax
+
+
+                '''
+    # calculate selectvitiy to VOT
+    indCell = -1
+    for indRow, dbRow in celldbRespVOT.iterrows():
+        #dbRow = celldb.loc[570]
+        indCell += 1
+        oneCell = ephyscore.Cell(dbRow)
+
+        ephysData, bdata = oneCell.load('FTVOTBorders')
+
+        spikeTimes = ephysData['spikeTimes']
+        eventOnsetTimes = ephysData['events']['stimOn']
+        timeRange = [-0.4, 0.55]  # In seconds
+        VOTSelectivityPval = np.full(len(allPeriods), np.nan)
+
+        for indPeriod, period in enumerate(allPeriods):
+            (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
+                spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
+
+            spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset,
+                                                                     indexLimitsEachTrial,
+                                                                     period)
+            nSpikesEachTrial = spikeCountMat[:,0]  # Flatten it
+
+            # -- Calculate nSpikes for each rate to test selectivity --
+            nSpikesEachVOT = []
+            for indcond, thisCond in enumerate(possibleVOTParams):
+                nSpikesEachVOT.append(nSpikesEachTrial[trialsEachVOTCond[:,indcond]])
+
+            if np.all(spikeCountMat == 0):
+                kStat = None
+                pValKruskal = None
+                print(f'{oneCell} no spikes for VOT-VOT session')
+            else:
+                kStat, pValKruskal = stats.kruskal(*nSpikesEachVOT)
+                VOTSelectivityPval[indPeriod] = pValKruskal
+                '''
+
+    celldb.at[indRow, 'ftSelectivityVotMaxPvalOnset'] = FTSelectivity_VOTMax_Pval[0]
+    celldb.at[indRow, 'ftSelectivityVotMaxPvalSustain'] = FTSelectivity_VOTMax_Pval[1]
+    celldb.at[indRow, 'ftSelectivityVotMinPvalOnset'] = FTSelectivity_VOTMin_Pval[0]
+    celldb.at[indRow, 'ftSelectivityVotMinPvalSustain'] = FTSelectivity_VOTMin_Pval[1]
+
+    celldb.at[indRow, 'votSelectivityFtMaxPvalOnset'] = VOTSelectivity_FTMax_Pval[0]
+    celldb.at[indRow, 'votSelectivityFtMaxPvalSustain'] = VOTSelectivity_FTMax_Pval[1]
+    celldb.at[indRow, 'votSelectivityFtMinPvalOnset'] = VOTSelectivity_FTMin_Pval[0]
+    celldb.at[indRow, 'votSelectivityFtMinPvalSustain'] = VOTSelectivity_FTMin_Pval[1]
+
+
+    celldatabase.save_hdf(celldb, newdbPath)

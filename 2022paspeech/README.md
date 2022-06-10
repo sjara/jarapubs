@@ -10,7 +10,10 @@ relevant file paths and statistical parameters for the database calculations
 * `database_freq_tuning.py`: Estimate frequency tuning. It creates `SUBJECT_paspeech_freq_tuning.h5` (it takes 1 min)
 * `database_am_responsiveness.py`: Estimate responses to AM sounds. It creates `SUBJECT_paspeech_am_pval.h5` (it takes 2 min)
 * `database_am_tuning.py`: Estimate tuning to AM rate. It creates `SUBJECT_paspeech_am_tuning.h5` (it takes 42s)
+* 'database_speech_responsive.py': Estimates responsiveness to speech sounds (FT and VOT). It creates 'SUBJECT_paspeech_speech_pval.h5' (it takes 3.5 min)
+* 'database_speech_selective.py': Estimates selectivity to FT and VOT. It creates 'SUBJECT_speech_tuning.h5' (it takes XX)
 
+ #For all databases, "BEST" indicates the maximum absolute value difference between the mean firing rate for a given stimulus (e.g. modulation rate) and baseline firing rate for each cell.
 
 ## `database_generation_funcs.py`
 Contains functions called during database generation.

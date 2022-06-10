@@ -186,7 +186,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
     celldb['amIndexMinPvalOnset'] = minPvalIndexEachCellSustain
 
     celldb['amFiringRateBaseline'] = firingRateEachCellBase
-    celldb['amFiringRateBestOnset'] = bestFiringRateEachCellOnset
+    celldb['amFiringRateBestOnset'] = bestFiringRateEachCellOnset  #"BEST" indicates the maximum absolute value difference between the mean firing rate for a given modulation rate and baseline firing rate for each cell.
     celldb['amIndexBestOnset'] = bestIndexEachCellOnset
     celldb['amFiringRateBestSustain'] = bestFiringRateEachCellSustain
     celldb['amIndexBestSustain'] = bestIndexEachCellSustain
