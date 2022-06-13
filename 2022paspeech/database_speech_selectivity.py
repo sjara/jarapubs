@@ -127,17 +127,32 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
             if np.all(spikeCountMat == 0):
                 kStat = None
-                pValKruskal = None
+                pValKruskal = 1
                 print(f'{oneCell} no spikes for FT-VOT session')
             else:
-                kStat, pValKruskalFT_VOTmin = stats.kruskal(*nSpikesEachFT_VOTmin)
+
+                try:
+                    kStat, pValKruskalFT_VOTmin = stats.kruskal(*nSpikesEachFT_VOTmin)
+                except ValueError:
+                    pValKruskalFT_VOTmin = 1
                 FTSelectivity_VOTMin_Pval[indPeriod] = pValKruskalFT_VOTmin
-                kStat, pValKruskalFT_VOTmax = stats.kruskal(*nSpikesEachFT_VOTmax)
+
+                try:
+                    kStat, pValKruskalFT_VOTmax = stats.kruskal(*nSpikesEachFT_VOTmax)
+                except ValueError:
+                    pValKruskalFT_VOTmax = 1
                 FTSelectivity_VOTMax_Pval[indPeriod] = pValKruskalFT_VOTmax
 
-                kStat, pValKruskalVOT_FTmin = stats.kruskal(*nSpikesEachVOT_FTmin)
+                try:
+                    kStat, pValKruskalVOT_FTmin = stats.kruskal(*nSpikesEachVOT_FTmin)
+                except ValueError:
+                    pValKruskalVOT_FTmin = 1
                 VOTSelectivity_FTMin_Pval[indPeriod] = pValKruskalVOT_FTmin
-                kStat, pValKruskalVOT_FTmax = stats.kruskal(*nSpikesEachVOT_FTmax)
+                
+                try:
+                    kStat, pValKruskalVOT_FTmax = stats.kruskal(*nSpikesEachVOT_FTmax)
+                except ValueError:
+                    pValKruskalVOT_FTmax = 1
                 VOTSelectivity_FTMax_Pval[indPeriod] = pValKruskalVOT_FTmax
 
 
