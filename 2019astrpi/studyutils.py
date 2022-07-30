@@ -5,7 +5,7 @@ Based on database_generation_funcs.py (by Devin and Matt)
 """
 
 import numpy as np
-
+import scipy.signal
 
 def select_cells(celldb, restrictND1=False):
     """
@@ -130,12 +130,10 @@ def calculate_fra(avgFiringRateRespMap, avgFiringRateBaseline, responseFraction=
 
 
 def calculate_intensity_threshold(fra, thresholdCF=0.85):
-    """
+    """, avgFiringRateRespMap
     Calculates intensity threshold index and characteristic frequency (CF) index.
     Neuron's CF is defined as the frequency with the lowest sound intensity inside
     the FRA where 85% (theshold) of the intensities above were also within the FRA.
-    Note that there could be more than one frequency that satisfies that criterion;
-    this function returns the first one it finds (usually a lower frequency).
     
     Args:
         fra (numpy.ndarray): boolean array of shape (nInten, nFreq).
@@ -151,6 +149,30 @@ def calculate_intensity_threshold(fra, thresholdCF=0.85):
     rows, cols = fra.nonzero()
     lowestIntensityInd = None
     charactFreqInd = None
+    cfPoints = []
+    for row, col in zip(rows, cols):
+        colAbove = fra[row:, col]
+        if colAbove.mean() > thresholdCF:
+            lowestIntensityInd = row
+            charactFreqInd = col
+            cfPoints.append((lowestIntensityInd, charactFreqInd))
+    if len(cfPoints) == 0:
+        lowestIntensityInd, charactFreqInd = None, None
+    else:
+        cfPointsArray = np.array(cfPoints)
+        minPoint = np.argmin(cfPointsArray[:,0])
+        lowestIntensityInd, charactFreqInd = cfPointsArray[minPoint,:]
+    return lowestIntensityInd, charactFreqInd
+
+
+def OLD_calculate_intensity_threshold(fra, thresholdCF=0.85):
+    """
+    Note that there could be more than one frequency that satisfies that criterion;
+    this function returns the first one it finds (usually a lower frequency).
+    """
+    rows, cols = fra.nonzero()
+    lowestIntensityInd = None
+    charactFreqInd = None
     for row, col in zip(rows, cols):
         colAbove = fra[row:, col]
         if colAbove.mean() > thresholdCF:
@@ -160,6 +182,38 @@ def calculate_intensity_threshold(fra, thresholdCF=0.85):
     return lowestIntensityInd, charactFreqInd
 
 
+def calculate_fra_slopes(fra, possibleIntensity, possibleFreq, cfInd, thresholdInd):
+    """
+    Args:
+        fra (numpy.ndarray): boolean array of shape (nInten, nFreq).
+        cfInd (int): characteristic frequency index.
+        thresholdInd (int): intensity threshold index.
+    Returns:
+        lowSlope (float): slope (in dB/oct) of the low-freq side of the FRA
+        highSlope (float): slope (in dB/oct) of the high-freq side of the FRA
+    """
+    ifra = fra.astype(int)
+    maxIntInd = np.argmax(possibleIntensity)
+    medianFiltered = scipy.signal.medfilt(ifra[maxIntInd,:], 3)
+    print(medianFiltered)
+    nonZeroInds = np.flatnonzero(medianFiltered)
+    if len(nonZeroInds) == 0:
+        return (np.nan, np.nan)
+    lowBorderInd = nonZeroInds[0]
+    highBorderInd = nonZeroInds[-1]
+    possibleFreqInOct = np.log2(possibleFreq)
+    if lowBorderInd != cfInd:
+        lowSlope = ((possibleIntensity[maxIntInd] - possibleIntensity[thresholdInd]) /
+                    (possibleFreqInOct[lowBorderInd] - possibleFreqInOct[cfInd]))
+    else:
+        lowSlope = -np.inf
+    if highBorderInd != cfInd:
+        highSlope = ((possibleIntensity[maxIntInd] - possibleIntensity[thresholdInd]) /
+                     (possibleFreqInOct[highBorderInd] - possibleFreqInOct[cfInd]))
+    else:
+        highSlope = np.inf
+    return (lowSlope, highSlope)
+    
 def gaussian(x, a, x0, sigma, y0):
     """
     Gaussian function
