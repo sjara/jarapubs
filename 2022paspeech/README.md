@@ -36,6 +36,10 @@ These are additional columns calculated for a selected set of cells:
 
 * *fancyIndex*: A-B/A+B where A is the response and B is the baseline.
 
+# Generate files
+`generate_psycurve_cohortAverages.py` : This generates a population average psychometric stored in `data_cohort_average_psycurves.npz`
+`generate_psycurve_exampleMouse.py` :  This generates a psychometric for a single example mouse, stored in `data_example_mice_psycurves.npz`
+
 
 # Figures
 

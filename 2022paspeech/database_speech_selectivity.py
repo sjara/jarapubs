@@ -29,6 +29,7 @@ allSubjects = studyparams.EPHYS_MICE
 #allSubjects = studyparams.TEST_MOUSE
 
 
+
 for indMouse, thisMouse in enumerate(allSubjects):
     subject = thisMouse
     dbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
@@ -38,7 +39,15 @@ for indMouse, thisMouse in enumerate(allSubjects):
     nCells = len(celldb)
 
     newdbPath = os.path.join(databaseDir , f'{subject}_paspeech_speech_tuning.h5')
+    celldb['ftSelectivityVotMaxPvalOnset'] = np.nan
+    celldb['ftSelectivityVotMaxPvalSustain'] = np.nan
+    celldb['ftSelectivityVotMinPvalOnset'] = np.nan
+    celldb['ftSelectivityVotMinPvalSustain'] = np.nan
 
+    celldb['votSelectivityFtMaxPvalOnset'] = np.nan
+    celldb['votSelectivityFtMaxPvalSustain'] = np.nan
+    celldb['votSelectivityFtMinPvalOnset'] = np.nan
+    celldb['votSelectivityFtMinPvalSustain'] = np.nan
 
     periodsName = ['respOnset', 'respSustained']
     allPeriods = [ [0, 0.12] , [0.12, 0.24] ]
@@ -51,17 +60,6 @@ for indMouse, thisMouse in enumerate(allSubjects):
     correctedAlpha = 0.05/N_SPEECH
     celldbResp = celldb[(celldb.speechMinPvalOnset < correctedAlpha) |
                         (celldb.speechMinPvalSustain < correctedAlpha)]
-
-
-    celldb['ftSelectivityVotMaxPvalOnset'] = np.nan
-    celldb['ftSelectivityVotMaxPvalSustain'] = np.nan
-    celldb['ftSelectivityVotMinPvalOnset'] = np.nan
-    celldb['ftSelectivityVotMinPvalSustain'] = np.nan
-
-    celldb['votSelectivityFtMaxPvalOnset'] = np.nan
-    celldb['votSelectivityFtMaxPvalSustain'] = np.nan
-    celldb['votSelectivityFtMinPvalOnset'] = np.nan
-    celldb['votSelectivityFtMinPvalSustain'] = np.nan
 
 
     indCell = -1
@@ -148,7 +146,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 except ValueError:
                     pValKruskalVOT_FTmin = 1
                 VOTSelectivity_FTMin_Pval[indPeriod] = pValKruskalVOT_FTmin
-                
+
                 try:
                     kStat, pValKruskalVOT_FTmax = stats.kruskal(*nSpikesEachVOT_FTmax)
                 except ValueError:
