@@ -25,8 +25,8 @@ reload(studyutils)
 
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
-allSubjects = studyparams.EPHYS_MICE
-#allSubjects = studyparams.TEST_MOUSE
+#allSubjects = studyparams.EPHYS_MICE
+allSubjects = ['feat009', 'feat010']
 
 
 
