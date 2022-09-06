@@ -1,5 +1,5 @@
 """
-Double-check that the cells selected by Devin as bad still corresponds to bad cells.
+Double-check that the cells selected by Devin as bad still correspond to bad cells.
 """
 
 import sys
