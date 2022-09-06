@@ -29,23 +29,28 @@ reload(extraplots)
 
 SAVE_FIGURE = 1
 outputDir = '/tmp/'
-figFilename = 'plots_am_responses' # Do not include extension
+figFilename = 'fig5_am_responses' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
 #figSize = [4.6, 3.8] # In inches
-figSize = [7, 4] # In inches
+figSize = [7, 5.5] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
 fontSizePanel = figparams.fontSizePanel
 markerSize = 2  #figparams.rasterMarkerSize
 
-labelPosXtop = [0.01, 0.29, 0.52, 0.75]   # Horiz position for panel labels
+#labelPosXtop = [0.01, 0.29, 0.52, 0.75]   # Horiz position for panel labels
+#labelPosXbot = [0.01, 0.53, 0.75]   # Horiz position for panel labels
+#labelPosY = [0.94, 0.45]    # Vert position for panel labels
+labelPosXtop = [0.01, 0.5]   # Horiz position for panel labels
 labelPosXbot = [0.01, 0.53, 0.75]   # Horiz position for panel labels
-labelPosY = [0.94, 0.45]    # Vert position for panel labels
+labelPosY = [0.97, 0.68, 0.32]    # Vert position for panel labels
 
 figuresDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME)
-dbPath = os.path.join(figuresDataDir, 'sj_am_tuning_20220213.h5')
+dbPath = os.path.join(figuresDataDir, 'astrpi_am_tuning.h5')
 celldb = celldatabase.load_hdf(dbPath)
+extraDataPath = os.path.join(figuresDataDir, 'am_tuning.npz')
+amTuningData = np.load(extraDataPath)
 
 pp = lambda x: f"['{x.subject}', '{x.date}', {x.pdepth}, {x.egroup}, {x.cluster}]"
 # pp(celldb.loc[])
@@ -58,46 +63,39 @@ cellTypes = ['D1', 'ND1']
 cellTypeLabel = ['D1', 'non-D1']
 selectedCells = [selectedD1s, selectedD1t, selectedND1s, selectedND1t]
 examplesTypes = ['D1', 'D1', 'ND1', 'ND1']
+panelLabels = ['A', 'B', 'C', 'D']
 
 # -- Plot results --
 fig = plt.gcf()
 fig.clf()
 fig.set_facecolor('w')
 
-gsMain = gridspec.GridSpec(2, 1)
-gsMain.update(left=0.09, right=0.96, top=0.95, bottom=0.12, hspace=0.6)
+gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.7, 0.3])
+gsMain.update(left=0.09, right=0.96, top=0.98, bottom=0.08, hspace=0.35)
 
-gsRast = gsMain[0,0].subgridspec(1, 4, wspace=0.2)
-axRastD1s = plt.subplot(gsRast[0, 0])
-axRastD1s.annotate('A', xy=(labelPosXtop[0],labelPosY[0]), xycoords='figure fraction',
-                   fontsize=fontSizePanel, fontweight='bold')
-axRastD1t = plt.subplot(gsRast[0, 1])
-axRastD1t.annotate('B', xy=(labelPosXtop[1],labelPosY[0]), xycoords='figure fraction',
-                   fontsize=fontSizePanel, fontweight='bold')
-axRastND1s = plt.subplot(gsRast[0, 2])
-axRastND1s.annotate('C', xy=(labelPosXtop[2],labelPosY[0]), xycoords='figure fraction',
-                   fontsize=fontSizePanel, fontweight='bold')
-axRastND1t = plt.subplot(gsRast[0, 3])
-axRastND1t.annotate('D', xy=(labelPosXtop[3],labelPosY[0]), xycoords='figure fraction',
-                   fontsize=fontSizePanel, fontweight='bold')
-axRast = [axRastD1s, axRastD1t, axRastND1s, axRastND1t,]
+gsExamples = gsMain[0].subgridspec(2, 2, wspace=0.3, hspace=0.2)
 
-
-gsBottom = gsMain[1,0].subgridspec(1, 3, wspace=0.6, width_ratios=[0.6, 0.15, 0.15])
+gsBottom = gsMain[1].subgridspec(1, 3, wspace=0.6, width_ratios=[0.6, 0.15, 0.15])
 axHist = plt.subplot(gsBottom[0, 0])
-axHist.annotate('E', xy=(labelPosXbot[0],labelPosY[1]), xycoords='figure fraction',
+axHist.annotate('E', xy=(labelPosXbot[0],labelPosY[2]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
 axRS = plt.subplot(gsBottom[0, 1])
-axRS.annotate('F', xy=(labelPosXbot[1],labelPosY[1]), xycoords='figure fraction',
+axRS.annotate('F', xy=(labelPosXbot[1],labelPosY[2]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
 axSy = plt.subplot(gsBottom[0, 2])
-axSy.annotate('G', xy=(labelPosXbot[2],labelPosY[1]), xycoords='figure fraction',
+axSy.annotate('G', xy=(labelPosXbot[2],labelPosY[2]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
 
 
 if 1:
     for indType, cellType in enumerate(examplesTypes):
-        plt.sca(axRast[indType])
+        (row, col) = np.unravel_index(indType, [2,2])
+        gsOneCell = gsExamples[row,col].subgridspec(1, 3, width_ratios=[0.6, 0.2, 0.2],
+                                                    wspace=0.3, hspace=0.2)
+        axRast = plt.subplot(gsOneCell[0])
+        axRast.annotate(panelLabels[indType], xy=(labelPosXtop[col],labelPosY[row]),
+                        xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+        plt.sca(axRast)
         colorThisType = figparams.colors[cellType]
         from matplotlib import colors as mco
         otherColor = mco.hsv_to_rgb(mco.rgb_to_hsv(mco.to_rgb(colorThisType))*[1,0.4,1]) 
@@ -125,20 +123,54 @@ if 1:
         yLabels = possibleRate
         pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                        timeRange, trialsEachCond,
-                                                       colorEachCond=rasterColors, labels=yLabels)
+                                                       colorEachCond=rasterColors, labels=yLabels,
+                                                       rasterized=False)
         plt.setp(pRaster, ms=1)
         plt.xticks([0, 0.5])
-        plt.xlabel('Time (s)', fontsize=fontSizeLabels)
-        if indType==0:
+        if 1: #indType in [0, 2]:
             plt.ylabel('AM rate (Hz)', fontsize=fontSizeLabels)
             yTicks, lab = plt.yticks()
             rateLabels = [f'{x:0.0f}' for x in possibleRate]
             yTickLabels = nRate*['']
             for lpos in range(0,12,2): #[0,5,10]:
                 yTickLabels[lpos] = rateLabels[lpos]
-            axRast[indType].set_yticklabels(yTickLabels)
+            axRast.set_yticklabels(yTickLabels)
         else:
-            axRast[indType].set_yticklabels([])
+            axRast.set_yticklabels([])
+        if indType > 1:
+            plt.xlabel('Time (s)', fontsize=fontSizeLabels)
+        else:
+            axRast.set_xticklabels([])
+
+        extraDataIndex = np.flatnonzero(amTuningData['cellIndexes']==indRow)[0]
+        markerSizeVax = 5
+        lineWidthVax = 2
+        axFR = plt.subplot(gsOneCell[1])
+        firingRateEachRate = amTuningData['amFiringRateEachRateSustain'][extraDataIndex,:]
+        plt.plot(firingRateEachRate, np.log2(possibleRate), '-o', color=colorThisType,
+                 ms=markerSizeVax, lw=lineWidthVax, clip_on=False)
+        plt.yticks(np.log2(possibleRate)[::2])
+        axFR.set_yticklabels([])
+        maxVal = np.ceil(np.max(firingRateEachRate))
+        plt.xlim([0, maxVal])
+        plt.xticks([0, maxVal])
+        extraplots.boxoff(axFR)
+        #plt.xlabel('Firing rate (spk/s)')
+        plt.xlabel('spk/s')
+        
+        axVS = plt.subplot(gsOneCell[2])
+        vectorStrength = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndex,:]
+        plt.plot(vectorStrength, np.log2(possibleRate), '-o', color=colorThisType,
+                 ms=markerSizeVax-1, mfc='w', mew=lineWidthVax, lw=lineWidthVax, clip_on=False)
+        #plt.plot(vectorStrength, np.log2(possibleRate), '-o', color='k')
+        plt.yticks(np.log2(possibleRate)[::2])
+        axVS.set_yticklabels([])
+        extraplots.boxoff(axVS)
+        plt.xlabel('V.S.')
+        plt.xlim([0, 1])
+        plt.xticks([0, 1])
+        
+            
     plt.show()
 
 
@@ -221,7 +253,6 @@ print(f'AM sust index (abs): ' +
 print()
 
 
-
 # -------------------- Rate selectivity ------------------------
 maxFiring = celldb['amFiringRateMaxSustain']
 minFiring = celldb['amFiringRateMinSustain']
@@ -238,6 +269,16 @@ medianD1rs = np.median(rsD1)
 medianND1rs = np.median(rsND1)
 
 plt.sca(axRS)
+boxWidth = 0.5
+lineWidth = 1.2
+pboxD1 = plt.boxplot(rsD1, positions=[1], widths=[boxWidth])
+pboxND1 = plt.boxplot(rsND1, positions=[2], widths=[boxWidth])
+plt.setp([pboxD1['boxes'][0], pboxD1['medians'][0]] , color=figparams.colors['D1'], lw=lineWidth)
+plt.setp([pboxD1['whiskers'], pboxD1['caps']], color=figparams.colors['D1'])
+plt.setp([pboxND1['boxes'][0], pboxND1['medians'][0]] , color=figparams.colors['ND1'], lw=lineWidth)
+plt.setp([pboxND1['whiskers'], pboxND1['caps']], color=figparams.colors['ND1'])
+#plt.ylim([10,75])
+'''
 markerSize = 3
 markerWidth = 0.5
 lineWidth = 3
@@ -250,6 +291,7 @@ plt.plot(1+xLine, [medianD1rs, medianD1rs], lw=lineWidth, color=figparams.colors
 xpos = 2 + jitter*(2*np.random.rand(nND1rs)-1)
 plt.plot(xpos, rsND1, 'o', mfc='none', mec=figparams.colors['ND1'], ms=markerSize, mew=markerWidth)
 plt.plot(2+xLine, [medianND1rs, medianND1rs], lw=lineWidth, color=figparams.colors['ND1'])
+'''
 plt.xticks([1,2])
 axRS.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
 plt.xlim([0.5, 2.5])
@@ -260,6 +302,54 @@ uval, pValRS = stats.mannwhitneyu(rsD1, rsND1, alternative='two-sided')
 print(f'AM rate selectivity index: D1 ({nD1rs}): {medianD1rs:0.4f} vs ' +
       f'ND1 ({nND1rs}): {medianND1rs:0.4f}   ' +
       f'p = {pValRS:0.6f} (U={uval})\n')
+
+
+# --- Best AM rate ---
+responsiveD1 = amResponsive & indD1
+responsiveND1 = amResponsive & indND1
+indsD1 = responsiveD1.index[responsiveD1]
+indsND1 = responsiveND1.index[responsiveND1]
+extraDataInds = amTuningData['cellIndexes']
+extraDataIndsD1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsD1 if ind in extraDataInds]
+extraDataIndsND1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsND1 if ind in extraDataInds]
+firingRateEachRateD1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsD1,:]
+firingRateEachRateND1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsND1,:]
+
+bestRateD1 = possibleRate[firingRateEachRateD1.argmax(axis=1)]
+bestRateND1 = possibleRate[firingRateEachRateND1.argmax(axis=1)]
+nD1br = len(bestRateD1)
+nND1br = len(bestRateND1)
+medianD1br = np.median(bestRateD1)
+medianND1br = np.median(bestRateND1)
+
+uval, pValBR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
+print(f'AM best rate: D1 ({nD1br}): {medianD1br:0.4f} vs ' +
+      f'ND1 ({nND1br}): {medianND1br:0.4f}   ' +
+      f'p = {pValBR:0.6f} (U={uval})')
+
+print(f'Most common preferred AM rate:   D1: {np.mean(bestRateD1==4):0.2%}   ' +
+      f'ND1: {np.mean(bestRateND1==4):0.2%}\n')
+
+
+# --- Best AM sync ---
+vectorStrengthEachRateD1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsD1,:]
+vectorStrengthEachRateND1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsND1,:]
+
+bestSyncRateD1 = possibleRate[vectorStrengthEachRateD1.argmax(axis=1)]
+bestSyncRateND1 = possibleRate[vectorStrengthEachRateND1.argmax(axis=1)]
+nD1bsr = len(bestRateD1)
+nND1bsr = len(bestRateND1)
+medianD1bsr = np.median(bestRateD1)
+medianND1bsr = np.median(bestRateND1)
+
+uval, pValBSR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
+print(f'AM best SYNC rate: D1 ({nD1bsr}): {medianD1bsr:0.4f} vs ' +
+      f'ND1 ({nND1bsr}): {medianND1bsr:0.4f}   ' +
+      f'p = {pValBSR:0.6f} (U={uval})')
+
+print(f'Most common SYNC preferred AM rate:   D1: {np.mean(bestSyncRateD1==4):0.2%}   ' +
+      f'ND1: {np.mean(bestSyncRateND1==4):0.2%}\n')
+
 
 
 # -------------------- Max Synchronization Rate ------------------------
@@ -287,6 +377,17 @@ yTicks = [4, 8, 16, 32, 64, 128]
 
 
 plt.sca(axSy)
+boxWidth = 0.5
+lineWidth = 1.2
+pboxD1 = plt.boxplot(np.log(syncD1), positions=[1], widths=[boxWidth])
+pboxND1 = plt.boxplot(np.log(syncND1), positions=[2], widths=[boxWidth])
+plt.setp([pboxD1['boxes'][0], pboxD1['medians'][0]] , color=figparams.colors['D1'], lw=lineWidth)
+plt.setp([pboxD1['whiskers'], pboxD1['caps']], color=figparams.colors['D1'])
+plt.setp(pboxD1['fliers'], mec=figparams.colors['D1'], ms=3)
+plt.setp([pboxND1['boxes'][0], pboxND1['medians'][0]] , color=figparams.colors['ND1'], lw=lineWidth)
+plt.setp([pboxND1['whiskers'], pboxND1['caps']], color=figparams.colors['ND1'])
+plt.setp(pboxND1['fliers'], mec=figparams.colors['ND1'], ms=3)
+'''
 markerSize = 3
 markerWidth = 0.5
 lineWidth = 3
@@ -302,6 +403,7 @@ plt.setp(markersND1, ms=markerSize, mew=markerWidth, mfc='none', mec=figparams.c
 #plt.plot(2+xLine, np.log([medianND1sync, medianND1sync]), lw=lineWidth, color=figparams.colors['ND1'])
 plt.xticks([1,2])
 axSy.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
+'''
 plt.xlim([0.4, 2.5])
 plt.yticks(np.log(yTicks))
 axSy.set_yticklabels(yTicks)

@@ -6,7 +6,23 @@ Based on database_generation_funcs.py (by Devin and Matt)
 
 import numpy as np
 import scipy.signal
+from scipy import optimize
 
+def cellinfo(celldb, cellID, prefix='', postfix=''):
+    """
+    cellID can be int or list.
+    """
+    if isinstance(cellID, int):
+        cellID = [cellID]
+    for oneCell in cellID:
+        if oneCell==-1:
+            print('')
+        else:
+            comment = f'  # cell {oneCell}'
+            cc = celldb.loc[oneCell]
+            cellStr = f"['{cc.subject}', '{cc.date}', {cc.pdepth}, {cc.egroup}, {cc.cluster}]"
+            print(prefix + cellStr + postfix + comment)
+        
 def select_cells(celldb, restrictND1=False):
     """
     Args:
@@ -77,7 +93,7 @@ def select_cells(celldb, restrictND1=False):
         #print(np.sum(celldb.neighbor & indND1))
         indND1 = indND1 & celldb.neighborToD1
     # -- Find D1 in the same tetrode as ND1 --
-    if 0:
+    if 0: #restrictD1
         print('********* WARNING: using only D1 neighboring ND1 ***********')
         celldb['neighborToND1'] = False
         celldbND1 = celldb[indND1]
@@ -182,20 +198,28 @@ def OLD_calculate_intensity_threshold(fra, thresholdCF=0.85):
     return lowestIntensityInd, charactFreqInd
 
 
-def calculate_fra_slopes(fra, possibleIntensity, possibleFreq, cfInd, thresholdInd):
+def calculate_fra_slopes(fra, possibleIntensity, possibleFreq, cfInd, thresholdInd,
+                         maxIntensityInd=None):
     """
     Args:
         fra (numpy.ndarray): boolean array of shape (nInten, nFreq).
+        possibleIntensity
+        possibleFreq
         cfInd (int): characteristic frequency index.
         thresholdInd (int): intensity threshold index.
+        maxIntensityInd (int): index of the top of the FRA. Usually calculated as:
+                               np.argmax(firingRateRespMap.sum(axis=1))
     Returns:
         lowSlope (float): slope (in dB/oct) of the low-freq side of the FRA
         highSlope (float): slope (in dB/oct) of the high-freq side of the FRA
     """
     ifra = fra.astype(int)
-    maxIntInd = np.argmax(possibleIntensity)
+    if maxIntensityInd is None:
+        maxIntInd = np.argmax(possibleIntensity)
+    else:
+        maxIntInd = maxIntensityInd
     medianFiltered = scipy.signal.medfilt(ifra[maxIntInd,:], 3)
-    print(medianFiltered)
+    #print(medianFiltered)
     nonZeroInds = np.flatnonzero(medianFiltered)
     if len(nonZeroInds) == 0:
         return (np.nan, np.nan)
@@ -230,32 +254,29 @@ def gaussian(x, a, x0, sigma, y0):
     return a*np.exp(-(x-x0)**2/(2*sigma**2))+y0
 
 
-def OLD_inverse_gaussian(y, a, x0, sigma, y0):
+def inverse_gaussian(y, a, x0, sigma, y0):
     """
     Inverse function of Gaussian (not to confuse with inverse gaussian distribution).
-    This function finds the lower and upper frequencies
-    with desirable response threshold output, and optimal parameters (*popt)
-    for 10dB above the current bandwidth
+    This function is useful for finding the lower and upper frequencies
+    at the response threshold, given a Gaussian fit at a particular intensity.
 
     Args:
-        y (numpy.ndarray): Gaussian fit
+        y (float or np.array): output value of the Gaussian
         a (float): the height of the curve's peak
-        x0 (float): the position of the center of the peak
-        sigma (float): standard variation that determines the width of the 'bell'
-        y0 (float): constant
+        x0 (float): horizontal offset
+        sigma (float): standard deviation (width of Gaussian)
+        y0 (float): vertical offset
 
     Returns:
-        lower (flaot): Value of the lower boundary of the gaussian at a set
-        intensity
-        upper (float): Value of the upper boundary of the gaussian at a set
-        intensity
+        lower (float): Value of the lower boundary of the Gaussian
+        upper (float): Value of the upper boundary of the Gaussian
     """
     sqrtInner = -1*np.log((y-y0)/a)*2*sigma**2
     if sqrtInner < 0:  # No solutions
         return None
     else:
-        lower = 2**(x0 - np.sqrt(sqrtInner))
-        upper = 2**(x0 + np.sqrt(sqrtInner))
+        lower = x0 - np.sqrt(sqrtInner)
+        upper = x0 + np.sqrt(sqrtInner)
         return [lower, upper]
 
 '''
@@ -270,6 +291,56 @@ xsq = -2*(sigma**2) * np.log((y-y0)/a)
 x = (x0 + np.sqrt(xsq))
 plt.plot(x,y,'.');
 '''
+
+
+def calculate_BWx(intensityEachTrial, freqEachTrial, firingRateEachTrial,
+                   intensityThreshold, dBabove):
+    # GAUSSIAN PARAMS: a, x0, sigma, y0
+    possibleFreq = np.unique(freqEachTrial)
+    possibleIntensity = np.unique(intensityEachTrial)
+    possibleLogFreq = np.log2(possibleFreq)
+    intensityIndXdBabove = np.argmin(np.abs(possibleIntensity-intensityThreshold-dBabove))
+    selectedTrialsByIntensity = intensityEachTrial==possibleIntensity[intensityIndXdBabove]
+    firingRateSelIntensity = firingRateEachTrial[selectedTrialsByIntensity]
+    logFreqsSelIntensity = np.log2(freqEachTrial[selectedTrialsByIntensity])
+    p0 = [1, possibleLogFreq[len(possibleLogFreq)//2], 1, np.min(firingRateSelIntensity)]
+    bounds = ([0, possibleLogFreq[0], 0, 0],
+              [np.inf, possibleLogFreq[-1], np.inf, np.inf])
+    try:
+        #popt, pcov = optimize.curve_fit(gaussian, logFreqsSelIntensity,
+        #                                firingRateSelIntensity, p0=p0, bounds=bounds)
+        popt, pcov = optimize.curve_fit(gaussian, logFreqsSelIntensity,
+                                        firingRateSelIntensity, p0=p0)
+    except RuntimeError:
+        print("Could not fit gaussian curve to tuning data.")
+        popt = None
+        Rsquared = np.nan
+        fullWidthHalfMax = np.nan
+    else:
+        if popt[2]<0:
+            print('Warning! Gaussian fit returned negative standard deviation. Changed to positive.')
+            popt[2] = -popt[2]
+        gaussianResp = gaussian(logFreqsSelIntensity, *popt)
+        residuals = firingRateSelIntensity - gaussianResp
+        ssquared = np.sum(residuals**2)
+        ssTotal = np.sum((firingRateSelIntensity-np.mean(firingRateSelIntensity))**2)
+        Rsquared = 1 - (ssquared/ssTotal)
+        fullWidthHalfMax = 2.355*popt[2] # Sigma is popt[2]
+    #breakpoint()
+    return (popt, Rsquared, fullWidthHalfMax)
+   
+
+'''
+lowerFreq, upperFreq, Rsquared10AboveSIT = funcs.calculate_BW10_params(ind10Above, popts, Rsquareds,
+                                                                       responseThreshold,
+                                                                       intensityThreshold)
+                if (lowerFreq is not None) and (upperFreq is not None):
+                    fitMidpoint = np.sqrt(lowerFreq * upperFreq)
+                    bw10 = (upperFreq - lowerFreq) / cf
+'''
+
+
+
 
 def angle_population_vector_zar(angles):
     """

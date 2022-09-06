@@ -19,7 +19,7 @@ from importlib import reload
 reload(extraplots)
 
 
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = '/tmp/'
 figFilename = 'fig2_locations' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
