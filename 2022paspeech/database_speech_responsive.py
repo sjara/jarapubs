@@ -34,15 +34,17 @@ for indMouse, thisMouse in enumerate(allSubjects):
     newdbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
 
     periodsName = ['base200', 'respOnset', 'respSustained']
-    allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ]
+    allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ] #try with shorter period for onset response. I think this is generous.onset vs. sustain?
+
+
     periodDuration = [x[1]-x[0] for x in allPeriods]
 
     #N_stim = 12
     N_FT = 4 # HARDCODED
     N_VOT = 4 #HARDCODE
 
-    pValsEachCellOnset = np.empty((nCells, N_FT, N_VOT))
-    pValsEachCellSustain = np.empty((nCells, N_FT, N_VOT))
+    pValsEachCellOnset = np.ones((nCells, N_FT, N_VOT))
+    pValsEachCellSustain = np.ones((nCells, N_FT, N_VOT))
     minPvalEachCellOnset = np.full(nCells, np.nan)
     minPvalEachCellSustain = np.full(nCells, np.nan)
     minPvalIndexEachCellOnset = np.full((nCells,2), -1)
@@ -110,9 +112,9 @@ for indMouse, thisMouse in enumerate(allSubjects):
         # Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
         meanFiringRateBase = np.empty([nFT, nVOT])
         meanFiringRateOnset = np.empty([nFT, nVOT])
-        pValEachCondOnset = np.empty([nFT, nVOT])
+        pValEachCondOnset = np.ones([nFT, nVOT])
         meanFiringRateSustain = np.empty([nFT, nVOT])
-        pValEachCondSustain = np.empty([nFT, nVOT])
+        pValEachCondSustain = np.ones([nFT, nVOT])
 
         for indFT, thisFT in enumerate(possibleFTParams):
             for indVOT, thisVOT in enumerate(possibleVOTParams):

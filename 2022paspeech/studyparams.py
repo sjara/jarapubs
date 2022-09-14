@@ -5,7 +5,7 @@ This file contains the default names and queries used for this study.
 STUDY_NAME = '2022paspeech'
 
 # List of animals used in this study
-EPHYS_MICE = ['feat004', 'feat005', 'feat006', 'feat007', 'feat008']
+EPHYS_MICE = ['feat004', 'feat005', 'feat006', 'feat007', 'feat008', 'feat009', 'feat010']
 TEST_MOUSE = ['feat004']
 
 TARGET_AREAS = ['Primary auditory area', 'Posterior auditory area', 'Ventral auditory area', 'Dorsal auditory area']
