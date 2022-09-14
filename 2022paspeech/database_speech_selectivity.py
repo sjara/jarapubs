@@ -25,9 +25,9 @@ reload(studyutils)
 
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
-allSubjects = studyparams.EPHYS_MICE
+#allSubjects = studyparams.EPHYS_MICE
 #allSubjects = studyparams.TEST_MOUSE
-#allSubjects = ['feat009', 'feat010']
+allSubjects = ['feat010']
 
 
 
@@ -89,10 +89,10 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         #rateEachTrial = bdata['currentFreq']
         # Remove last stim from ephys if not saved in behavior file
-        ''' Shouldn't need for speech data.
+
         if len(rateEachTrial) == len(eventOnsetTimes)-1:
             eventOnsetTimes = eventOnsetTimes[:len(rateEachTrial)]
-        '''
+
 
 
         FTParamsEachTrial = bdata['targetFTpercent']
