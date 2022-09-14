@@ -99,7 +99,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
             eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
-            print(f'[{indRow}] Warning! BehavTrials ({len(freqEachTrial)}) and ' +
+            print(f'[{indRow}] Warning! BehavTrials ({len(FTParamsEachTrial)}) and ' +
                   f'EphysTrials ({len(eventOnsetTimes)})')
 
         trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
