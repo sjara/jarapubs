@@ -3,6 +3,7 @@ Figure about responses to pure tones.
 """
 
 import sys
+sys.path.append('..')
 import studyparams
 import figparams
 import os
@@ -25,9 +26,9 @@ from importlib import reload
 reload(figparams)
 reload(studyutils)
 
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = '/tmp/'
-figFilename = 'plots_tone_responses' # Do not include extension
+figFilename = 'plots_tone_cf_and_threshold' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
 #figSize = [4.6, 3.8] # In inches
 figSize = [7, 3.6] # In inches
@@ -40,13 +41,14 @@ markerSize = 2  #figparams.rasterMarkerSize
 
 #panelLabels = ['A', ['B','D'], ['C','E']]
 #labelPosX = [0.04, 0.3, 0.68]   # Horiz position for panel labels
-labelPosXtop = [0.01, 0.36, 0.68]   # Horiz position for panel labels
-labelPosXbot = [0.01, 0.55, 0.75]   # Horiz position for panel labels
+labelPosXtop = [0.01, 0.30, 0.525, 0.755]   # Horiz position for panel labels
+labelPosXbot = [0.01, 0.55, 0.745]   # Horiz position for panel labels
 labelPosY = [0.93, 0.5]    # Vert position for panel labels
 
 figuresDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME)
 #dbPath = os.path.join(figuresDataDir, 'sj_am_tuning_20220212.h5')
-dbPath = os.path.join(figuresDataDir, 'astrpi_am_tuning.h5')
+#dbPath = os.path.join(figuresDataDir, 'astrpi_am_tuning.h5')
+dbPath = os.path.join(figuresDataDir, 'astrpi_freq_tuning.h5')
 celldb = celldatabase.load_hdf(dbPath)
 
 pp = lambda x: f"['{x.subject}', '{x.date}', {x.pdepth}, {x.egroup}, {x.cluster}]"
@@ -55,16 +57,19 @@ pp = lambda x: f"['{x.subject}', '{x.date}', {x.pdepth}, {x.egroup}, {x.cluster}
 # D1: 1967, 1971
 selectedD1 = ['d1pi036', '2019-05-29', 2800, 2, 4] # cell 710
 selectedND1 = ['d1pi041', '2019-08-25', 3600, 7, 2] # cell 1454
+selectedD1sup = ['d1pi046', '2020-02-18', 3200, 8, 3] # cell 2999
 selectedND1sup = ['d1pi041', '2019-08-25', 3400, 6, 2] # cell 1381
+
 #selectedND1sup = ['d1pi041', '2019-08-25', 3600, 5, 4] # cell 1446
 #selectedD1 = ['d1pi042', '2019-09-11', 3300, 2, 3]  # cell 1971
 #selectedD1 = ['d1pi042', '2019-09-11', 3300, 1, 2]  # cell 1967
 #selectedND1 = ['d1pi041', '2019-08-25', 3500, 8, 2] # cell 1426
+
 cellTypes = ['D1', 'ND1']
 cellTypeLabel = ['D1', 'non-D1']
-selectedCells = [selectedD1, selectedND1, selectedND1sup]
-examplesTuning = ['D1', 'ND1', 'ND1']
-cMaps = ['Blues', 'Reds', 'Reds']
+selectedCells = [selectedD1, selectedND1, selectedD1sup, selectedND1sup]
+examplesTuning = ['D1', 'ND1', 'D1', 'ND1']
+cMaps = ['Blues', 'Reds', 'Blues', 'Reds']
 
 # -- Plot results --
 fig = plt.gcf()
@@ -72,33 +77,36 @@ fig.clf()
 fig.set_facecolor('w')
 
 gsMain = gridspec.GridSpec(2, 1)
-gsMain.update(left=0.1, right=0.95, top=1.0, bottom=0.12, hspace=0.3)
+gsMain.update(left=0.09, right=0.95, top=1.0, bottom=0.12, hspace=0.3)
 
-gsTC = gsMain[0,0].subgridspec(1, 3, wspace=0.6)
+gsTC = gsMain[0,0].subgridspec(1, 4, wspace=0.3)
 axTCD1 = plt.subplot(gsTC[0, 0])
 axTCD1.annotate('A', xy=(labelPosXtop[0],labelPosY[0]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
 axTCND1 = plt.subplot(gsTC[0, 1])
 axTCND1.annotate('B', xy=(labelPosXtop[1],labelPosY[0]), xycoords='figure fraction',
                  fontsize=fontSizePanel, fontweight='bold')
-axTCSup = plt.subplot(gsTC[0, 2])
-axTCSup.annotate('C', xy=(labelPosXtop[2],labelPosY[0]), xycoords='figure fraction',
-                 fontsize=fontSizePanel, fontweight='bold')
-axTC = [axTCD1, axTCND1, axTCSup]
+axTCSupD1 = plt.subplot(gsTC[0, 2])
+axTCSupD1.annotate('C', xy=(labelPosXtop[2],labelPosY[0]), xycoords='figure fraction',
+                   fontsize=fontSizePanel, fontweight='bold')
+axTCSupND1 = plt.subplot(gsTC[0, 3])
+axTCSupND1.annotate('D', xy=(labelPosXtop[3],labelPosY[0]), xycoords='figure fraction',
+                    fontsize=fontSizePanel, fontweight='bold')
+axTC = [axTCD1, axTCND1, axTCSupD1, axTCSupND1]
 
 gsBottom = gsMain[1,0].subgridspec(1, 3, wspace=0.6, width_ratios=[0.6, 0.15, 0.15])
 axHist = plt.subplot(gsBottom[0, 0])
-axHist.annotate('D', xy=(labelPosXbot[0],labelPosY[1]), xycoords='figure fraction',
+axHist.annotate('E', xy=(labelPosXbot[0],labelPosY[1]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
-axBW = plt.subplot(gsBottom[0, 1])
-axBW.annotate('E', xy=(labelPosXbot[1],labelPosY[1]), xycoords='figure fraction',
+axThresh = plt.subplot(gsBottom[0, 1])
+axThresh.annotate('F', xy=(labelPosXbot[1],labelPosY[1]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
-axOSI = plt.subplot(gsBottom[0, 2])
-axOSI.annotate('F', xy=(labelPosXbot[2],labelPosY[1]), xycoords='figure fraction',
+axCF = plt.subplot(gsBottom[0, 2])
+axCF.annotate('G', xy=(labelPosXbot[2],labelPosY[1]), xycoords='figure fraction',
                 fontsize=fontSizePanel, fontweight='bold')
 
 
-if 1:
+if 0:
     for indType, cellType in enumerate(examplesTuning):
         plt.sca(axTC[indType])
         #colorThisType = figparams.colors[cellType]
@@ -113,6 +121,9 @@ if 1:
             eventOnsetTimes = eventOnsetTimes[:len(bdata['currentFreq'])]
         timeRange = [-0.3, 0.6]  # In seconds
         responsePeriod = [0, 0.1]
+        if indType in [2,3]:
+            responsePeriod = [0, 0.2];
+            print('WARNING! Using 0.2s period for this example.\n')
         respPeriodDuration = responsePeriod[1]-responsePeriod[0]
 
         (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
@@ -141,8 +152,10 @@ if 1:
 
 
         maxFR = np.max(tuningMatFiringRate)
-        if indType==2:
-            maxFR = 24; print('WARNING! fixing max color for third example.\n')
+        if indType==2: # This cell used to be #2 (before including D1sup)
+            maxFR = 10; print('WARNING! fixing max color for third example.\n')
+        if indType==3: # This cell used to be #2 (before including D1sup)
+            maxFR = 24; print('WARNING! fixing max color for fourth example.\n')
         tuningPlot = plt.imshow(np.flipud(tuningMatFiringRate), interpolation='nearest',
                                 cmap=cMaps[indType], vmax=maxFR) #, extent=[0, 15, 11, 0]
         tuningPlot.set_clim([0, maxFR])
@@ -174,14 +187,16 @@ if 1:
             axTC[indType].set_xticklabels([])
         if indType==0:
             plt.ylabel('Intensity\n(dB SPL)', fontsize=fontSizeLabels)
+        else:
+            axTC[indType].set_yticklabels([])
         extraplots.set_ticks_fontsize(axTC[indType], fontSizeTicks)
 
-        cbar = plt.colorbar(tuningPlot, ax=axTC[indType], format='%d', shrink=0.62,
-                            pad=0.06, aspect=15)
+        cbar = plt.colorbar(tuningPlot, ax=axTC[indType], format='%d', shrink=0.52,
+                            pad=0.06, aspect=10)
         cbar.ax.set_ylabel('spk/s', fontsize=fontSizeLabels, labelpad=-2, rotation=-90)
         extraplots.set_ticks_fontsize(cbar.ax, fontSizeTicks)
         cbar.set_ticks([0, maxFR])
-
+        cbar.ax.axhline(dbRow.toneFiringRateBaseline, color=[0,1,0])
         plt.show()
 
 
@@ -205,6 +220,8 @@ else:
     toneRespIndexD1 = toneRespIndex[indD1 & cellsWithTone]
     toneRespIndexND1 = toneRespIndex[indND1 & cellsWithTone]
     toneRespIndexEachType = [toneRespIndexD1, toneRespIndexND1]
+    baselineD1 = celldb.toneFiringRateBaseline[indD1 & cellsWithTone]
+    baselineND1 = celldb.toneFiringRateBaseline[indND1 & cellsWithTone]
 
 toneRespIndexD1pos = toneRespIndexD1[toneRespIndexD1>0]
 toneRespIndexND1pos = toneRespIndexND1[toneRespIndexND1>0]
@@ -212,6 +229,10 @@ toneRespIndexD1neg = toneRespIndexD1[toneRespIndexD1<0]
 toneRespIndexND1neg = toneRespIndexND1[toneRespIndexND1<0]
 toneRespIndexEachTypePos = [toneRespIndexD1pos, toneRespIndexND1pos]
 toneRespIndexEachTypeNeg = [toneRespIndexD1neg, toneRespIndexND1neg]
+baselineD1pos = baselineD1[toneRespIndexD1>0]
+baselineD1neg = baselineD1[toneRespIndexD1<0]
+baselineND1pos = baselineND1[toneRespIndexND1>0]
+baselineND1neg = baselineND1[toneRespIndexND1<0]
 
 
 def line_histogram(data, edges, percent=False, **kwargs):
@@ -221,7 +242,8 @@ def line_histogram(data, edges, percent=False, **kwargs):
     #print(np.sum(hh))
     hline = plt.step(np.r_[ee, ee[-1]], np.r_[0,hh,0],'-', where='pre', **kwargs)
     return hline
-   
+
+'''
 plt.sca(axHist)
 yLims = [0, 15]
 binEdges = np.linspace(-1, 1, 32) #32
@@ -250,7 +272,39 @@ plt.text(-1, 9, 'non-D1 cells', ha='left', fontweight='bold', fontsize=fontSizeL
          color=figparams.colors['ND1'])
 
 plt.show()
+'''
 
+nPosD1 = len(toneRespIndexD1pos)
+nNegD1 = len(toneRespIndexD1neg)
+nTotalD1 = nPosD1+nNegD1
+nPosND1 = len(toneRespIndexND1pos)
+nNegND1 = len(toneRespIndexND1neg)
+nTotalND1 = nPosND1+nNegND1
+print(f'Neg responses (D1): {nNegD1}/{nTotalD1} = {nNegD1/nTotalD1:0.01%}')
+print(f'Neg responses (ND1): {nNegND1}/{nTotalND1} = {nNegND1/nTotalND1:0.01%}')
+
+uval, pValBaselineD1 = stats.mannwhitneyu(baselineD1pos, baselineD1neg, alternative='two-sided')
+print(f'Baseline firing D1: pos: {baselineD1pos.median():0.4f} vs ' +
+      f'neg: {baselineD1neg.median():0.4f}   ' +
+      f'p = {pValBaselineD1:0.6f} (U={uval})')
+
+uval, pValBaselineND1 = stats.mannwhitneyu(baselineND1pos, baselineND1neg, alternative='two-sided')
+print(f'Baseline firing ND1: pos: {baselineND1pos.median():0.4f} vs ' +
+      f'neg: {baselineND1neg.median():0.4f}   ' +
+      f'p = {pValBaselineND1:0.6f} (U={uval})')
+uval, pValBaselinePos = stats.mannwhitneyu(baselineD1pos, baselineND1pos, alternative='two-sided')
+print(f'Baseline firing (pos): D1: {baselineD1pos.median():0.4f} vs ' +
+      f'neg: {baselineND1pos.median():0.4f}   ' +
+      f'p = {pValBaselinePos:0.6f} (U={uval})')
+uval, pValBaselineNeg = stats.mannwhitneyu(baselineD1neg, baselineND1neg, alternative='two-sided')
+print(f'Baseline firing (neg): D1: {baselineD1neg.median():0.4f} vs ' +
+      f'neg: {baselineND1neg.median():0.4f}   ' +
+      f'p = {pValBaselineNeg:0.6f} (U={uval})')
+uval, pValBaseline = stats.mannwhitneyu(baselineD1, baselineND1, alternative='two-sided')
+print(f'Baseline firing: D1: {baselineD1.median():0.4f} vs ' +
+      f'neg: {baselineND1.median():0.4f}   ' +
+      f'p = {pValBaseline:0.6f} (U={uval})')
+print()
 
 uval, pValPos = stats.mannwhitneyu(toneRespIndexD1pos, toneRespIndexND1pos, alternative='two-sided')
 print(f'Tone index (pos): D1: {toneRespIndexD1pos.median():0.4f} vs ' +
@@ -275,104 +329,103 @@ print(f'Tone responsive: D1: {np.sum(indD1 & toneResponsive)} ' +
 print()
 
 
-# -------------------- Bandwidth ------------------------
+# -------------------- Threshold ------------------------
 goodFit = celldb.toneGaussianRsquare > 0.01 #0.01
 #goodFit = (celldb.toneGaussianRsquare > 0.01) & (celldb.toneGaussianX0<15) & (celldb.toneGaussianX0>11)
-fullWidthHalfMax = 2.355 * celldb.toneGaussianSigma
-bwD1 = fullWidthHalfMax[indD1 & toneResponsive & goodFit]
-bwND1 = fullWidthHalfMax[indND1 & toneResponsive & goodFit]
-nD1bw = len(bwD1)
-nND1bw = len(bwND1)
-medianD1bw = np.median(bwD1)
-medianND1bw = np.median(bwND1)
+#fullWidthHalfMax = 2.355 * celldb.toneGaussianSigma
 
-plt.sca(axBW)
+intensityThreshold = celldb.toneIntensityThreshold
+validThreshold = intensityThreshold<np.inf  #65
+
+threshD1 = intensityThreshold[indD1 & toneResponsive & goodFit & validThreshold]
+threshND1 = intensityThreshold[indND1 & toneResponsive & goodFit & validThreshold]
+#threshD1 = intensityThreshold[indD1 & toneResponsive & validThreshold]
+#threshND1 = intensityThreshold[indND1 & toneResponsive & validThreshold]
+nD1thresh = len(threshD1)
+nND1thresh = len(threshND1)
+medianD1thresh = np.median(threshD1)
+medianND1thresh = np.median(threshND1)
+###medianD1thresh = np.mean(threshD1)
+###medianND1thresh = np.mean(threshND1)
+
+plt.sca(axThresh)
 markerSize = 3
 markerWidth = 0.5
 lineWidth = 3
 jitter = 0.2
 xLine = 0.3*np.array([-1,1])
 np.random.seed(0)
-xpos = 1 + jitter*(2*np.random.rand(nD1bw)-1)
-plt.plot(xpos, bwD1, 'o', mfc='none', mec=figparams.colors['D1'], ms=markerSize, mew=markerWidth)
-plt.plot(1+xLine, [medianD1bw, medianD1bw], lw=lineWidth, color=figparams.colors['D1'])
-xpos = 2 + jitter*(2*np.random.rand(nND1bw)-1)
-plt.plot(xpos, bwND1, 'o', mfc='none', mec=figparams.colors['ND1'], ms=markerSize, mew=markerWidth)
-plt.plot(2+xLine, [medianND1bw, medianND1bw], lw=lineWidth, color=figparams.colors['ND1'])
+xpos = 1 + jitter*(2*np.random.rand(nD1thresh)-1)
+plt.plot(xpos, threshD1, 'o', mfc='none', mec=figparams.colors['D1'], ms=markerSize, mew=markerWidth)
+#plt.plot(1+xLine, [medianD1thresh, medianD1thresh], lw=lineWidth, color=figparams.colors['D1'])
+xpos = 2 + jitter*(2*np.random.rand(nND1thresh)-1)
+plt.plot(xpos, threshND1, 'o', mfc='none', mec=figparams.colors['ND1'], ms=markerSize, mew=markerWidth)
+#plt.plot(2+xLine, [medianND1thresh, medianND1thresh], lw=lineWidth, color=figparams.colors['ND1'])
 plt.xticks([1,2])
-axBW.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
+axThresh.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
 plt.xlim([0.5, 2.5])
-extraplots.boxoff(axBW)
-plt.ylabel('Tuning bandwidth (oct)', fontsize=fontSizeLabels)
+extraplots.boxoff(axThresh)
+plt.ylabel('Intensity threshold (dB)', fontsize=fontSizeLabels)
 
-uval, pValBW = stats.mannwhitneyu(bwD1, bwND1, alternative='two-sided')
-print(f'Tuning BW: D1 ({nD1bw}): {medianD1bw:0.4f} vs ' +
-      f'ND1 ({nND1bw}): {medianND1bw:0.4f}   ' +
-      f'p = {pValBW:0.6f} (U={uval})\n')
+uval, pValThresh = stats.mannwhitneyu(threshD1, threshND1, alternative='two-sided')
+print(f'Tuning Thresh: D1 ({nD1thresh}): {medianD1thresh:0.4f} vs ' +
+      f'ND1 ({nND1thresh}): {medianND1thresh:0.4f}   ' +
+      f'p = {pValThresh:0.6f} (U={uval})\n')
 
 
-# -------------------- Onset vs Sustain ------------------------
-baselineFiring = celldb['toneFiringRateBaseline']
-onsetResp = celldb['toneFiringRateBestOnset']
-sustainResp = celldb['toneFiringRateBestSustain']
-onsetToSustainIndex = (onsetResp - sustainResp) / (onsetResp + sustainResp)
+# -------------------- CF ------------------------
+goodFit = celldb.toneGaussianRsquare > 0.01 #0.01
+#goodFit = (celldb.toneGaussianRsquare > 0.01) & (celldb.toneGaussianX0<15) & (celldb.toneGaussianX0>11)
+#fullWidthHalfMax = 2.355 * celldb.toneGaussianSigma
 
-toneResponsive = toneResponsive & goodFit; print('WARNING! only good fit neurons used here!')
-#toneResponsive = toneResponsive & ((celldb['toneFiringRateBest']-celldb['toneFiringRateBaseline'])>0)
+charactFreq = celldb.toneCharactFreq
+###charactFreq = 2**celldb.toneGaussianX0; print('WARNING! Using center of Gaussian, not CF')
 
-# NOTE: I need to remove nans because some neurons may be have FR=0 for tones but not AM
-osiD1 = onsetToSustainIndex[indD1 & toneResponsive & ~np.isnan(onsetToSustainIndex)]
-osiND1 = onsetToSustainIndex[indND1 & toneResponsive & ~np.isnan(onsetToSustainIndex)]
-nD1osi = len(osiD1)
-nND1osi = len(osiND1)
-medianD1osi = np.median(osiD1)
-medianND1osi = np.median(osiND1)
+cfD1 = charactFreq[indD1 & toneResponsive & goodFit]
+cfND1 = charactFreq[indND1 & toneResponsive & goodFit]
+nD1cf = len(cfD1)
+nND1cf = len(cfND1)
+medianD1cf = np.median(cfD1)
+medianND1cf = np.median(cfND1)
 
-'''
-########3# TEST #########
-np.sum(np.isnan(osiD1))
-np.sum(np.isnan(onsetToSustainIndex))
-np.sum(np.isnan(onsetToSustainIndex[toneResponsive]))
-cc = celldb[toneResponsive]
-inds = np.flatnonzero(np.isnan(onsetToSustainIndex[toneResponsive]))
-print(inds) #  [147, 176, 204]
-cc.iloc[147]
-# It looks like some with low FR are passing criteria in studyutils.select_cells()
-thFR = 1.0
-highFR = ( (celldb.toneFiringRateBaseline > thFR) | (celldb.toneFiringRateBest > thFR) |
-           (celldb.amFiringRateBaseline > thFR) | (celldb.amFiringRateBestOnset > thFR) |
-           (celldb.amFiringRateBestSustain > thFR))
-celldb[~highFR & indD1]
-celldb[~highFR & toneResponsive]
-# look at 3015 it seems to have all FR low but be tone responsive
-#######################3
-'''
-
-plt.sca(axOSI)
-#markerSize = 3
-#lineWidth = 3
-#jitter = 0.2
-#xLine = 0.3*np.array([-1,1])
-#np.random.seed(0)
-xpos = 1 + jitter*(2*np.random.rand(nD1osi)-1)
-plt.plot(xpos, osiD1, 'o', mfc='none', mec=figparams.colors['D1'], ms=markerSize, mew=markerWidth)
-plt.plot(1+xLine, [medianD1osi, medianD1osi], lw=lineWidth, color=figparams.colors['D1'])
-xpos = 2 + jitter*(2*np.random.rand(nND1osi)-1)
-plt.plot(xpos, osiND1, 'o', mfc='none', mec=figparams.colors['ND1'], ms=markerSize, mew=markerWidth)
-plt.plot(2+xLine, [medianND1osi, medianND1osi], lw=lineWidth, color=figparams.colors['ND1'])
+plt.sca(axCF)
+markerSize = 3
+markerWidth = 0.5
+lineWidth = 3
+jitter = 0.2
+xLine = 0.3*np.array([-1,1])
+np.random.seed(0)
+xpos = 1 + jitter*(2*np.random.rand(nD1cf)-1)
+plt.plot(xpos, cfD1, 'o', mfc='none', mec=figparams.colors['D1'], ms=markerSize, mew=markerWidth)
+plt.plot(1+xLine, [medianD1cf, medianD1cf], lw=lineWidth, color=figparams.colors['D1'])
+xpos = 2 + jitter*(2*np.random.rand(nND1cf)-1)
+plt.plot(xpos, cfND1, 'o', mfc='none', mec=figparams.colors['ND1'], ms=markerSize, mew=markerWidth)
+plt.plot(2+xLine, [medianND1cf, medianND1cf], lw=lineWidth, color=figparams.colors['ND1'])
 plt.xticks([1,2])
-axOSI.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
+axCF.set_xticklabels(['D1', 'non-D1'], fontsize=fontSizeLabels, rotation=30)
 plt.xlim([0.5, 2.5])
-extraplots.boxoff(axOSI)
-plt.ylabel('Onset-to-sustain index', fontsize=fontSizeLabels)
+extraplots.boxoff(axCF)
+plt.ylabel('CF (Hz)', fontsize=fontSizeLabels)
 
-uval, pValOSI = stats.mannwhitneyu(osiD1, osiND1, alternative='two-sided')
-print(f'Onset-to-sustain index: D1 ({nD1osi}): {medianD1osi:0.4f} vs ' +
-      f'ND1 ({nND1osi}): {medianND1osi:0.4f}   ' +
-      f'p = {pValOSI:0.6f} (U={uval})\n')
+uval, pValCF = stats.mannwhitneyu(cfD1, cfND1, alternative='two-sided')
+print(f'Tuning CF: D1 ({nD1cf}): {medianD1cf:0.4f} vs ' +
+      f'ND1 ({nND1cf}): {medianND1cf:0.4f}   ' +
+      f'p = {pValCF:0.6f} (U={uval})\n')
 
 
-
+# -------------------- Threshold vs CF ------------------------
+plt.sca(axHist)
+from matplotlib.ticker import ScalarFormatter
+nCells = len(charactFreq)
+xjitter = 0.05
+yjitter = 1
+xpos = 1 + xjitter*(2*np.random.rand(nCells)-1)
+ypos = yjitter*(2*np.random.rand(nCells)-1)
+plt.plot(charactFreq*xpos, intensityThreshold+ypos,'o', mfc='none')
+axHist.set_xscale('log')
+axHist.xaxis.set_major_formatter(ScalarFormatter())
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Intensity threshold (dB)')
 
 plt.show()
 

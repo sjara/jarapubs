@@ -9,17 +9,22 @@ Characterization of sound-evoked responses in the posterior striatum.
 * `database_laser_response.py`: Estimate response to laser. It creates `astrpi_laser_response.h5` (it takes 25s)
 * `database_tone_responsive.py`: Estimate responses to pure tones. It creates `astrpi_tones_pval.h5` (it takes 7 min)
 * `database_am_responsiveness.py`: Estimate responses to AM sounds. It creates `astrpi_am_pval.h5` (it takes 2 min)
-* `database_freq_tuning.py`: Estimate frequency tuning. It creates `astrpi_freq_tuning.h5` (it takes 2 min)
-* `database_am_tuning.py`: Estimate tuning to AM rate. It creates `astrpi_am_tuning.h5` (it takes 20s)
+* `database_freq_tuning.py`: Estimate frequency tuning and latency (using stimulus timing from taskontrol). It creates `astrpi_freq_tuning.h5` (it takes 2.5 min)
+* `database_tone_latency.py`: Estimate response latency (using stimulus timing from sound detector) and onset-to-sustained ratio. It creates `astrpi_freq_tuning_latency.h5` (it takes 1.5 min)
+* `database_am_tuning.py`: Estimate tuning to AM rate. It creates `astrpi_am_tuning.h5` (it takes 30s)
 
 ## Figure 1
 * `figure_photoid.py`
 
 ## Figure 2
-* `figure_locations.py`
+* `figure_locations_by_responsiveness.py`
 
 ## Figure 3
-* `figure_tone_resposes.py`
+* `figure_tone_responses.py`
 
 ## Figure 4
+* `figure_response_dynamics.py`
+
+## Figure 5
 * `figure_am_responses.py`
+

@@ -24,19 +24,12 @@ from importlib import reload
 reload(figparams)
 reload(spikesanalysis)
 
-'''
-FIGNAME = 'figure_name'
-figDataFile = 'file_containing_data_for_this_fig.npz'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, figparams.STUDY_NAME, FIGNAME)
-figDataFullPath = os.path.join(figDataDir,figDataFile)
-'''
 
 SAVE_FIGURE = 1
 outputDir = '/tmp/'
 figFilename = 'plots_photoid' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7,4] # In inches
-
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -110,8 +103,9 @@ def plot_raster(spikeTimesFromEventOnset, trialIndexForEachSpike, stimColor='g')
     plt.axis(False)
     yLims = plt.ylim()
     # -- Plot the stimulus --
-    yPos = yLims[-1] + 0.1*(yLims[-1]-yLims[0])
-    plt.plot([0, 0.1], 2*[yPos], lw=stimLineWidth, color=stimColor, clip_on=False)
+    yPos = 1.1*yLims[-1] + 0.075*(yLims[-1]-yLims[0])
+    plt.plot([0, 0.1], 2*[yPos], lw=stimLineWidth, color=stimColor,
+             clip_on=False, solid_capstyle='butt')
 
 # -- Load laser session --
 for indType, cellType in enumerate(cellTypes):

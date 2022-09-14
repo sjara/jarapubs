@@ -1,5 +1,5 @@
 """
-Calculate laser response to see if cells are D1 or nD1.
+Calculate frequency tuning measurements.
 """
 
 import os
@@ -40,7 +40,6 @@ responsePeriod = [0, 0.1]
 respPeriodDuration = responsePeriod[1]-responsePeriod[0]
 
 N_FREQ = 16 # HARDCODED
-
 correctedAlpha = 0.05/N_FREQ
 
 '''
@@ -74,6 +73,10 @@ celldb['toneGaussianY0'] = np.nan
 #celldbResp = celldbResp.loc[1317:]  # Good test
 #celldbResp = celldbResp.loc[1381:]  # Inverted test
 #celldbResp = celldbResp.loc[717:]  # Gives an error
+#celldbResp = celldbResp.loc[710:]  # Example in figure
+#celldbResp = celldbResp.loc[1317:]  # Potential Example in figure
+#celldbResp = celldbResp.loc[1391:]  # Example in figure
+#celldbResp = celldbResp.loc[1999:]  # Potential Example in figure
 
 indCell = -1
 for indRow, dbRow in celldbResp.iterrows():
@@ -133,11 +136,22 @@ for indRow, dbRow in celldbResp.iterrows():
             #nTrialsThisComb = len(nSpikesThisComb)
 
     firingRateBaseline = dbRow['toneFiringRateBaseline']
-    fra, respThreshold = studyutils.calculate_fra(firingRateRespMap, firingRateBaseline)
+    if np.mean(firingRateRespMap) > firingRateBaseline:
+        fra, respThreshold = studyutils.calculate_fra(firingRateRespMap, firingRateBaseline)
+    else:
+        print(f'Inverting FRA for cell {indRow}')
+        invertedMap = firingRateRespMap.max()-firingRateRespMap
+        invertedBase = firingRateRespMap.max()-firingRateBaseline
+        fra, respThreshold = studyutils.calculate_fra(invertedMap, invertedBase)
     intenThresholdInd, cfInd = studyutils.calculate_intensity_threshold(fra)
     #print(intenThresholdInd, cfInd)
     #toneIntensityThresholdEachCell[indRow] = intenThresholdInd
     #toneCharactFreqEachCell[indRow] = cfInd
+    if intenThresholdInd is not None:
+        maxIntensityInd = np.argmax(firingRateRespMap.sum(axis=1))
+        (lowSlope, highSlope) = studyutils.calculate_fra_slopes(fra, possibleIntensity,
+                                                                possibleFreq, cfInd,
+                                                                intenThresholdInd, maxIntensityInd)
 
     '''
     # -- Fit a Gaussian to a specific intensity --
@@ -194,7 +208,42 @@ for indRow, dbRow in celldbResp.iterrows():
     toneGaussianY0[indRow] = popt[3]
     '''
 
-    # -- Estimate onset vs sustain response --
+    # -- Estimate BW10 --
+    RsquaredBW10 = np.nan
+    fullWHMaxBW10 = np.nan
+    RsquaredBW40 = np.nan
+    fullWHMaxBW40 = np.nan
+    if (intenThresholdInd is not None) and (np.mean(firingRateRespMap) > firingRateBaseline):
+        intensityThreshold = possibleIntensity[intenThresholdInd]
+        if intensityThreshold<65:
+            dBabove = 10
+            (poptBW10, RsquaredBW10, fullWHMaxBW10) = studyutils.calculate_BWx(intensityEachTrial,
+                                                                               freqEachTrial,
+                                                                               nSpikesEachTrial,
+                                                                               intensityThreshold,
+                                                                               dBabove)
+        if intensityThreshold<35:
+            dBabove = 40
+            (poptBW40, RsquaredBW40, fullWHMaxBW40) = studyutils.calculate_BWx(intensityEachTrial,
+                                                                               freqEachTrial,
+                                                                               nSpikesEachTrial,
+                                                                               intensityThreshold,
+                                                                               dBabove)
+    # -- Estimate latency (from taskontrol timing) --
+    bestFreqInd = dbRow['toneIndexBest']
+    thisFreq = np.unique(bdata['currentFreq'])[bestFreqInd]
+    useIntensityAbove = 40
+    selectedTrials = (bdata['currentFreq']==thisFreq) & (bdata['currentIntensity']>useIntensityAbove)
+    latencyTimeRange = [-0.2, 0.2]
+    indexLimitsSelectedTrials = indexLimitsEachTrial[:,selectedTrials]
+    smoothWin = signal.windows.hann(11)
+    respLatency, interim = spikesanalysis.response_latency(spikeTimesFromEventOnset,
+                                                           indexLimitsSelectedTrials, latencyTimeRange,
+                                                           win=smoothWin)
+    #print(f"{respLatency:0.4f}")
+
+    '''
+    # -- Estimate onset vs sustain response  (this is not in database_tone_latency.py)--
     onsetSustainRanges = [0, 0.05, 0.1]
     #onsetSustainRanges = [0.01, 0.05, 0.09]
     onsetDuration = onsetSustainRanges[1] - onsetSustainRanges[0]
@@ -206,13 +255,21 @@ for indRow, dbRow in celldbResp.iterrows():
     trialsThisFreq = trialsEachCond[:,bestFreqInd]
     firingRateOnset = np.mean(spikeCountMat[trialsThisFreq, 0])/onsetDuration
     firingRateSustain = np.mean(spikeCountMat[trialsThisFreq, 1])/sustainDuration
+    '''
     
     celldb.at[indRow, 'toneSelectivityPval'] = pValKruskal
-    celldb.at[indRow, 'toneFiringRateBestOnset'] = firingRateOnset
-    celldb.at[indRow, 'toneFiringRateBestSustain'] = firingRateSustain
+    #celldb.at[indRow, 'toneFiringRateBestOnset'] = firingRateOnset
+    #celldb.at[indRow, 'toneFiringRateBestSustain'] = firingRateSustain
+    celldb.at[indRow, 'toneBW10'] = fullWHMaxBW10
+    celldb.at[indRow, 'toneBW10Rsquared'] = RsquaredBW10
+    celldb.at[indRow, 'toneBW40'] = fullWHMaxBW40
+    celldb.at[indRow, 'toneBW40Rsquared'] = RsquaredBW40
+    celldb.at[indRow, 'toneLatencyBehav'] = respLatency
     if intenThresholdInd is not None:
         celldb.at[indRow, 'toneIntensityThreshold'] = possibleIntensity[intenThresholdInd]
         celldb.at[indRow, 'toneCharactFreq'] = possibleFreq[cfInd]
+        celldb.at[indRow, 'toneFRAlowSlope'] = lowSlope
+        celldb.at[indRow, 'toneFRAhighSlope'] = highSlope
     if Rsquared is not None:
         celldb.at[indRow, 'toneGaussianRsquare'] = Rsquared
         celldb.at[indRow, 'toneGaussianA'] = popt[0]
@@ -234,8 +291,9 @@ for indRow, dbRow in celldbResp.iterrows():
         thisTitle = plt.title(f'[{indRow}]', fontweight=fontWeight)
         axFRA = plt.subplot2grid((3,2),[0,1])
         imExtent = None
+        maxFR = None
         plt.imshow(firingRateRespMap, interpolation='nearest',
-                   cmap='Blues', origin='lower', extent=imExtent)
+                   cmap='Blues', origin='lower', extent=imExtent, vmax=maxFR)
         plt.colorbar()
         plt.subplot2grid((3,2),[1,1], sharex=None)
         xvals = np.linspace(possibleLogFreq[0], possibleLogFreq[-1], 60)

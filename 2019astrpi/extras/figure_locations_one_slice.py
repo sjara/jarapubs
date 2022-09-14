@@ -19,11 +19,12 @@ from importlib import reload
 reload(extraplots)
 
 
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
 outputDir = '/tmp/'
 figFilename = 'fig2_locations' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [3.35, 2.4] # In inches
+#figSize = [3.35, 2.4] # In inches
+figSize = [7, 2.4] # In inches
 
 '''
 fontSizeLabels = figparams.fontSizeLabels
@@ -38,16 +39,17 @@ celldb = celldatabase.load_hdf(dbPath)
 N_FREQ = 16 # HARDCODED
 N_RATE = 11 # HARDCODED
 
-# -- Select only responsive cells --
+# -- Find sound responsive cells --
 toneResponsive = celldb['toneMinPval'] < (0.05/N_FREQ)
 amOnsetResponsive = celldb['amMinPvalOnset'] < (0.05/N_RATE)
 amSustainResponsive = celldb['amMinPvalSustain'] < (0.05/N_RATE)
+soundResponsive = toneResponsive | amOnsetResponsive | amSustainResponsive
 
 laserBase = celldb.laserBaseRate200
 laserResp = celldb.laserRespRate50
 
 # -- Exclude laser sessions with very low firing rate --
-if 0:
+if 1:
     laserThFR = 1.0 #0.5 # Threshold in spk/s
     highFRlaserSession = (laserBase > laserThFR) | (laserResp > laserThFR)
     #highFRlaserSession = (laserBase > laserThFR)
@@ -62,7 +64,7 @@ indD1 = ((celldb.laserPvalB200R50 < 0.01) & (laserResp>laserBase)) & highFRlaser
 indND1 = ((celldb.laserPvalB200R50 > 0.01) | (laserResp<=laserBase)) & highFRlaserSession
 
 # -- Select only high enough firing rate --
-if 1:
+if 0:
     thFR = 1.0 # Threshold in spk/s
     highFR = ( (celldb.toneFiringRateBaseline > thFR) | (celldb.toneFiringRateBest > thFR) |
                (celldb.amFiringRateBaseline > thFR) | (celldb.amFiringRateBestOnset > thFR) |
@@ -70,6 +72,16 @@ if 1:
     indD1 = indD1 & highFR
     indND1 = indND1 & highFR
     print(f'\nWARNING: From the total, we analyze only cells with firing rate > {thFR} spk/s\n')
+
+# -- Select sound-responsive --
+#respTypes = ['responsive','unresponsive']
+respTypes = ['responsive']
+indD1resp = soundResponsive # Include all
+#indD1resp = indD1 & soundResponsive
+indND1resp = indND1 & soundResponsive
+indD1unresp = indD1 & ~soundResponsive
+indND1unresp = indND1 & ~soundResponsive
+
 
 # celldb.recordingSiteName.unique()
 areasToExclude = ['Supplemental somatosensory area, layer 6b',
@@ -87,7 +99,8 @@ for inda, oneArea in enumerate(areasToExclude):
 celldbCopy = celldb.copy()
 
 #selectedSlices = np.array([244, 260, 270])
-selectedSlices = np.array([266, 250])
+#selectedSlices = np.array([266, 250])
+selectedSlices = np.array([266])
 zCoords = celldb.z_coord.to_numpy()
 closestCoord = np.argmin(np.abs(zCoords[:,np.newaxis]-selectedSlices), axis=1)
 newZcoord = selectedSlices[closestCoord].astype('float')
@@ -98,46 +111,63 @@ celldbCopy['z_coord'] = newZcoord
 #celldbND1 = celldbCopy[indND1 & ~excludedByArea]
 #celldbAll = celldbCopy[(indD1|indND1) & ~excludedByArea]
 
-cellTypes = ['D1', 'ND1']
+#cellTypes = ['D1', 'ND1']
+cellTypes = ['D1']
 cellTypeLabel = ['D1', 'non-D1']
-indsEachType = [indD1, indND1]
+#indsEachType = [indD1, indND1]
+indsEachType = [[indD1resp, indND1resp], [indD1unresp, indND1unresp]]
+
 #colors = {'D1':cp.TangoPalette['SkyBlue1'],
 #          'ND1':cp.TangoPalette['ScarletRed1']}
-colors = {'D1':'#005fd8',
+#colors = {'D1':'#005fd8',
+#          'ND1':cp.TangoPalette['ScarletRed1']}
+colors = {'D1':'g',
           'ND1':cp.TangoPalette['ScarletRed1']}
 
 fontSizePanel = figparams.fontSizePanel
-panelLabels = ['A', 'B']
-labelPosX = [0.01, 0.52]   # Horiz position for panel labels
+fontSizeLabels = figparams.fontSizeLabels
+fontSizeTicks = figparams.fontSizeTicks
+panelLabels = [['A', 'B'],['C', 'D']]
+labelPosX = [[0.01, 0.25], [0.54, 0.78]]   # Horiz position for panel labels
 labelPosY = 0.93    # Vert position for panel labels
+respLabelPosx = [[0.1125, 0.355], [0.645, 0.89]]
 
 # -- Plot results --
 fig = plt.gcf()
 fig.clf()
 fig.set_facecolor('w')
 
-gsMain = gridspec.GridSpec(2, 2)
-gsMain.update(left=-0.01, right=1.02, top=1.0, bottom=-0.0, wspace=0.0, hspace=0.0)
+#gsMain = gridspec.GridSpec(2, 4)
+gsMain = gridspec.GridSpec(1, 1)
+gsMain.update(left=-0.01, right=1.01, top=1.0, bottom=0.05, wspace=0.1, hspace=0.0)
 
-for indType, cellType in enumerate(cellTypes):
-    siteColor = figparams.colors[cellType]
-    #siteColor = colors[cellType]
-    for inds, oneSlice in enumerate(selectedSlices):
-        thisAx = plt.subplot(gsMain[inds, indType])
-        thisImgFile = os.path.join(figuresDataDir, f'atlas{oneSlice}_whiteBG.png')
-        img = plt.imread(thisImgFile)
-        plt.imshow(img, cmap='gray', vmax=255)
-        theseCells = (celldbCopy.z_coord==oneSlice) & ~excludedByArea & indsEachType[indType]
-        xCoords = celldb.x_coord[theseCells]
-        yCoords = celldb.y_coord[theseCells]
-        #plt.plot(xCoords, yCoords, '.', color=siteColor, ms=2)
-        plt.plot(xCoords, yCoords, 'o', mec=siteColor, mfc='none', mew=0.5, ms=2)
-        plt.axis(False)
-    thisAx.annotate(panelLabels[indType], xy=(labelPosX[indType],labelPosY),
-                    xycoords='figure fraction',
-                    fontsize=fontSizePanel, fontweight='bold')
+for indResp, responsiveness in enumerate(respTypes):
+    gsResp = gridspec.GridSpecFromSubplotSpec(1, 1, subplot_spec=gsMain[indResp], wspace=0.0, hspace=0.0,)
+    for indType, cellType in enumerate(cellTypes):
+        siteColor = 'g' #figparams.colors[cellType]
+        #siteColor = colors[cellType]
+        for inds, oneSlice in enumerate(selectedSlices):
+            #thisAx = plt.subplot(gsMain[inds, indType + 2*indResp])
+            thisAx = plt.subplot(gsResp[inds, indType])
+            thisImgFile = os.path.join(figuresDataDir, f'atlas{oneSlice}_whiteBG.png')
+            img = plt.imread(thisImgFile)
+            plt.imshow(img, cmap='gray', vmax=255)
+            theseCells = (celldbCopy.z_coord==oneSlice) & ~excludedByArea & indsEachType[indResp][indType]
+            xCoords = celldb.x_coord[theseCells]
+            yCoords = celldb.y_coord[theseCells]
+            #plt.plot(xCoords, yCoords, '.', color=siteColor, ms=2)
+            plt.plot(xCoords, yCoords, 'o', mec=siteColor, mfc='none', mew=0.5, ms=2)
+            plt.axis(False)
+        thisAx.annotate(panelLabels[indResp][indType], xy=(labelPosX[indResp][indType],labelPosY),
+                        xycoords='figure fraction',
+                        fontsize=fontSizePanel, fontweight='bold')
+        respLabel = f'{cellTypeLabel[indType]} {respTypes[indResp]}'
+        thisAx.annotate(respLabel, xy=(respLabelPosx[indResp][indType], 0.011),
+                        xycoords='figure fraction', ha='center',
+                        fontsize=fontSizeTicks, fontweight='normal')
 
-        
+plt.show()
+
 if SAVE_FIGURE:
     extraplots.save_figure(figFilename, figFormat, figSize, outputDir, dpi=300)
 

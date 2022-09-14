@@ -25,11 +25,14 @@ reload(studyutils)
 
 
 figuresDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME)
-dbPath = os.path.join(figuresDataDir, 'astrpi_freq_tuning.h5')
+dbPath = os.path.join(figuresDataDir, 'astrpi_freq_tuning_latency.h5')
 celldb = celldatabase.load_hdf(dbPath)
 nCells = len(celldb)
 
+SAVE_DATA = 1
 newdbPath = '/tmp/astrpi_am_tuning.h5'
+extraDataFile = '/tmp/am_tuning.npz'
+scriptFullPath = os.path.realpath(__file__)
 
 #responsePeriod = [0, 0.5]
 #respPeriodDuration = responsePeriod[1]-responsePeriod[0]
@@ -48,10 +51,17 @@ celldbResp = celldb[(celldb.amMinPvalOnset < correctedAlpha) |
 #celldbResp = celldbResp.loc[516:]
 #celldbResp = celldbResp.loc[652:]
 #celldbResp = celldbResp.loc[1879:] # Nice sync
+#celldbResp = celldbResp.loc[1949:] # Fig
+#celldbResp = celldbResp.loc[3094:] # Fig
+#celldbResp = celldbResp.loc[3420:] # Fig 
+#celldbResp = celldbResp.loc[3124:] # Fig 
 
 celldb['amSelectivityPvalOnset'] = np.nan
 celldb['amSelectivityPvalSustain'] = np.nan
 celldb['amMaxSyncRate'] = np.nan
+cellIndexes = celldbResp.index
+amFiringRateEachRateSustain = np.full((len(celldbResp), N_RATE), np.nan)
+amVectorStrengthEachRateSustain = np.full((len(celldbResp), N_RATE), np.nan)
 
 indCell = -1
 for indRow, dbRow in celldbResp.iterrows():
@@ -63,6 +73,8 @@ for indRow, dbRow in celldbResp.iterrows():
 
     spikeTimes = ephysData['spikeTimes']
     eventOnsetTimes = ephysData['events']['stimOn']
+    detectorOnsetTimes = ephysData['events']['soundDetectorOn']
+    #eventOnsetTimes = spikesanalysis.minimum_event_onset_diff(detectorOnsetTimes, 0.5)
     timeRange = [-0.4, 0.8]  # In seconds
 
     rateEachTrial = bdata['currentFreq']
@@ -91,22 +103,26 @@ for indRow, dbRow in celldbResp.iterrows():
         kStat, pValKruskal = stats.kruskal(*nSpikesEachRate)
         amSelectivityPvalOnset[indPeriod] = pValKruskal
 
-        # -- Evaluate synchronization (during sustained) --
+        # -- For the sustained period, get average rate and synchronization --
         if indPeriod==1:
-            #sustainedSpikes = (spikeTimesFromEventOnset>0.1)&(spikeTimesFromEventOnset<0.5)
+            avgFiringEachRate = np.empty(nRate)
             vectorStrength = np.empty(nRate)
             pValRayleigh = np.empty(nRate)
             for indRate, thisRate in enumerate(possibleRate):
-                # FINISH THIS
-                # - For each rate find spiketimes (use indexLimitsEachTrial)
+                # -- Estimate average firing for each rate --
                 trialsThisRate = trialsEachCond[:,indRate]
+                spikeCountThisRate = spikeCountMat[trialsThisRate]
+                avgFiringEachRate[indRate] = np.mean(spikeCountThisRate)/periodDuration[indPeriod]
+
+                # - - For each rate find spiketimes (use indexLimitsEachTrial) --
                 indexLimitsThisRate = indexLimitsEachTrial[:, trialsThisRate]
                 spikeInds = np.concatenate([np.arange(*pair) for pair in indexLimitsThisRate.T])
                 spiketimesThisRate = spikeTimesFromEventOnset[spikeInds]
                 spiketimesThisRate = spiketimesThisRate[(spiketimesThisRate>period[0]) &
                                                         (spiketimesThisRate<period[1])]
-                if len(spiketimesThisRate):
-                    # NOTE: vector strength will be 1 if there is only one spike!
+                # -- Evaluate synchronization (during sustained) --
+                if len(spiketimesThisRate)>1:
+                    # NOTE: vector strength is set to NaN if there is only one spike.
                     strength, phase = signal.vectorstrength(spiketimesThisRate, 1/thisRate)
                     vectorStrength[indRate] = strength
                     radsPerSec = thisRate * 2 * np.pi
@@ -126,6 +142,8 @@ for indRow, dbRow in celldbResp.iterrows():
     celldb.at[indRow, 'amSelectivityPvalOnset'] = amSelectivityPvalOnset[0]
     celldb.at[indRow, 'amSelectivityPvalSustain'] = amSelectivityPvalOnset[1]
     celldb.at[indRow, 'amMaxSyncRate'] = maxSyncRate
+    amFiringRateEachRateSustain[indCell, :] = avgFiringEachRate
+    amVectorStrengthEachRateSustain[indCell, :] = vectorStrength
 
     if indCell % 20 == 0:
         print(f'{indCell}/{len(celldbResp)}')
@@ -138,16 +156,37 @@ for indRow, dbRow in celldbResp.iterrows():
         print(pValsStr)
         print()
         plt.clf()
-        fRaster = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
-                                         timeRange, trialsEachCond)
+        import matplotlib.gridspec as gridspec
+        gsMain = gridspec.GridSpec(1, 3, width_ratios = [0.4, 0.2, 0.2])
+        plt.subplot(gsMain[0]) 
+        (pRaster,hcond,zline) = extraplots.raster_plot(spikeTimesFromEventOnset,
+                                                       indexLimitsEachTrial,
+                                                       timeRange, trialsEachCond)
+        plt.setp(pRaster, ms=2)
         fontWeight = 'bold' #if responsiveThisCell else None
         thisTitle = plt.title(f'[{indRow}]', fontweight=fontWeight)
+        yVals = np.log2(possibleRate)
+        plt.subplot(gsMain[1])
+        plt.plot(avgFiringEachRate, np.log2(possibleRate), '-o', color='k')
+        plt.xlabel('Firing rate (spk/s)')
+        plt.ylim([yVals[0]-0.2, yVals[-1]+0.2])
+        plt.subplot(gsMain[2])
+        plt.plot(vectorStrength, np.log2(possibleRate), '-o', color='k')
+        plt.xlabel('Vector strength')
+        plt.xlim([0,1])
+        plt.ylim([yVals[0]-0.2, yVals[-1]+0.2])
         plt.show()
         #plt.waitforbuttonpress()
         sys.exit()
         #plt.pause(0.1)
 
-celldatabase.save_hdf(celldb, newdbPath)
+if SAVE_DATA:
+    celldatabase.save_hdf(celldb, newdbPath)
+    np.savez(extraDataFile, script=scriptFullPath, cellIndexes= cellIndexes,
+             possibleRate = possibleRate,
+             amFiringRateEachRateSustain=amFiringRateEachRateSustain,
+             amVectorStrengthEachRateSustain=amVectorStrengthEachRateSustain)
+    print(f'Saved {extraDataFile}')
 
 
 '''

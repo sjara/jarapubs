@@ -27,9 +27,9 @@ reload(figparams)
 reload(studyutils)
 reload(extraplots)
 
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = '/tmp/'
-figFilename = 'fig5_am_responses' # Do not include extension
+#figFilename = 'fig5_am_responses' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
 #figSize = [4.6, 3.8] # In inches
 figSize = [7, 5.5] # In inches
@@ -67,27 +67,14 @@ panelLabels = ['A', 'B', 'C', 'D']
 
 # -- Plot results --
 fig = plt.gcf()
-fig.clf()
+#fig.clf()
 fig.set_facecolor('w')
 
 gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.7, 0.3])
 gsMain.update(left=0.09, right=0.96, top=0.98, bottom=0.08, hspace=0.35)
 
-gsExamples = gsMain[0].subgridspec(2, 2, wspace=0.3, hspace=0.2)
 
-gsBottom = gsMain[1].subgridspec(1, 3, wspace=0.6, width_ratios=[0.6, 0.15, 0.15])
-axHist = plt.subplot(gsBottom[0, 0])
-axHist.annotate('E', xy=(labelPosXbot[0],labelPosY[2]), xycoords='figure fraction',
-                fontsize=fontSizePanel, fontweight='bold')
-axRS = plt.subplot(gsBottom[0, 1])
-axRS.annotate('F', xy=(labelPosXbot[1],labelPosY[2]), xycoords='figure fraction',
-                fontsize=fontSizePanel, fontweight='bold')
-axSy = plt.subplot(gsBottom[0, 2])
-axSy.annotate('G', xy=(labelPosXbot[2],labelPosY[2]), xycoords='figure fraction',
-                fontsize=fontSizePanel, fontweight='bold')
-
-
-if 1:
+if 0:
     for indType, cellType in enumerate(examplesTypes):
         (row, col) = np.unravel_index(indType, [2,2])
         gsOneCell = gsExamples[row,col].subgridspec(1, 3, width_ratios=[0.6, 0.2, 0.2],
@@ -123,8 +110,7 @@ if 1:
         yLabels = possibleRate
         pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                        timeRange, trialsEachCond,
-                                                       colorEachCond=rasterColors, labels=yLabels,
-                                                       rasterized=False)
+                                                       colorEachCond=rasterColors, labels=yLabels)
         plt.setp(pRaster, ms=1)
         plt.xticks([0, 0.5])
         if 1: #indType in [0, 2]:
@@ -196,62 +182,6 @@ amRespIndexEachTypePos = [amRespIndexD1pos, amRespIndexND1pos]
 amRespIndexEachTypeNeg = [amRespIndexD1neg, amRespIndexND1neg]
 
 
-def line_histogram(data, edges, percent=False, **kwargs):
-    hh, ee = np.histogram(data, edges)
-    if percent:
-        hh = 100 * hh/len(data[~np.isnan(data)])
-    hline = plt.step(np.r_[ee, ee[-1]], np.r_[0,hh,0],'-', where='pre', **kwargs)
-    return hline
-   
-
-plt.sca(axHist)
-yLims = [0, 15]
-binEdges = np.linspace(-1, 1, 27) #27 32
-for indType, cellType in enumerate(cellTypes):
-    colorThisType = figparams.colors[cellType]
-    hline = line_histogram(amRespIndexEachType[indType], binEdges, lw=2,
-                           percent=True, color=colorThisType)
-    #hline = line_histogram(np.abs(amRespIndexEachType[indType]), binEdges, lw=2,
-    #                       percent=True, color=colorThisType)
-    medianPos = np.median(amRespIndexEachTypePos[indType])
-    medianNeg = np.median(amRespIndexEachTypeNeg[indType])
-    plt.plot(medianPos, 0.95*yLims[-1], 'v', color=colorThisType, mew=2, mfc='none')
-    plt.plot(medianNeg, 0.95*yLims[-1], 'v', color=colorThisType, mew=2, mfc='none')
-    
-plt.ylim(yLims)
-#plt.ylim([0,60])
-extraplots.boxoff(axHist)
-plt.yticks(np.arange(0,20,5))
-plt.xlabel('AM sustained response index')
-plt.ylabel('% cells')
-plt.axvline(0, color='0.9')
-#plt.legend(['D1','non-D1'], loc='upper left')
-plt.text(-1, 11, 'D1 cells', ha='left', fontweight='bold', fontsize=fontSizeLabels+0,
-         color=figparams.colors['D1'])
-plt.text(-1, 9, 'non-D1 cells', ha='left', fontweight='bold', fontsize=fontSizeLabels+0,
-         color=figparams.colors['ND1'])
-
-plt.show()
-
-
-uval, pValPos = stats.mannwhitneyu(amRespIndexD1pos, amRespIndexND1pos, alternative='two-sided')
-print(f'AM sust index (pos): ' +
-      f'D1: {amRespIndexD1pos.median():0.4f} vs ' +
-      f'ND1: {amRespIndexND1pos.median():0.4f}   ' +
-      f'p = {pValPos:0.6f} (U={uval})')
-uval, pValNeg = stats.mannwhitneyu(amRespIndexD1neg, amRespIndexND1neg, alternative='two-sided')
-print(f'AM sust index (neg): D1: {amRespIndexD1neg.median():0.4f} vs ' +
-      f'ND1: {amRespIndexND1neg.median():0.4f}   ' +
-      f'p = {pValNeg:0.6f} (U={uval})')
-uval, pValNeg = stats.mannwhitneyu(np.abs(amRespIndexD1[~np.isnan(amRespIndexD1)]),
-                                   np.abs(amRespIndexND1[~np.isnan(amRespIndexND1)]),
-                                   alternative='two-sided')
-print(f'AM sust index (abs): ' +
-      f'D1 ({len(amRespIndexD1)}): {np.abs(amRespIndexD1).median():0.4f} vs ' +
-      f'ND1 ({len(amRespIndexND1)}): {np.abs(amRespIndexND1).median():0.4f}   ' +
-      f'p = {pValNeg:0.6f} (U={uval})')
-print()
-
 
 # -------------------- Rate selectivity ------------------------
 maxFiring = celldb['amFiringRateMaxSustain']
@@ -260,13 +190,96 @@ rateSelectivityIndex = (maxFiring - minFiring) / (maxFiring + minFiring)
 
 # NOTE: I need to remove nans because some neurons may be have FR=0 for AM but not tones
 amResponsive = amSustainResponsive
-rsD1 = rateSelectivityIndex[indD1 & amResponsive & ~np.isnan(rateSelectivityIndex)]
-rsND1 = rateSelectivityIndex[indND1 & amResponsive & ~np.isnan(rateSelectivityIndex)]
 
-nD1rs = len(rsD1)
-nND1rs = len(rsND1)
-medianD1rs = np.median(rsD1)
-medianND1rs = np.median(rsND1)
+responsiveD1 = indD1 & amResponsive & ~np.isnan(rateSelectivityIndex)
+responsiveND1 = indND1 & amResponsive & ~np.isnan(rateSelectivityIndex)
+
+
+# --- Best AM rate ---
+possibleRateHC =  np.array([  4.        ,   5.65685425,   8.        ,  11.3137085 ,
+                              16.        ,  22.627417  ,  32.        ,  45.254834  ,
+                              64.        ,  90.50966799, 128.        ])
+
+indsD1 = responsiveD1.index[responsiveD1]
+indsND1 = responsiveND1.index[responsiveND1]
+extraDataInds = amTuningData['cellIndexes']
+extraDataIndsD1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsD1 if ind in extraDataInds]
+extraDataIndsND1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsND1 if ind in extraDataInds]
+firingRateEachRateD1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsD1,:]
+firingRateEachRateND1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsND1,:]
+
+bestRateD1 = possibleRateHC[firingRateEachRateD1.argmax(axis=1)]
+bestRateND1 = possibleRateHC[firingRateEachRateND1.argmax(axis=1)]
+nD1br = len(bestRateD1)
+nND1br = len(bestRateND1)
+medianD1br = np.median(bestRateD1)
+medianND1br = np.median(bestRateND1)
+
+uval, pValBR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
+print(f'AM best rate: D1 ({nD1br}): {medianD1br:0.4f} vs ' +
+      f'ND1 ({nND1br}): {medianND1br:0.4f}   ' +
+      f'p = {pValBR:0.6f} (U={uval})')
+
+print(f'Most common preferred AM rate:   D1: {np.mean(bestRateD1==4):0.2%}   ' +
+      f'ND1: {np.mean(bestRateND1==4):0.2%}\n')
+
+
+# --- Best AM sync ---
+vectorStrengthEachRateD1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsD1,:]
+vectorStrengthEachRateND1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsND1,:]
+
+bestSyncRateD1 = possibleRateHC[vectorStrengthEachRateD1.argmax(axis=1)]
+bestSyncRateND1 = possibleRateHC[vectorStrengthEachRateND1.argmax(axis=1)]
+nD1bsr = len(bestRateD1)
+nND1bsr = len(bestRateND1)
+medianD1bsr = np.median(bestRateD1)
+medianND1bsr = np.median(bestRateND1)
+
+uval, pValBSR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
+print(f'AM best SYNC rate: D1 ({nD1bsr}): {medianD1bsr:0.4f} vs ' +
+      f'ND1 ({nND1bsr}): {medianND1bsr:0.4f}   ' +
+      f'p = {pValBSR:0.6f} (U={uval})')
+
+print(f'Most common SYNC preferred AM rate:   D1: {np.mean(bestSyncRateD1==4):0.2%}   ' +
+      f'ND1: {np.mean(bestSyncRateND1==4):0.2%}\n')
+
+
+
+
+
+sys.exit()
+
+#vectorStrengthEachRate = amTuningData['amVectorStrengthEachRateSustain'][indCell,:]
+
+# plt.plot((firingRateEachRateD1/firingRateEachRateD1.max(axis=1)[:,np.newaxis]).mean(axis=0), 'o-')
+
+
+selCells = celldb.index[responsiveD1]
+
+cellIndexes = amTuningData['cellIndexes']
+plt.clf()
+axTop = plt.subplot(2,1,1)
+axBot = plt.subplot(2,1,2)
+possibleRate = amTuningData['possibleRate']
+xVals = range(len(possibleRate))
+for indCell, indRow in enumerate(cellIndexes):
+    if indRow in selCells:
+        firingRateEachRate = amTuningData['amFiringRateEachRateSustain'][indCell,:]
+        vectorStrengthEachRate = amTuningData['amVectorStrengthEachRateSustain'][indCell,:]
+        plt.sca(axTop)
+        plt.cla()
+        plt.plot(firingRateEachRate, 'o-')
+        plt.xlim([xVals[0]-0.5, xVals[-1]+0.5])
+        plt.title(indRow)
+        plt.sca(axBot)
+        plt.cla()
+        plt.plot(vectorStrengthEachRate, 'o-', color='k')
+        plt.ylim([0,1])
+        plt.xlim([xVals[0]-0.5, xVals[-1]+0.5])
+        plt.waitforbuttonpress()
+
+sys.exit()
+
 
 plt.sca(axRS)
 boxWidth = 0.5
@@ -302,54 +315,6 @@ uval, pValRS = stats.mannwhitneyu(rsD1, rsND1, alternative='two-sided')
 print(f'AM rate selectivity index: D1 ({nD1rs}): {medianD1rs:0.4f} vs ' +
       f'ND1 ({nND1rs}): {medianND1rs:0.4f}   ' +
       f'p = {pValRS:0.6f} (U={uval})\n')
-
-
-# --- Best AM rate ---
-responsiveD1 = amResponsive & indD1
-responsiveND1 = amResponsive & indND1
-indsD1 = responsiveD1.index[responsiveD1]
-indsND1 = responsiveND1.index[responsiveND1]
-extraDataInds = amTuningData['cellIndexes']
-extraDataIndsD1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsD1 if ind in extraDataInds]
-extraDataIndsND1 = [np.flatnonzero(extraDataInds==ind)[0] for ind in indsND1 if ind in extraDataInds]
-firingRateEachRateD1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsD1,:]
-firingRateEachRateND1 = amTuningData['amFiringRateEachRateSustain'][extraDataIndsND1,:]
-
-bestRateD1 = possibleRate[firingRateEachRateD1.argmax(axis=1)]
-bestRateND1 = possibleRate[firingRateEachRateND1.argmax(axis=1)]
-nD1br = len(bestRateD1)
-nND1br = len(bestRateND1)
-medianD1br = np.median(bestRateD1)
-medianND1br = np.median(bestRateND1)
-
-uval, pValBR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
-print(f'AM best rate: D1 ({nD1br}): {medianD1br:0.4f} vs ' +
-      f'ND1 ({nND1br}): {medianND1br:0.4f}   ' +
-      f'p = {pValBR:0.6f} (U={uval})')
-
-print(f'Most common preferred AM rate:   D1: {np.mean(bestRateD1==4):0.2%}   ' +
-      f'ND1: {np.mean(bestRateND1==4):0.2%}\n')
-
-
-# --- Best AM sync ---
-vectorStrengthEachRateD1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsD1,:]
-vectorStrengthEachRateND1 = amTuningData['amVectorStrengthEachRateSustain'][extraDataIndsND1,:]
-
-bestSyncRateD1 = possibleRate[vectorStrengthEachRateD1.argmax(axis=1)]
-bestSyncRateND1 = possibleRate[vectorStrengthEachRateND1.argmax(axis=1)]
-nD1bsr = len(bestRateD1)
-nND1bsr = len(bestRateND1)
-medianD1bsr = np.median(bestRateD1)
-medianND1bsr = np.median(bestRateND1)
-
-uval, pValBSR = stats.mannwhitneyu(bestRateD1, bestRateND1, alternative='two-sided')
-print(f'AM best SYNC rate: D1 ({nD1bsr}): {medianD1bsr:0.4f} vs ' +
-      f'ND1 ({nND1bsr}): {medianND1bsr:0.4f}   ' +
-      f'p = {pValBSR:0.6f} (U={uval})')
-
-print(f'Most common SYNC preferred AM rate:   D1: {np.mean(bestSyncRateD1==4):0.2%}   ' +
-      f'ND1: {np.mean(bestSyncRateND1==4):0.2%}\n')
-
 
 
 # -------------------- Max Synchronization Rate ------------------------
