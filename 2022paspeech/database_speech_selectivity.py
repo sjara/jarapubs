@@ -90,17 +90,17 @@ for indMouse, thisMouse in enumerate(allSubjects):
         #rateEachTrial = bdata['currentFreq']
         # Remove last stim from ephys if not saved in behavior file
 
-        if len(rateEachTrial) == len(eventOnsetTimes)-1:
-            eventOnsetTimes = eventOnsetTimes[:len(rateEachTrial)]
-
-
-
         FTParamsEachTrial = bdata['targetFTpercent']
         possibleFTParams = np.unique(FTParamsEachTrial)
         VOTParamsEachTrial = bdata['targetVOTpercent']
         possibleVOTParams = np.unique(VOTParamsEachTrial)
         nFT = len(possibleFTParams)
         nVOT = len(possibleVOTParams)
+
+        if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
+            eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
+            print(f'[{indRow}] Warning! BehavTrials ({len(freqEachTrial)}) and ' +
+                  f'EphysTrials ({len(eventOnsetTimes)})')
 
         trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
