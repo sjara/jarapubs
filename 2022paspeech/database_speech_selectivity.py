@@ -73,6 +73,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
     correctedAlpha = 0.05/N_SPEECH
     celldbResp = celldb[(celldb.speechMinPvalOnset < correctedAlpha) |
                         (celldb.speechMinPvalSustain < correctedAlpha)]
+    respIndex = celldb.index[(celldb.speechMinPvalOnset < correctedAlpha) | (celldb.speechMinPvalSustain < correctedAlpha)]
 
 
     indCell = -1
@@ -213,26 +214,26 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
 
 
-        celldb.at[indRow, 'selectivityIndexFT_VOTmin'] = selectivityIndexFT_VOTmin[0]
-        celldb.at[indRow, 'selectivityIndexFT_VOTmax'] = selectivityIndexFT_VOTmax[0]
-        celldb.at[indRow, 'selectivityIndexVOT_FTmin'] = selectivityIndexVOT_FTmin[0]
-        celldb.at[indRow, 'selectivityIndexVOT_FTmax'] = selectivityIndexVOT_FTmax[0]
+        celldb.at[respIndex[indRow], 'selectivityIndexFT_VOTmin'] = selectivityIndexFT_VOTmin[0]
+        celldb.at[respIndex[indRow], 'selectivityIndexFT_VOTmax'] = selectivityIndexFT_VOTmax[0]
+        celldb.at[respIndex[indRow], 'selectivityIndexVOT_FTmin'] = selectivityIndexVOT_FTmin[0]
+        celldb.at[respIndex[indRow], 'selectivityIndexVOT_FTmax'] = selectivityIndexVOT_FTmax[0]
 
-        celldb.at[indRow, 'selectivityIndex2FT_VOTmin'] = selectivityIndex2FT_VOTmin[0]
-        celldb.at[indRow, 'selectivityIndex2FT_VOTmax'] = selectivityIndex2FT_VOTmax[0]
-        celldb.at[indRow, 'selectivityIndex2VOT_FTmin'] = selectivityIndex2VOT_FTmin[0]
-        celldb.at[indRow, 'selectivityIndex2VOT_FTmax'] = selectivityIndex2VOT_FTmax[0]
+        celldb.at[respIndex[indRow], 'selectivityIndex2FT_VOTmin'] = selectivityIndex2FT_VOTmin[0]
+        celldb.at[respIndex[indRow], 'selectivityIndex2FT_VOTmax'] = selectivityIndex2FT_VOTmax[0]
+        celldb.at[respIndex[indRow], 'selectivityIndex2VOT_FTmin'] = selectivityIndex2VOT_FTmin[0]
+        celldb.at[respIndex[indRow], 'selectivityIndex2VOT_FTmax'] = selectivityIndex2VOT_FTmax[0]
 
 
-        celldb.at[indRow, 'ftSelectivityVotMaxPvalOnset'] = FTSelectivity_VOTMax_Pval[0]
-        celldb.at[indRow, 'ftSelectivityVotMaxPvalSustain'] = FTSelectivity_VOTMax_Pval[1]
-        celldb.at[indRow, 'ftSelectivityVotMinPvalOnset'] = FTSelectivity_VOTMin_Pval[0]
-        celldb.at[indRow, 'ftSelectivityVotMinPvalSustain'] = FTSelectivity_VOTMin_Pval[1]
+        celldb.at[respIndex[indRow], 'ftSelectivityVotMaxPvalOnset'] = FTSelectivity_VOTMax_Pval[0]
+        celldb.at[respIndex[indRow], 'ftSelectivityVotMaxPvalSustain'] = FTSelectivity_VOTMax_Pval[1]
+        celldb.at[respIndex[indRow], 'ftSelectivityVotMinPvalOnset'] = FTSelectivity_VOTMin_Pval[0]
+        celldb.at[respIndex[indRow], 'ftSelectivityVotMinPvalSustain'] = FTSelectivity_VOTMin_Pval[1]
 
-        celldb.at[indRow, 'votSelectivityFtMaxPvalOnset'] = VOTSelectivity_FTMax_Pval[0]
-        celldb.at[indRow, 'votSelectivityFtMaxPvalSustain'] = VOTSelectivity_FTMax_Pval[1]
-        celldb.at[indRow, 'votSelectivityFtMinPvalOnset'] = VOTSelectivity_FTMin_Pval[0]
-        celldb.at[indRow, 'votSelectivityFtMinPvalSustain'] = VOTSelectivity_FTMin_Pval[1]
+        celldb.at[respIndex[indRow], 'votSelectivityFtMaxPvalOnset'] = VOTSelectivity_FTMax_Pval[0]
+        celldb.at[respIndex[indRow], 'votSelectivityFtMaxPvalSustain'] = VOTSelectivity_FTMax_Pval[1]
+        celldb.at[respIndex[indRow], 'votSelectivityFtMinPvalOnset'] = VOTSelectivity_FTMin_Pval[0]
+        celldb.at[respIndex[indRow], 'votSelectivityFtMinPvalSustain'] = VOTSelectivity_FTMin_Pval[1]
 
 
     celldatabase.save_hdf(celldb, newdbPath)
