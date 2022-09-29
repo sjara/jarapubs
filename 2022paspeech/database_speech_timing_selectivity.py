@@ -69,8 +69,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
         nVOT = len(possibleVOTParams)
 
         if len(VOTParamsEachTrial) == len(eventOnsetTimes)-1:
-            eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
-            print(f'[{indRow}] Warning! BehavTrials ({len(FTParamsEachTrial)}) and ' +
+            eventOnsetTimes = eventOnsetTimes[:len(VOTParamsEachTrial)]
+            print(f'[{indRow}] Warning! BehavTrials ({len(VOTParamsEachTrial)}) and ' +
                   f'EphysTrials ({len(eventOnsetTimes)})')
 
         #period = [0,0.12]
