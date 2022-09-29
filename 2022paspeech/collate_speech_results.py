@@ -23,9 +23,11 @@ reload(studyutils)
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 #dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning.h5')
+dbPath = os.path.join(databaseDir, 'fulldb_speech_tuning_combineAudDAudPo.h5')
 allSubjects = studyparams.EPHYS_MICE
 try:
-    dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning.h5')
+    #dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning.h5')
+    dbPath = os.path.join(databaseDir, 'fulldb_speech_tuning_combineAudDAudPo.h5')
     celldb = celldatabase.load_hdf(dbPath)
 except:
     for indMouse, thisMouse in enumerate(allSubjects):
@@ -39,12 +41,13 @@ except:
     recordingAreaName = celldb.recordingSiteName
     recordingAreaName = recordingAreaName.str.replace(r'[,/].+', '', regex = True)
     celldb['recordingAreaName'] = recordingAreaName
-    newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning.h5')
-    celldatabase.save_hdf(celldb, newdbPath)
+    #newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning.h5')
+    #celldatabase.save_hdf(celldb, newdbPath)
 
 
 
-audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Dorsal auditory area', 'Ventral auditory area']
+#audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Dorsal auditory area', 'Ventral auditory area']
+audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Ventral auditory area']
 featureAlpha = 0.05/4
 VOTselective_FTmax = celldb.votSelectivityFtMaxPvalOnset < featureAlpha
 VOTselective_FTmin = celldb.votSelectivityFtMinPvalOnset < featureAlpha
