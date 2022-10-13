@@ -26,15 +26,12 @@ databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 figDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'vot_timing')
 dbPath = os.path.join(databaseDir, 'fulldb_speech_tuning_combineAudDAudPo.h5')
 fulldb = celldatabase.load_hdf(dbPath)
-newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_latencies.h5')
+newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_latencies_ftvot.h5')
 nCells = len(fulldb)
 
 allSubjects = studyparams.EPHYS_MICE
 #allSubjects = studyparams.TEST_MOUSE
 
-#fulldb['respLatency_VOTmax'] = np.nan
-#fulldb['respLatency_VOTmin'] = np.nan
-#fulldb['respLatency_VOTdiff'] = np.nan
 
 for indMouse, thisMouse in enumerate(allSubjects):
     subject = thisMouse
@@ -83,36 +80,60 @@ for indMouse, thisMouse in enumerate(allSubjects):
         #(spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \ spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
         votLatencies_FTmin = np.ones(nVOT)
         votLatencies_FTmax = np.ones(nVOT)
+        ftLatencies_VOTmin = np.ones(nVOT)
+        ftLatencies_VOTmax = np.ones(nVOT)
+
         for indVOT, thisVOT in enumerate(possibleVOTParams):
 
-            selectedTrials_FTmin = trialsEachCond[:,0,indVOT]
-            selectedTrials_FTmax = trialsEachCond[:,3,indVOT]
+            selected_VOTtrials_FTmin = trialsEachCond[:,0,indVOT]
+            selected_VOTtrials_FTmax = trialsEachCond[:,3,indVOT]
+            selected_FTtrials_VOTmin = trialsEachCond[:,indVOT,0]
+            selected_FTtrials_VOTmax = trialsEachCond[:,indVOT,3]
 
-            (spikeTimesFromEventOnset_FTmin, trialIndexForEachSpike_FTmin, indexLimitsEachTrial_FTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmin], latencyTimeRange)
-            (spikeTimesFromEventOnset_FTmax, trialIndexForEachSpike_FTmax, indexLimitsEachTrial_FTmax) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmax], latencyTimeRange)
+            #VOT
+            (spikeTimesFromEventOnsetVOT_FTmin, trialIndexForEachSpikeVOT_FTmin, indexLimitsEachTrialVOT_FTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selected_VOTtrials_FTmin], latencyTimeRange)
+            (spikeTimesFromEventOnsetVOT_FTmax, trialIndexForEachSpikeVOT_FTmax, indexLimitsEachTrialVOT_FTmax) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selected_VOTtrials_FTmax], latencyTimeRange)
+            #FT
+            (spikeTimesFromEventOnsetFT_VOTmin, trialIndexForEachSpikeFT_VOTmin, indexLimitsEachTrialFT_VOTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selected_FTtrials_VOTmin], latencyTimeRange)
+            (spikeTimesFromEventOnsetFT_VOTmax, trialIndexForEachSpikeFT_VOTmax, indexLimitsEachTrialFT_VOTmax) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selected_FTtrials_VOTmax], latencyTimeRange)
 
             # Estimate latency
+            #VOT
             smoothWin = signal.windows.hann(7)
             try:
-                respLatency_FTmin, interim_FTmin = spikesanalysis.response_latency(spikeTimesFromEventOnset_FTmin, indexLimitsEachTrial_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
-                votLatencies_FTmin[indVOT] = respLatency_FTmin
+                respLatencyVOT_FTmin, interimVOT_FTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                votLatencies_FTmin[indVOT] = respLatencyVOT_FTmin
             except:
                 votLatencies_FTmin[indVOT] = -1
             try:
-                respLatency_FTmax, interim_FTmax = spikesanalysis.response_latency(spikeTimesFromEventOnset_FTmax, indexLimitsEachTrial_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
-                votLatencies_FTmax[indVOT] = respLatency_FTmax
+                respLatencyVOT_FTmax, interimVOT_FTmax = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmax, indexLimitsEachTrialVOT_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                votLatencies_FTmax[indVOT] = respLatencyVOT_FTmax
             except:
                 votLatencies_FTmax[indVOT] = -1
-            #votLatencies_FTmin[indVOT] = respLatency_FTmin
-            #votLatencies_FTmax[indVOT] = respLatency_FTmax
+
+            #FT
+            try:
+                respLatencyFT_VOTmin, interimFT_VOTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetFT_VOTmin, indexLimitsEachTrialFT_VOTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                ftLatencies_VOTmin[indVOT] = respLatencyFT_VOTmin
+            except:
+                ftLatencies_VOTmin[indVOT] = -1
+            try:
+                respLatencyFT_VOTmax, interimFT_VOTmax = spikesanalysis.response_latency(spikeTimesFromEventOnsetFT_VOTmax, indexLimitsEachTrialFT_VOTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                ftLatencies_VOTmax[indVOT] = respLatencyFT_VOTmax
+            except:
+                votLatencies_FTmax[indVOT] = -1
+
 
 
             if indCell % 10 == 0:
                 print(f'{indCell}/{len(celldbResp)}')
                 pass
-            #print(f'[{indRow}] {str(oneCell)}')
+                #print(f'[{indRow}] {str(oneCell)}')
 
-        if votLatencies_FTmin[0]>0 and votLatencies_FTmin[-1]>0:
+
+
+        ## FIGURES ##
+        if 0: #votLatencies_FTmin[0]>0 and votLatencies_FTmin[-1]>0:
             plt.clf()
             gsMain = gs.GridSpec(2, 5)
             gsMain.update(left=0.075, right=0.98, top=0.9, bottom=0.1, wspace=0.4, hspace=0.4)
@@ -120,13 +141,13 @@ for indMouse, thisMouse in enumerate(allSubjects):
             ax0 = plt.subplot(gsMain[0,0])
             selectedTrials_FTmin = trialsEachCond[:,0,:]
 
-            (spikeTimesFromEventOnset_FTmin, trialIndexForEachSpike_FTmin, indexLimitsEachTrial_FTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmin], latencyTimeRange)
+            (spikeTimesFromEventOnsetVOT_FTmin, trialIndexForEachSpikeVOT_FTmin, indexLimitsEachTrialVOT_FTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmin], latencyTimeRange)
             #plt.plot(spikeTimesFromEventOnset, trialIndexForEachSpike, '.k', ms=markerSize)
-            nTrials = len(indexLimitsEachTrial_FTmin)
+            nTrials = len(indexLimitsEachTrialVOT_FTmin)
             (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selectedTrials_FTmin, nTrials)
             lastTrialEachCond = np.cumsum(nTrialsEachCond)
             firstTrialEachCond = np.r_[0, lastTrialEachCond[:-1]]
-            pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset_FTmin, indexLimitsEachTrial_FTmin, latencyTimeRange, selectedTrials_FTmin, labels = possibleVOTParams)
+            pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, selectedTrials_FTmin, labels = possibleVOTParams)
             plt.setp(pRaster, ms = 2)
             plt.axvline(0, color='b')
             plt.title('FTmin')
@@ -135,19 +156,19 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.plot([votLatencies_FTmin[indVOT], votLatencies_FTmin[indVOT]], [firstTrialEachCond[indVOT], lastTrialEachCond[indVOT]])
                 ax1 = plt.subplot(gsMain[0,5-indVOT], sharex=ax0)
                 try:
-                    respLatency, interim = spikesanalysis.response_latency(spikeTimesFromEventOnset_FTmin, indexLimitsEachTrial_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                    respLatency, interim = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                     plt.plot(interim['timeVec'], interim['psth'])
                 except:
                     print('no spikes for this condition')
 
             ax0 = plt.subplot(gsMain[1,0])
             selectedTrials_FTmax = trialsEachCond[:,3,:]
-            (spikeTimesFromEventOnset_FTmax, trialIndexForEachSpike_FTmax, indexLimitsEachTrial_FTmax) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmax], latencyTimeRange)
+            (spikeTimesFromEventOnsetVOT_FTmax, trialIndexForEachSpike_FTmax, indexLimitsEachTrial_FTmax) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selectedTrials_FTmax], latencyTimeRange)
             nTrials = len(indexLimitsEachTrial_FTmax)
             (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selectedTrials_FTmax, nTrials)
             lastTrialEachCond = np.cumsum(nTrialsEachCond)
             firstTrialEachCond = np.r_[0, lastTrialEachCond[:-1]]
-            pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset_FTmax, indexLimitsEachTrial_max, latencyTimeRange, selectedTrials_FTmax, labels = possibleVOTParams)
+            pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnsetVOT_FTmax, indexLimitsEachTrial_max, latencyTimeRange, selectedTrials_FTmax, labels = possibleVOTParams)
             plt.title('FTmax')
             plt.setp(pRaster, ms = 2)
             plt.axvline(0, color='b')
@@ -156,7 +177,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.plot([votLatencies_FTmax[indVOT], votLatencies_FTmax[indVOT]], [firstTrialEachCond[indVOT], lastTrialEachCond[indVOT]])
                 ax1 = plt.subplot(gsMain[1,5-indVOT], sharex=ax0)
                 try:
-                    respLatency, interim = spikesanalysis.response_latency(spikeTimesFromEventOnset_FTmax, indexLimitsEachTrial_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+                    respLatency, interim = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmax, indexLimitsEachTrial_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                     plt.plot(interim['timeVec'], interim['psth'])
                 except:
                     print('no spikes for this condition')
@@ -184,4 +205,12 @@ for indMouse, thisMouse in enumerate(allSubjects):
         fulldb.at[indRow, 'respLatency_VOTmin_FTmax'] = votLatencies_FTmax[0]
         fulldb.at[indRow, 'respLatency_VOTmax_FTmax'] = votLatencies_FTmax[-1]
         fulldb.at[indRow, 'respLatency_VOTdiff_FTmax'] = (votLatencies_FTmax[-1] - votLatencies_FTmax[0])
-#celldatabase.save_hdf(fulldb, newdbPath)
+
+        fulldb.at[indRow, 'respLatency_FTmin_VOTmin'] = ftLatencies_VOTmin[0]
+        fulldb.at[indRow, 'respLatency_FTmax_VOTmin'] = ftLatencies_VOTmin[-1]
+        fulldb.at[indRow, 'respLatency_FTdiff_VOTmin'] = (ftLatencies_VOTmin[-1] - ftLatencies_VOTmax[0])
+
+        fulldb.at[indRow, 'respLatency_FTmin_VOTmax'] = ftLatencies_VOTmax[0]
+        fulldb.at[indRow, 'respLatency_FTmax_VOTmax'] = ftLatencies_VOTmax[-1]
+        fulldb.at[indRow, 'respLatency_FTdiff_VOTmax'] = (ftLatencies_VOTmax[-1] - ftLatencies_VOTmin[0])
+celldatabase.save_hdf(fulldb, newdbPath)
