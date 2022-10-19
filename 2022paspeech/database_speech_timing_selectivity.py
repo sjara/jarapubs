@@ -131,13 +131,26 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 #print(f'[{indRow}] {str(oneCell)}')
 
         #check for linear or monotonic relationship between onset latency and VOT
-        pearsonCorrVotLatencyFtMin, pvalPearsonCorrVotLatencyFtMin = stats.pearsonr(possibleVOTParams, votLatencies_FTmin)
-
-        pearsonCorrVotLatencyFtMax, pvalPearsonCorrVotLatencyFtMax = stats.pearsonr(possibleVOTParams, votLatencies_FTmax)
-
-        spearmanCorrVotLatencyFtMin, pvalSpearmanCorrVotLatencyFtMin = stats.spearmanr(possibleVOTParams, votLatencies_FTmin)
-
-        spearmanCorrVotLatencyFtMax, pvalSpearmanCorrVotLatencyFtMax = stats.spearmanr(possibleVOTParams, votLatencies_FTmax)
+        try:
+            pearsonCorrVotLatencyFtMin, pvalPearsonCorrVotLatencyFtMin = stats.pearsonr(possibleVOTParams, votLatencies_FTmin)
+        except:
+            pearsonCorrVotLatencyFtMin = 0
+            pvalPearsonCorrVotLatencyFtMin = 1
+        try:
+            pearsonCorrVotLatencyFtMax, pvalPearsonCorrVotLatencyFtMax = stats.pearsonr(possibleVOTParams, votLatencies_FTmax)
+        except:
+            pearsonCorrVotLatencyFtMax = 0
+            pvalPearsonCorrVotLatencyFtMax = 1
+        try:
+            spearmanCorrVotLatencyFtMin, pvalSpearmanCorrVotLatencyFtMin = stats.spearmanr(possibleVOTParams, votLatencies_FTmin)
+        except:
+            spearmanCorrVotLatencyFtMin = 0
+            pvalSpearmanCorrVotLatencyFtMin = 1
+        try:
+            spearmanCorrVotLatencyFtMax, pvalSpearmanCorrVotLatencyFtMax = stats.spearmanr(possibleVOTParams, votLatencies_FTmax)
+        except:
+            spearmanCorrVotLatencyFtMax = 0
+            pvalSpearmanCorrVotLatencyFtMax = 1
 
 
 
