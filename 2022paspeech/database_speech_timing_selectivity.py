@@ -29,8 +29,8 @@ fulldb = celldatabase.load_hdf(dbPath)
 newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_latencies_ftvot.h5')
 nCells = len(fulldb)
 
-#allSubjects = studyparams.EPHYS_MICE
-allSubjects = studyparams.TEST_MOUSE
+allSubjects = studyparams.EPHYS_MICE
+#allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
