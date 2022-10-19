@@ -69,13 +69,16 @@ for indMouse, thisMouse in enumerate(allSubjects):
     N_VOT = 4 #HARDCODED
     N_SPEECH = 12 #HARDCODED
 
-
-    #correctedAlpha = 0.05/N_SPEECH
-    #celldbResp = celldb[(celldb.speechMinPvalOnset < correctedAlpha) | (celldb.speechMinPvalSustain < correctedAlpha)]
+    '''
+    if SPEECH_RESPONSIVE:
+        correctedAlpha = 0.05/N_SPEECH
+        celldbResp = celldb[(celldb.speechMinPvalOnset < correctedAlpha) | (celldb.speechMinPvalSustain < correctedAlpha)]
+    else:
+        celldbResp = celldb
+    '''
 
 
     indCell = -1
-    #for indRow, dbRow in celldbResp.iterrows():
     for indRow, dbRow in celldb.iterrows():
         #dbRow = celldb.loc[570]
         indCell += 1

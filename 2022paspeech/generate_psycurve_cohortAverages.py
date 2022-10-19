@@ -45,6 +45,8 @@ fractionHitsEachValueVot = np.empty((np.size(studyparams.BEHAVIOR_MICE['VOT']),6
 ciHitsEachValueVot = np.empty((np.size(studyparams.BEHAVIOR_MICE['VOT']),2,6))
 nTrialsEachValueVot = np.empty((np.size(studyparams.BEHAVIOR_MICE['VOT']),6))
 nHitsEachValueVot = np.empty((np.size(studyparams.BEHAVIOR_MICE['VOT']),6))
+nFTmice = len(studyparams.BEHAVIOR_MICE['FT'])
+nVOTmice = len(studyparams.BEHAVIOR_MICE['VOT'])
 
 
 for indTask, thisTask in enumerate(tasks):
@@ -116,10 +118,9 @@ if 1:
     xTicks = np.arange(-1, 1.5, 0.5)
     fontSizeLabels = 12
     hfit = plt.plot(fitxvalFt, 100*fityvalFt, '-', linewidth=2, color='k')
-    (pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(possibleValuesFt,
-                                                                fractionHitsEachValueFtAvg,
-                                                                ciHitsEachValueFtAvg, xTicks=None,
-                                                                xscale='linear')
+    semBars = np.array((np.std(fractionHitsEachValueFt,0)/np.sqrt(nFTmice)))
+    semBarsFT = np.array([(fractionHitsEachValueFtAvg - semBars), (semBars + fractionHitsEachValueFtAvg)])
+    (pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(possibleValuesFt, fractionHitsEachValueFtAvg, semBarsFT, xTicks=None, xscale='linear')
     pline.set_visible(False)
     plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
     plt.xlabel('FT slope (A.U.)', fontsize=fontSizeLabels)
@@ -134,9 +135,11 @@ if 1:
     fityvalVot = extrastats.psychfun(fitxvalVot, *curveParamsVot)
     fontSizeLabels = 12
     hfit = plt.plot(fitxvalVot, 100*fityvalVot, '-', linewidth=2, color='k')
+    semBars = np.array((np.std(fractionHitsEachValueVot,0)/np.sqrt(nFTmice)))
+    semBarsVOT = np.array([(fractionHitsEachValueVotAvg - semBars), (semBars + fractionHitsEachValueVotAvg)])
     (pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(possibleValuesVot,
                                                                 fractionHitsEachValueVotAvg,
-                                                                ciHitsEachValueVotAvg, xTicks=None,
+                                                                semBarsVOT, xTicks=None,
                                                                 xscale='linear')
     pline.set_visible(False)
     plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
@@ -146,5 +149,5 @@ if 1:
 
     plt.show()
 
-np.savez(figDataFullPath, possibleValuesFt = possibleValuesFt, fractionHitsEachValueFtAvg = fractionHitsEachValueFtAvg, ciHitsEachValueFtAvg = ciHitsEachValueFtAvg, nTrialsEachValueFtAvg = nTrialsEachValueFtAvg, nHitsEachValueFtAvg = nHitsEachValueFtAvg, curveParamsFt = curveParamsFt, pcovFt = pcovFt, possibleValuesVot = possibleValuesVot, fractionHitsEachValueVotAvg = fractionHitsEachValueVotAvg, ciHitsEachValueVotAvg = ciHitsEachValueVotAvg, nTrialsEachValueVotAvg = nTrialsEachValueVotAvg, nHitsEachValueVotAvg = nHitsEachValueVotAvg, curveParamsVot = curveParamsVot, pcovVot = pcovVot)
+np.savez(figDataFullPath, possibleValuesFt = possibleValuesFt, fractionHitsEachValueFt = fractionHitsEachValueFt, fractionHitsEachValueFtAvg = fractionHitsEachValueFtAvg, semBarsFT = semBarsFT, ciHitsEachValueFtAvg = ciHitsEachValueFtAvg, nTrialsEachValueFtAvg = nTrialsEachValueFtAvg, nHitsEachValueFtAvg = nHitsEachValueFtAvg, curveParamsFt = curveParamsFt, pcovFt = pcovFt, possibleValuesVot = possibleValuesVot, fractionHitsEachValueVot = fractionHitsEachValueVot,  fractionHitsEachValueVotAvg = fractionHitsEachValueVotAvg, semBarsVOT = semBarsVOT, ciHitsEachValueVotAvg = ciHitsEachValueVotAvg, nTrialsEachValueVotAvg = nTrialsEachValueVotAvg, nHitsEachValueVotAvg = nHitsEachValueVotAvg, curveParamsVot = curveParamsVot, pcovVot = pcovVot)
 print('saved to ' f'{figDataFullPath}')

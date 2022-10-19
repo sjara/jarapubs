@@ -29,8 +29,8 @@ fulldb = celldatabase.load_hdf(dbPath)
 newdbPath = os.path.join(databaseDir, 'fulldb_paspeech_latencies_ftvot.h5')
 nCells = len(fulldb)
 
-allSubjects = studyparams.EPHYS_MICE
-#allSubjects = studyparams.TEST_MOUSE
+#allSubjects = studyparams.EPHYS_MICE
+allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -130,6 +130,15 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 pass
                 #print(f'[{indRow}] {str(oneCell)}')
 
+        #check for linear or monotonic relationship between onset latency and VOT
+        pearsonCorrVotLatencyFtMin, pvalPearsonCorrVotLatencyFtMin = stats.pearsonr(possibleVOTParams, votLatencies_FTmin)
+
+        pearsonCorrVotLatencyFtMax, pvalPearsonCorrVotLatencyFtMax = stats.pearsonr(possibleVOTParams, votLatencies_FTmax)
+
+        spearmanCorrVotLatencyFtMin, pvalSpearmanCorrVotLatencyFtMin = stats.spearmanr(possibleVOTParams, votLatencies_FTmin)
+
+        spearmanCorrVotLatencyFtMax, pvalSpearmanCorrVotLatencyFtMax = stats.spearmanr(possibleVOTParams, votLatencies_FTmax)
+
 
 
         ## FIGURES ##
@@ -213,4 +222,16 @@ for indMouse, thisMouse in enumerate(allSubjects):
         fulldb.at[indRow, 'respLatency_FTmin_VOTmax'] = ftLatencies_VOTmax[0]
         fulldb.at[indRow, 'respLatency_FTmax_VOTmax'] = ftLatencies_VOTmax[-1]
         fulldb.at[indRow, 'respLatency_FTdiff_VOTmax'] = (ftLatencies_VOTmax[-1] - ftLatencies_VOTmin[0])
+
+        fulldb.at[indRow, 'pearsonCorrVotLatencyFtMin'] = pearsonCorrVotLatencyFtMin
+        fulldb.at[indRow, 'pvalPearsonCorrVotLatencyFtMin'] = pvalPearsonCorrVotLatencyFtMin
+        fulldb.at[indRow, 'spearmanCorrVotLatencyFtMin'] = spearmanCorrVotLatencyFtMin
+        fulldb.at[indRow, 'pvalSpearmanCorrVotLatencyFtMin'] = pvalSpearmanCorrVotLatencyFtMin
+
+        fulldb.at[indRow, 'pearsonCorrVotLatencyFtMax'] = pearsonCorrVotLatencyFtMax
+        fulldb.at[indRow, 'pvalPearsonCorrVotLatencyFtMax'] = pvalPearsonCorrVotLatencyFtMax
+        fulldb.at[indRow, 'spearmanCorrVotLatencyFtMax'] = spearmanCorrVotLatencyFtMax
+        fulldb.at[indRow, 'pvalSpearmanCorrVotLatencyFtMax'] = pvalSpearmanCorrVotLatencyFtMax
+
+
 celldatabase.save_hdf(fulldb, newdbPath)

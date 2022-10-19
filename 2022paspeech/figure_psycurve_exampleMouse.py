@@ -1,6 +1,5 @@
 '''
-This script provides a template for scripts to generate figures.
-Replace this comment with a description of which figure will be plotted by this script.
+This figure plots 4 psychometric curves: 1 example mouse and cohort averages for both the FT and the VOT cohorts.
 '''
 
 import os
@@ -23,11 +22,11 @@ figDataFullPathCohort = os.path.join(figDataDir, figDataFileCohort)
 
 PANELS = [2,2] # Plot panel i if PANELS[i]==1
 
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_behavior' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [7, 5] # In inches
+figSize = [9, 7] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -107,7 +106,7 @@ fityvalFt = extrastats.psychfun(fitxvalFt, *cohortData['curveParamsFt'])
 xTicks = (np.arange(-1, 1.5, 0.5),['ba','da'])
 fontSizeLabels = 12
 hfit = plt.plot(fitxvalFt, 100*fityvalFt, '-', linewidth=2, color='k')
-(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesFt'], cohortData['fractionHitsEachValueFtAvg'], cohortData['ciHitsEachValueFtAvg'], xTicks=None, xscale='linear')
+(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesFt'], cohortData['fractionHitsEachValueFtAvg'], cohortData['semBarsFT'], xTicks=None, xscale='linear')
 pline.set_visible(False)
 plt.xticks([0,100],['/ba/', '/da/'])
 plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
@@ -123,7 +122,7 @@ fityvalVot = extrastats.psychfun(fitxvalVot, *cohortData['curveParamsVot'])
 xTicks = (np.arange(-1, 1.5, 0.5),['ba','pa'])
 fontSizeLabels = 12
 hfit = plt.plot(fitxvalVot, 100*fityvalVot, '-', linewidth=2, color='k')
-(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVotAvg'], cohortData['ciHitsEachValueVotAvg'], xTicks=None, xscale='linear')
+(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVotAvg'], cohortData['semBarsVOT'], xTicks=None, xscale='linear')
 pline.set_visible(False)
 plt.xticks([0,100],['/ba/', '/da/'])
 plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
