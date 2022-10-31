@@ -54,6 +54,10 @@ for indMouse, thisMouse in enumerate(allSubjects):
     bestFiringRateEachCellSustain = np.full(nCells, np.nan)
     bestIndexEachCellOnset = np.full((nCells,2), -1)
     bestIndexEachCellSustain = np.full((nCells,2), -1)
+    minFiringRate_FT_VOTmin = np.full(nCells, np.nan)
+    maxFiringRate_FT_VOTmin = ##NEED TO ADD MIN/MAX FR and ind's for all 4 conditions
+
+
     maxFiringRateEachCellOnset = np.full(nCells, np.nan)
     minFiringRateEachCellOnset = np.full(nCells, np.nan)
     maxFiringRateEachCellSustain = np.full(nCells, np.nan)
@@ -145,8 +149,14 @@ for indMouse, thisMouse in enumerate(allSubjects):
         indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset-firingRateEachCellBase[indCell])), meanFiringRateOnset.shape)
         bestFiringRateEachCellOnset[indCell] = meanFiringRateOnset[indBestOnset]
         bestIndexEachCellOnset[indCell,:] = indBestOnset
-        maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
-        minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
+        #maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
+        #minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
+        minFiringRate_FT_VOTmin = np.nanmin(meanFiringRateOnset[:,0])
+        maxFiringRate_FT_VOTmax = np.nanmax(meanFiringRateOnset[:,3])
+        minFiringRate_VOT_FTmin = np.nanmin(meanFiringRateOnset[0,:])
+        maxFiringRate_VOT_FTmax = np.nanmax(meanFiringRateOnset[3,:])
+
+
 
         indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain), pValEachCondSustain.shape)
         minPvalEachCellSustain[indCell] = pValEachCondSustain[indMinPvalSustain]

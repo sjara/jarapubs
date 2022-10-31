@@ -19,3 +19,6 @@ colors = {}
 colors['sound'] = cp.TangoPalette['Butter2']
 colors['ft'] = cp.TangoPalette['ScarletRed1']
 colors['vot'] = cp.TangoPalette['SkyBlue2']
+colors['audP'] = cp.TangoPalette['SkyBlue1']
+colors['audD'] = cp.TangoPalette['Orange1']
+colors['audV'] = cp.TangoPalette['Aluminium4']
