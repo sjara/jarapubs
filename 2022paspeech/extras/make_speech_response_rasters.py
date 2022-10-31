@@ -16,12 +16,14 @@ sys.path.append('..')
 import studyparams
 import figparams
 
-#plt.rcParams['font.family'] = 'Helvetica'
+plt.rcParams['font.family'] = 'Helvetica'
 plt.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines
 SAVE_FIGURE = 1
 LATENCY_LINES = 0
 #figDir = 'C:\\Users\\jenny\\tmp\\rasters'
 figDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'timing_rasters')
+figFormat = 'svg' # 'pdf' or 'svg'
+figSize = [14, 12]
 
 ## load database
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
@@ -45,10 +47,10 @@ for indMouse, thisMouse in enumerate(allSubjects):
         gsMain.update(left=0.075, right=0.98, top=0.9, bottom=0.1, wspace=0.4, hspace=0.5) #Change spacing of things
         plt.gcf().set_size_inches([14, 12])
 
-        bestFtIndex = np.round(dbRow[['selectivityIndexFT_VOTmin', 'selectivityIndexFT_VOTmax']].values.max(0))
-        bestVotIndex = np.round(dbRow[['selectivityIndexVOT_FTmin', 'selectivityIndexVOT_FTmin']].values.max(0))
+        bestFtIndex = np.round(dbRow[['selectivityIndexFT_VOTmin', 'selectivityIndexFT_VOTmax']].values.max(0),2)
+        bestVotIndex = np.round(dbRow[['selectivityIndexVOT_FTmin', 'selectivityIndexVOT_FTmin']].values.max(0),2)
 
-        plt.suptitle(f'Recording Site:{dbRow.recordingSiteName}\n' + f'FT-SI = {bestFtIndex}, ' + f'VOT-SI ={bestVotIndex}', fontsize=14, fontweight='bold', y = 0.99)
+        plt.suptitle(f'Recording Site:{dbRow.recordingSiteName}\n' + f'VOT-SI ={bestVotIndex}'+ f'FT-SI = {bestFtIndex},', fontsize=14, fontweight='bold', y = 0.99)
         VOTlabels = ['0', '20', '40', '60']
         FTlabels = ['9', '3', '-3', '-9']
         colorsEachVOT = [cp.TangoPalette['ScarletRed3'], cp.TangoPalette['ScarletRed2'], cp.TangoPalette['Butter2'], cp.TangoPalette['Butter3']]
@@ -118,10 +120,10 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         for indVOT, thisVOT in enumerate(possibleVOTParams):
 
-            selected_VOTtrials_FTmin = trialsEachCond[:,0,indVOT]
-            selected_VOTtrials_FTmax = trialsEachCond[:,3,indVOT]
-            selected_FTtrials_VOTmin = trialsEachCond[:,indVOT,0]
-            selected_FTtrials_VOTmax = trialsEachCond[:,indVOT,3]
+            selected_VOTtrials_FTmin = trialsEachCond[:, indVOT, 0]
+            selected_VOTtrials_FTmax = trialsEachCond[:, indVOT, 3]
+            selected_FTtrials_VOTmin = trialsEachCond[:, 0, indVOT]
+            selected_FTtrials_VOTmax = trialsEachCond[:, 3, indVOT]
 
             #VOT
             (spikeTimesFromEventOnsetVOT_FTmin, trialIndexForEachSpikeVOT_FTmin, indexLimitsEachTrialVOT_FTmin) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes[selected_VOTtrials_FTmin], latencyTimeRange)
@@ -141,7 +143,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.subplot(gsMain[4-indVOT,0], sharex=ax0)
                 plt.plot(interimVOT_FTmin['timeVec'], interimVOT_FTmin['psth'], color=colorsEachVOT[indVOT])
                 plt.title(f'VOT {VOTlabels[indVOT]}ms')
-                plt.ylim((0,.1))
+                plt.ylim((0,.175))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -158,7 +160,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.subplot(gsMain[4-indVOT,1], sharex=ax1)
                 plt.plot(interimVOT_FTmax['timeVec'], interimVOT_FTmax['psth'], color=colorsEachVOT[indVOT])
                 plt.title(f'VOT {VOTlabels[indVOT]}ms')
-                plt.ylim((0,.1))
+                plt.ylim((0,.175))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -177,7 +179,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.subplot(gsMain[4-indVOT,2], sharex=ax2)
                 plt.plot(interimFT_VOTmin['timeVec'], interimFT_VOTmin['psth'], color=colorsEachFT[indVOT])
                 plt.title(f'FT {FTlabels[indVOT]}oct/s')
-                plt.ylim((0,.1))
+                plt.ylim((0,.175))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -193,7 +195,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 plt.subplot(gsMain[4-indVOT,3], sharex=ax3)
                 plt.plot(interimFT_VOTmax['timeVec'], interimFT_VOTmax['psth'], color=colorsEachFT[indVOT])
                 plt.title(f'FT {FTlabels[indVOT]} oct/s')
-                plt.ylim((0,.1))
+                plt.ylim((0,.175))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -210,7 +212,9 @@ for indMouse, thisMouse in enumerate(allSubjects):
         #input("press enter for next cell")
 
         if SAVE_FIGURE:
-            figPath = os.path.join(figDir, f'{subject}_{dbRow.date}_{dbRow.maxDepth}um_c{dbRow.cluster}_rasters.png')
-            plt.savefig(figPath, format='png')
+            #figPath = os.path.join(figDir, f'{subject}_{dbRow.date}_{dbRow.maxDepth}um_c{dbRow.cluster}_rasters.png')
+            FIGNAME = f'{subject}_{dbRow.date}_{dbRow.maxDepth}um_c{dbRow.cluster}_rasters'
+            #plt.savefig(figPath, format='png')
+            extraplots.save_figure(FIGNAME, figFormat, figSize, figDir)
 
         #plt.close()
