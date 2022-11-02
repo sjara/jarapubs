@@ -22,7 +22,7 @@ SAVE_FIGURE = 1
 LATENCY_LINES = 0
 #figDir = 'C:\\Users\\jenny\\tmp\\rasters'
 figDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'timing_rasters')
-figFormat = 'svg' # 'pdf' or 'svg'
+figFormat = 'png' # 'pdf' or 'svg'
 figSize = [14, 12]
 
 ## load database
@@ -43,7 +43,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
         plt.clf()
 
         oneCell = ephyscore.Cell(dbRow)
-        gsMain = gs.GridSpec(5, 4, height_ratios=(5, 2, 2, 2, 2))
+        gsMain = gs.GridSpec(5, 4, height_ratios=(5, 1, 1, 1, 1))
         gsMain.update(left=0.075, right=0.98, top=0.9, bottom=0.1, wspace=0.4, hspace=0.5) #Change spacing of things
         plt.gcf().set_size_inches([14, 12])
 
@@ -136,14 +136,20 @@ for indMouse, thisMouse in enumerate(allSubjects):
             # ---Estimate latency---
             #--VOT--
             smoothWin = signal.windows.hann(13)
+            yMax = np.round(dbRow[['speechFiringRateMaxOnset', 'speechFiringRateMaxSustain']].values.max(0))*8
+            if yMax < 5:
+                yMax = 10
             try:
                 respLatencyVOT_FTmin, interimVOT_FTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                 votLatencies_FTmin[indVOT] = respLatencyVOT_FTmin
                 #whichAx = f'ax{4*(indVOT+1)}'
                 plt.subplot(gsMain[4-indVOT,0], sharex=ax0)
-                plt.plot(interimVOT_FTmin['timeVec'], interimVOT_FTmin['psth'], color=colorsEachVOT[indVOT])
+                timeBin = interimVOT_FTmin['timeVec'][1]-interimVOT_FTmin['timeVec'][0]
+                psth = interimVOT_FTmin['psth']/timeBin
+                plt.plot(interimVOT_FTmin['timeVec'], psth, color=colorsEachVOT[indVOT])
                 plt.title(f'VOT {VOTlabels[indVOT]}ms')
-                plt.ylim((0,.175))
+
+                plt.ylim((0,yMax))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -158,9 +164,11 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 respLatencyVOT_FTmax, interimVOT_FTmax = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmax, indexLimitsEachTrialVOT_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                 votLatencies_FTmax[indVOT] = respLatencyVOT_FTmax
                 plt.subplot(gsMain[4-indVOT,1], sharex=ax1)
-                plt.plot(interimVOT_FTmax['timeVec'], interimVOT_FTmax['psth'], color=colorsEachVOT[indVOT])
+                timeBin = interimVOT_FTmax['timeVec'][1]-interimVOT_FTmax['timeVec'][0]
+                psth = interimVOT_FTmax['psth']/timeBin
+                plt.plot(interimVOT_FTmax['timeVec'], psth, color=colorsEachVOT[indVOT])
                 plt.title(f'VOT {VOTlabels[indVOT]}ms')
-                plt.ylim((0,.175))
+                plt.ylim((0,yMax))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -177,9 +185,11 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 respLatencyFT_VOTmin, interimFT_VOTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetFT_VOTmin, indexLimitsEachTrialFT_VOTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                 ftLatencies_VOTmin[indVOT] = respLatencyFT_VOTmin
                 plt.subplot(gsMain[4-indVOT,2], sharex=ax2)
-                plt.plot(interimFT_VOTmin['timeVec'], interimFT_VOTmin['psth'], color=colorsEachFT[indVOT])
+                timeBin = interimFT_VOTmin['timeVec'][1]-interimFT_VOTmin['timeVec'][0]
+                psth = interimFT_VOTmin['psth']/timeBin
+                plt.plot(interimFT_VOTmin['timeVec'], psth, color=colorsEachFT[indVOT])
                 plt.title(f'FT {FTlabels[indVOT]}oct/s')
-                plt.ylim((0,.175))
+                plt.ylim((0,yMax))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
@@ -193,9 +203,11 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 respLatencyFT_VOTmax, interimFT_VOTmax = spikesanalysis.response_latency(spikeTimesFromEventOnsetFT_VOTmax, indexLimitsEachTrialFT_VOTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
                 ftLatencies_VOTmax[indVOT] = respLatencyFT_VOTmax
                 plt.subplot(gsMain[4-indVOT,3], sharex=ax3)
-                plt.plot(interimFT_VOTmax['timeVec'], interimFT_VOTmax['psth'], color=colorsEachFT[indVOT])
+                timeBin = interimFT_VOTmax['timeVec'][1]-interimFT_VOTmax['timeVec'][0]
+                psth = interimFT_VOTmax['psth']/timeBin
+                plt.plot(interimFT_VOTmax['timeVec'], psth, color=colorsEachFT[indVOT])
                 plt.title(f'FT {FTlabels[indVOT]} oct/s')
-                plt.ylim((0,.175))
+                plt.ylim((0,yMax))
                 if indVOT == 0:
                     plt.xlabel('Time (s)')
                 if LATENCY_LINES:
