@@ -8,17 +8,18 @@ from jaratoolbox import celldatabase
 from jaratoolbox import histologyanalysis as ha
 import matplotlib.pyplot as plt
 from jaratoolbox import settings
-
+import studyparams
 from importlib import reload
 reload(ha)
 reload(celldatabase)
 
-subject = 'feat004' # 'test000' #'feat001'
+print('input animal name (e.g. feat004)')
+subject = input()
 inforec = os.path.join(settings.INFOREC_PATH, f'{subject}_inforec.py')
 
 #dbPath = f'/tmp/celldb_{subject}.h5'
 
-dbPath = os.path.join(settings.DATABASE_PATH, f'celldb_{subject}.h5')
+dbPath = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME, f'celldb_{subject}.h5')
 
 if 0:
     basicdb = celldatabase.generate_cell_database(inforec, minimal=False)
@@ -45,6 +46,6 @@ aa.add_points_from_db(celldb)
 aa.show_all_sites(nRows=2, areas=['AUDp','AUDv','AUDd','AUDpo'])
 #aa.show_all_sites()
 
-figPath = os.path.join('/mnt/jarahubdata/reports/2022paspeech/', f'{subject}_tracks_on_brain.png')
-#plt.savefig('/tmp/feat006_tracks_on_brain.png', format='png')
-plt.savefig(figPath, format='png')
+figPath = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'feat_tracks' f'{subject}_tracks_on_brain.png')
+
+#plt.savefig(figPath, format='png')
