@@ -21,7 +21,8 @@ reload(extraplots)
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 
 #allSubjects = studyparams.EPHYS_MICE
-allSubjects = ['feat009', 'feat010']
+#allSubjects = ['feat009', 'feat010']
+allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -55,9 +56,13 @@ for indMouse, thisMouse in enumerate(allSubjects):
     bestIndexEachCellOnset = np.full((nCells,2), -1)
     bestIndexEachCellSustain = np.full((nCells,2), -1)
     minFiringRate_FT_VOTmin = np.full(nCells, np.nan)
-    maxFiringRate_FT_VOTmin = ##NEED TO ADD MIN/MAX FR and ind's for all 4 conditions
-
-
+    maxFiringRate_FT_VOTmin = np.full(nCells, np.nan)
+    minFiringRate_FT_VOTmax = np.full(nCells, np.nan)
+    maxFiringRate_FT_VOTmax = np.full(nCells, np.nan)
+    minFiringRate_VOT_FTmin = np.full(nCells, np.nan)
+    maxFiringRate_VOT_FTmin = np.full(nCells, np.nan)
+    minFiringRate_VOT_FTmax = np.full(nCells, np.nan)
+    maxFiringRate_VOT_FTmax = np.full(nCells, np.nan)
     maxFiringRateEachCellOnset = np.full(nCells, np.nan)
     minFiringRateEachCellOnset = np.full(nCells, np.nan)
     maxFiringRateEachCellSustain = np.full(nCells, np.nan)
@@ -151,11 +156,14 @@ for indMouse, thisMouse in enumerate(allSubjects):
         bestIndexEachCellOnset[indCell,:] = indBestOnset
         #maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
         #minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
-        minFiringRate_FT_VOTmin = np.nanmin(meanFiringRateOnset[:,0])
-        maxFiringRate_FT_VOTmax = np.nanmax(meanFiringRateOnset[:,3])
-        minFiringRate_VOT_FTmin = np.nanmin(meanFiringRateOnset[0,:])
-        maxFiringRate_VOT_FTmax = np.nanmax(meanFiringRateOnset[3,:])
-
+        minFiringRate_FT_VOTmin[indCell] = np.nanmin(meanFiringRateOnset[:,0])
+        maxFiringRate_FT_VOTmin[indCell] = np.nanmax(meanFiringRateOnset[:,0])
+        minFiringRate_FT_VOTmax[indCell] = np.nanmin(meanFiringRateOnset[:,3])
+        maxFiringRate_FT_VOTmax[indCell] = np.nanmax(meanFiringRateOnset[:,3])
+        minFiringRate_VOT_FTmin[indCell] = np.nanmin(meanFiringRateOnset[0,:])
+        maxFiringRate_VOT_FTmin[indCell] = np.nanmax(meanFiringRateOnset[0,:])
+        minFiringRate_VOT_FTmax[indCell] = np.nanmin(meanFiringRateOnset[3,:])
+        maxFiringRate_VOT_FTmax[indCell] = np.nanmax(meanFiringRateOnset[3,:])
 
 
         indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain), pValEachCondSustain.shape)
@@ -185,5 +193,13 @@ for indMouse, thisMouse in enumerate(allSubjects):
     celldb['speechFiringRateMinOnset'] = minFiringRateEachCellOnset
     celldb['speechFiringRateMaxSustain'] = maxFiringRateEachCellSustain
     celldb['speechFiringRateMinSustain'] = minFiringRateEachCellSustain
+    celldb['minFiringRate_FT_VOTmin'] = minFiringRate_FT_VOTmin
+    celldb['maxFiringRate_FT_VOTmin'] = maxFiringRate_FT_VOTmin
+    celldb['minFiringRate_FT_VOTmax'] = minFiringRate_FT_VOTmax
+    celldb['maxFiringRate_FT_VOTmax'] = maxFiringRate_FT_VOTmax
+    celldb['minFiringRate_VOT_FTmin'] = minFiringRate_VOT_FTmin
+    celldb['maxFiringRate_VOT_FTmin'] = maxFiringRate_VOT_FTmin
+    celldb['minFiringRate_VOT_FTmax'] = minFiringRate_VOT_FTmax
+    celldb['maxFiringRate_VOT_FTmax'] = maxFiringRate_VOT_FTmax
 
     celldatabase.save_hdf(celldb, newdbPath)
