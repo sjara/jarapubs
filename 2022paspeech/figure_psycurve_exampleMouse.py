@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 from jaratoolbox import settings
 from jaratoolbox import extraplots
 from jaratoolbox import extrastats
-#import scipy.stats as stats
+import scipy.stats as stats
 import figparams
 import studyparams
 

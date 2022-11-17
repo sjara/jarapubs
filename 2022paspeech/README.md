@@ -4,15 +4,15 @@ Characterization of how neuronal populations in A1 and non-primary AC regions en
 # Producing databases
 The file `studyparams.py` contains the list of animals used in this study as well as
 relevant file paths and statistical parameters for the database calculations
+You need to run the database generation scripts in the order listed here, as each script loads the previous and adds to that.
 
-## `database_generation.py`
-* `database_cell_locations.py`: Estimates which brain area each cell is from using the processed histology data and the allen average mouse brain atlas.
+* `database_cell_locations.py`: Estimates which brain area each cell is from using the processed histology data and the Allen average mouse brain atlas.
 * `database_tone_responsive.py`: Estimate responses to pure tones. It creates `SUBJECT_paspeech_tones_pval.h5` (it takes 3 min)
 * `database_freq_tuning.py`: Estimate frequency tuning. It creates `SUBJECT_paspeech_freq_tuning.h5` (it takes 1 min)
 * `database_am_responsiveness.py`: Estimate responses to AM sounds. It creates `SUBJECT_paspeech_am_pval.h5` (it takes 2 min)
 * `database_am_tuning.py`: Estimate tuning to AM rate. It creates `SUBJECT_paspeech_am_tuning.h5` (it takes 42s)
 * `database_speech_responsive.py`: Estimates responsiveness to speech sounds (FT and VOT). It creates `SUBJECT_paspeech_speech_pval.h5` (it takes 3.5 min)
-* `database_speech_selective.py`: Estimates selectivity to FT and VOT. It creates `SUBJECT_speech_tuning.h5` (it takes 2 min)
+* `database_combine_subjects`: Combines the databases from each individual subject into one database. It creates `fulldb_speech_tuning.h5`
 
 # For all databases, "BEST" indicates the maximum absolute value difference between the mean firing rate for a given stimulus (e.g. modulation rate) and baseline firing rate for each cell.
 
@@ -47,10 +47,9 @@ These are additional columns calculated for a selected set of cells:
 # Generate files
 `generate_psycurve_cohortAverages.py` : This generates a population average psychometric stored in `data_cohort_average_psycurves.npz`
 `generate_psycurve_exampleMouse.py` :  This generates a psychometric for a single example mouse, stored in `data_example_mice_psycurves.npz`
-
+`generate_selectivity_indices.py`: This generates FT and VOT selectivity indices for each cell, stored in `data_selectivity_indices.npz`
 
 # Figures
-
 All figures require access to the databases, the clustered ephys data, and the behavior data.
 
 ## Figure 1 (Mice can discriminate speech sounds)

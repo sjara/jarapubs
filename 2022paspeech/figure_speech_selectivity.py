@@ -23,7 +23,7 @@ from importlib import reload
 reload(studyutils)
 reload(studyparams)
 
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:\\Users\\jenny\\tmp'
 FIGNAME1 = 'figure_speech_selectivity_vot_allcells'
 FIGNAME2 = 'figure_speech_selectivity_ft_allcells'
@@ -34,18 +34,14 @@ figSize = [7, 5] # In inches
 #figDataFullPath = os.path.join(figDataDir, figDataFile)
 
 # -- Load data --
-#figData = np.load(figDataFullPath)
-databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
-dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning_allcells.h5')
-celldb = celldatabase.load_hdf(dbPath)
-
-audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Ventral auditory area']
-ftCombos = ['selectivityIndexFT_VOTmin', 'selectivityIndexFT_VOTmax']
-votCombos = ['selectivityIndexVOT_FTmin', 'selectivityIndexVOT_FTmax']
-bestFtIndex = celldb[[ftCombos[0], ftCombos[1]]].values.max(1)
-bestVotIndex = celldb[[votCombos[0], votCombos[1]]].values.max(1)
-bestVotSIbyArea = []
-bestFtSIbyArea = []
+figDataFile = 'data_selectivity_indices.npz'
+figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+figDataFullPath = os.path.join(figDataDir, figDataFile)
+figData = np.load(figDataFullPath)
+#databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
+#dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning_allcells.h5')
+#celldb = celldatabase.load_hdf(dbPath)
+#audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Ventral auditory area']
 
 
 PANELS = [0] # Plot panel i if PANELS[i]==1
@@ -58,24 +54,15 @@ labelPosX = [0.07, 0.36, 0.7]   # Horiz position for panel labels
 labelPosY = [0.9, 0.48]    # Vert position for panel labels
 
 # -- Assigned colors (defined in figparams) --
-#laserColor = figparams.colors['blueLaser']
 audPColor = figparams.colors['audP']
 audDColor = figparams.colors['audD']
 audVColor = figparams.colors['audV']
 
 # -- Processed data --
-for indArea, thisArea in enumerate(audCtxAreas):
-    bestFtSIbyArea.append(bestFtIndex[celldb.recordingAreaName == thisArea])
-    bestVotSIbyArea.append(bestVotIndex[celldb.recordingAreaName == thisArea])
-    ## FIX ME: calculate Ft/VOT SI for all cells (not just speech responsive), then don't have to remove nans. Also, calculate these indices inside this script, not in other redundant script
-    #bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~isnan(bestFtSIbyArea[indArea])]
-    #bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~isnan(bestVotSIbyArea[indArea])]
-
-
-
 kstat, pValKruskalBestVOT = stats.kruskal(bestVotSIbyArea[0], bestVotSIbyArea[1], bestVotSIbyArea[2], nan_policy = 'omit')
 kstat, pValKruskalBestFT = stats.kruskal(bestFtSIbyArea[0], bestFtSIbyArea[1], bestFtSIbyArea[2], nan_policy = 'omit')
-#if group difference, test individual compariosns:
+
+# if group difference, test individual compariosns:
 if pValKruskalBestVOT < 0.05:
     ustat, pValmannU_votAudPvsAudD = stats.mannwhitneyu(bestVotSIbyArea[0], bestVotSIbyArea[1])
     ustat, pValmannU_votAudPvsAudV = stats.mannwhitneyu(bestVotSIbyArea[0], bestVotSIbyArea[2])

@@ -111,7 +111,7 @@ curveParamsFt, pcovFt = scipy.optimize.curve_fit(extrastats.psychfun, possibleVa
 curveParamsVot, pcovVot = scipy.optimize.curve_fit(extrastats.psychfun, possibleValuesVot, fractionHitsEachValueVotAvg)
 
 
-if 1:
+if 0:
     xPadFt = 0.2 * (possibleValuesFt[-1] - possibleValuesFt[0])
     fitxvalFt = np.linspace(possibleValuesFt[0]-xPadFt, possibleValuesFt[-1]+xPadFt, 40)
     fityvalFt = extrastats.psychfun(fitxvalFt, *curveParamsFt)
