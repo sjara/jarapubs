@@ -18,8 +18,8 @@ import figparams
 
 plt.rcParams['font.family'] = 'Helvetica'
 plt.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines
-SAVE_FIGURE = 1
-LATENCY_LINES = 0
+SAVE_FIGURE = 0
+LATENCY_LINES = 1
 #figDir = 'C:\\Users\\jenny\\tmp\\rasters'
 figDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'timing_rasters','exampleCells')
 figFormat = 'png' # 'pdf' or 'svg'
@@ -144,33 +144,32 @@ for indCell, thisCell in enumerate(exampleCells):
 
         # ---Estimate latency---
         #--VOT--
-        smoothWin = signal.windows.hann(13)
+        smoothWin = signal.windows.hann(7)
         yMax = np.round(dbRow[['speechFiringRateMaxOnset', 'speechFiringRateMaxSustain']].values.max(0))*8
         if yMax < 5:
             yMax = 10
-        try:
-            respLatencyVOT_FTmin, interimVOT_FTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
-            votLatencies_FTmin[indVOT] = respLatencyVOT_FTmin
-            #whichAx = f'ax{4*(indVOT+1)}'
-            plt.subplot(gsMain[4-indVOT,0], sharex=ax0)
-            timeBin = interimVOT_FTmin['timeVec'][1]-interimVOT_FTmin['timeVec'][0]
-            psth = interimVOT_FTmin['psth']/timeBin
-            plt.plot(interimVOT_FTmin['timeVec'], psth, color=colorsEachVOT[indVOT])
-            plt.title(f'VOT {VOTlabels[indVOT]}ms', fontsize = 14)
-            plt.xlim(-0.1,.15)
-            plt.ylim((0,yMax))
-            plt.xticks([])
-            if indVOT == 0:
-                plt.xlabel('Time (ms)', fontsize = 18)
-                plt.xticks(np.arange(0,.1, step=0.1),(0,100), fontsize = 18)
-            if LATENCY_LINES:
-                nTrials = len(indexLimitsEachTrialVOT_FTmin[1,:])
-                (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selected_VOTtrials_FTmin, nTrials)
-                lastTrialEachCond = np.cumsum(nTrialsEachCond)
-                firstTrialEachCond = np.r_[0, lastTrialEachCond[:-1]]
-                ax0.plot([votLatencies_FTmin[indVOT], votLatencies_FTmin[indVOT]], [firstTrialEachCond[indVOT], lastTrialEachCond[indVOT]])
-        except:
-            votLatencies_FTmin[indVOT] = -1
+        #try:
+        respLatencyVOT_FTmin, interimVOT_FTmin = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmin, indexLimitsEachTrialVOT_FTmin, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
+        votLatencies_FTmin[indVOT] = respLatencyVOT_FTmin
+        #whichAx = f'ax{4*(indVOT+1)}'
+        plt.subplot(gsMain[4-indVOT,0], sharex=ax0)
+        timeBin = interimVOT_FTmin['timeVec'][1]-interimVOT_FTmin['timeVec'][0]
+        psth = interimVOT_FTmin['psth']/timeBin
+        plt.plot(interimVOT_FTmin['timeVec'], psth, color=colorsEachVOT[indVOT])
+        plt.title(f'VOT {VOTlabels[indVOT]}ms', fontsize = 14)
+        #plt.xlim(-0.1,.15)
+        plt.ylim((0,yMax))
+        #plt.xticks([])
+        if indVOT == 0:
+            plt.xlabel('Time (ms)', fontsize = 18)
+        if LATENCY_LINES:
+            nTrials = len(indexLimitsEachTrialVOT_FTmin[1,:])
+            (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selected_VOTtrials_FTmin, nTrials)
+            lastTrialEachCond = np.cumsum(nTrialsEachCond)
+            firstTrialEachCond = np.r_[0, lastTrialEachCond[:-1]]
+            ax0.plot([votLatencies_FTmin[indVOT], votLatencies_FTmin[indVOT]], [firstTrialEachCond[indVOT], lastTrialEachCond[indVOT]])
+        #except:
+        #    votLatencies_FTmin[indVOT] = -1
         try:
             respLatencyVOT_FTmax, interimVOT_FTmax = spikesanalysis.response_latency(spikeTimesFromEventOnsetVOT_FTmax, indexLimitsEachTrialVOT_FTmax, latencyTimeRange, threshold = 0.5, win = smoothWin, invert = False)
             votLatencies_FTmax[indVOT] = respLatencyVOT_FTmax
@@ -179,12 +178,11 @@ for indCell, thisCell in enumerate(exampleCells):
             psth = interimVOT_FTmax['psth']/timeBin
             plt.plot(interimVOT_FTmax['timeVec'], psth, color=colorsEachVOT[indVOT])
             plt.title(f'VOT {VOTlabels[indVOT]}ms', fontsize = 14)
-            plt.xlim(-0.1,.15)
+            #plt.xlim(-0.1,.15)
             plt.ylim((0,yMax))
-            plt.xticks([])
+            #plt.xticks([])
             if indVOT == 0:
                 plt.xlabel('Time (ms)', fontsize = 18)
-                plt.xticks(np.arange(0,.1, step=0.1),(0','100'), fontsize = 18)
             if LATENCY_LINES:
                 (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selected_VOTtrials_FTmax, nTrials)
                 lastTrialEachCond = np.cumsum(nTrialsEachCond)
@@ -203,12 +201,11 @@ for indCell, thisCell in enumerate(exampleCells):
             psth = interimFT_VOTmin['psth']/timeBin
             plt.plot(interimFT_VOTmin['timeVec'], psth, color=colorsEachFT[indVOT])
             plt.title(f'FT {FTlabels[indVOT]}oct/s', fontsize = 14)
-            plt.xlim(-0.1,.15)
+            #plt.xlim(-0.1,.15)
             plt.ylim((0,yMax))
-            plt.xticks([])
+            #plt.xticks([])
             if indVOT == 0:
                 plt.xlabel('Time (ms)', fontsize = 18)
-                plt.xticks(np.arange(0,.1, step=0.1),(0,100), fontsize = 18)
             if LATENCY_LINES:
                 (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selected_FTtrials_VOTmin, nTrials)
                 lastTrialEachCond = np.cumsum(nTrialsEachCond)
@@ -225,10 +222,9 @@ for indCell, thisCell in enumerate(exampleCells):
             plt.plot(interimFT_VOTmax['timeVec'], psth, color=colorsEachFT[indVOT])
             plt.title(f'FT {FTlabels[indVOT]} oct/s', fontsize = 14)
             plt.ylim((0,yMax))
-            plt.xticks([])
+            #plt.xticks([])
             if indVOT == 0:
                 plt.xlabel('Time (ms)', fontsize = 18)
-                plt.xticks(np.arange(0,.1, step=0.1),(0,100), fontsize = 18)
             if LATENCY_LINES:
                 (trialsEachCondInds, nTrialsEachCond, nCond) = extraplots.trials_each_cond_inds(selected_FTtrials_VOTmax, nTrials)
                 lastTrialEachCond = np.cumsum(nTrialsEachCond)
@@ -237,7 +233,8 @@ for indCell, thisCell in enumerate(exampleCells):
         except:
             ftLatencies_VOTmax[indVOT] = -1
 
-
+    print(votLatencies_FTmax)
+    print(votLatencies_FTmin)
 
     plt.show()
     #input("press enter for next cell")
