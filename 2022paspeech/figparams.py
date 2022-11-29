@@ -10,9 +10,9 @@ matplotlib.rcParams['svg.fonttype'] = 'none'  # To render as font rather than ou
 
 STUDY_NAME = '2022paspeech'
 
-fontSizeLabels = 12
+fontSizeLabels = 16
 fontSizeTicks = 12
-fontSizePanel = 16
+fontSizePanel = 20
 
 colors = {}
 #colors['blueLaser'] = cp.TangoPalette['SkyBlue1']

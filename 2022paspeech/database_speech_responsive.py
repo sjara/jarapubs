@@ -20,9 +20,9 @@ reload(extraplots)
 
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 
-#allSubjects = studyparams.EPHYS_MICE
+allSubjects = studyparams.EPHYS_MICE
 #allSubjects = ['feat009', 'feat010']
-allSubjects = studyparams.TEST_MOUSE
+#allSubjects = studyparams.TEST_MOUSE
 
 
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -154,8 +154,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
         indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset-firingRateEachCellBase[indCell])), meanFiringRateOnset.shape)
         bestFiringRateEachCellOnset[indCell] = meanFiringRateOnset[indBestOnset]
         bestIndexEachCellOnset[indCell,:] = indBestOnset
-        #maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
-        #minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
+        maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
+        minFiringRateEachCellOnset[indCell] = np.nanmin(meanFiringRateOnset)
         minFiringRate_FT_VOTmin[indCell] = np.nanmin(meanFiringRateOnset[:,0])
         maxFiringRate_FT_VOTmin[indCell] = np.nanmax(meanFiringRateOnset[:,0])
         minFiringRate_FT_VOTmax[indCell] = np.nanmin(meanFiringRateOnset[:,3])
