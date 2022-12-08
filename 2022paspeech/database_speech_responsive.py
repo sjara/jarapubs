@@ -35,10 +35,10 @@ for indMouse, thisMouse in enumerate(allSubjects):
     newdbPath = os.path.join(databaseDir, f'{subject}_paspeech_speech_pval.h5')
 
     periodsName = ['base200', 'respOnset', 'respSustained']
-    allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ] #try with shorter period for onset response. I think this is generous.onset vs. sustain?
+    allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ] #try with shorter period for onset response.
 
 
-    periodDuration = [x[1]-x[0] for x in allPeriods]
+    periodDuration = [x[1] - x[0] for x in allPeriods]
 
     #N_stim = 12
     N_FT = 4 # HARDCODED
@@ -86,7 +86,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         FTParamsEachTrial = bdata['targetFTpercent']
 
-        # -- Test if trials from behavior don't match ephys --
+        ## -- Test if trials from behavior don't match ephys --
         if (len(FTParamsEachTrial) > len(eventOnsetTimes)) or \
            (len(FTParamsEachTrial) < len(eventOnsetTimes)-1):
             print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
@@ -103,22 +103,24 @@ for indMouse, thisMouse in enumerate(allSubjects):
         nVOT = len(possibleVOTParams)
         nStim = 12
 
-        trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
+        trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, 
+            possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
 
-        (spikeTimesFromEventOnset,trialIndexForEachSpike,indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
+        (spikeTimesFromEventOnset,trialIndexForEachSpike,indexLimitsEachTrial) = 
+            spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
 
         meanFiringEachPeriod = np.empty(len(allPeriods))
         spikesEachTrialEachPeriod = []
         for indPeriod, period in enumerate(allPeriods):
             spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset,
-                                                                     indexLimitsEachTrial, period)
+                indexLimitsEachTrial, period)
             spikesEachTrial = spikeCountMat[:,0]
             spikesEachTrialEachPeriod.append(spikesEachTrial)
 
         firingRateEachCellBase[indCell] = spikesEachTrialEachPeriod[0].mean()/periodDuration[0]
 
-        # Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
+        ## Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
         meanFiringRateBase = np.empty([nFT, nVOT])
         meanFiringRateOnset = np.empty([nFT, nVOT])
         pValEachCondOnset = np.ones([nFT, nVOT])
@@ -151,7 +153,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
         indMinPvalOnset = np.unravel_index(np.argmin(pValEachCondOnset), pValEachCondOnset.shape)
         minPvalEachCellOnset[indCell] = pValEachCondOnset[indMinPvalOnset]
         minPvalIndexEachCellOnset[indCell,:] = indMinPvalOnset
-        indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset-firingRateEachCellBase[indCell])), meanFiringRateOnset.shape)
+        indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset - 
+            firingRateEachCellBase[indCell])), meanFiringRateOnset.shape)
         bestFiringRateEachCellOnset[indCell] = meanFiringRateOnset[indBestOnset]
         bestIndexEachCellOnset[indCell,:] = indBestOnset
         maxFiringRateEachCellOnset[indCell] = np.nanmax(meanFiringRateOnset)
@@ -166,10 +169,12 @@ for indMouse, thisMouse in enumerate(allSubjects):
         maxFiringRate_VOT_FTmax[indCell] = np.nanmax(meanFiringRateOnset[3,:])
 
 
-        indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain), pValEachCondSustain.shape)
+        indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain), 
+            pValEachCondSustain.shape)
         minPvalEachCellSustain[indCell] = pValEachCondSustain[indMinPvalSustain]
         minPvalIndexEachCellSustain[indCell,:] = indMinPvalSustain
-        indBestSustain = np.unravel_index(np.nanargmax(np.abs(meanFiringRateSustain-firingRateEachCellBase[indCell])), meanFiringRateSustain.shape)
+        # indBestSustain = np.unravel_index(np.nanargmax(np.abs(meanFiringRateSustain-firingRateEachCellBase[indCell])), meanFiringRateSustain.shape)
+        # indBestSustain = np.unravel_index(np.nanargmax(np.abs(meanFiringRateSustain-firingRateEachCellBase[indCell])), meanFiringRateSustain.shape)
         bestFiringRateEachCellSustain[indCell] = meanFiringRateSustain[indBestSustain]
         bestIndexEachCellSustain[indCell,:] = indBestSustain
         maxFiringRateEachCellSustain[indCell] = np.nanmax(meanFiringRateSustain)

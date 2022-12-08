@@ -19,7 +19,7 @@ FIGNAME = 'figure_spectrogramsBaDaPa'
 SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_spectrogramsBaDaPa' # Do not include extension
-figFormat = 'svg' # 'pdf' or 'svg'
+figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [8.5, 3.5] # In inches
 
 PANELS = [3,1] # Plot panel i if PANELS[i]==1
@@ -43,7 +43,7 @@ ftValues = ['100', '000']
 a = 0
 for indVOT, thisVOT in enumerate(votValues):
     for indFT, thisFT in enumerate(ftValues):
-        if indFT and indVOT:
+        if indFT==0 and indVOT:
             pass
         else:
             thisSound = f'syllable_8x_vot{thisVOT}_ft{thisFT}.wav'
@@ -62,7 +62,8 @@ for indVOT, thisVOT in enumerate(votValues):
 
             if a == 0:
                 plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels)
-                plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], fontsize=fontSizeTicks)
+                plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], 
+                    fontsize=fontSizeTicks)
                 plt.title('/da/', fontsize=fontSizeLabels, fontweight='bold',)
             elif a ==1 :
                 plt.title('/ba/', fontsize=fontSizeLabels, fontweight='bold')
