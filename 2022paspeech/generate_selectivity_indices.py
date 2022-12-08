@@ -44,33 +44,54 @@ selectivityIndex2VOT_FTmax = (celldb['maxFiringRate_VOT_FTmax'] - celldb['minFir
 alpha = 0.05/12
 speechResponsive = np.array(celldb.speechMinPvalOnset < alpha)
 
-# -- exclude cells with low firing rates
+## -- exclude cells with low firing rates
 exclusionCriterion = 3
 exclude_Ft_VotMin = celldb.maxFiringRate_FT_VOTmin < exclusionCriterion
 exclude_Ft_VotMax = celldb.maxFiringRate_FT_VOTmax < exclusionCriterion
 exclude_Vot_FtMin = celldb.maxFiringRate_FT_VOTmin < exclusionCriterion
 exclude_Vot_FtMax = celldb.maxFiringRate_FT_VOTmax < exclusionCriterion
 
-selectivityIndexFT_VOTmin[exclude_Ft_VotMin] = 0
-selectivityIndexFT_VOTmax[exclude_Ft_VotMax] = 0
-selectivityIndexVOT_FTmin[exclude_Vot_FtMin] = 0
-selectivityIndexVOT_FTmax[exclude_Vot_FtMax] = 0
+excludeCells = exclude_Ft_VotMax & exclude_Ft_VotMin & exclude_Vot_FtMax & exclude_Vot_FtMin
 
-# -- select best index b/w conditions
+## -- select best index b/w conditions
 ftCombos = np.array([selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax])
 votCombos = np.array([selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax])
 bestSelectivityIndexFt = ftCombos.max(0)
 bestSelectivityIndexVot = votCombos.max(0)
 
-# -- run stats
+amOnsetSelective = np.array(celldb.amSelectivityPvalOnset < 0.05)
+amSustainSelective = np.array(celldb.amSelectivityPvalSustain < 0.05)
+amSelective = amOnsetSelective| amSustainSelective
+toneSelective = np.array(celldb.toneSelectivityPval < 0.05)
+excludeAM = celldb.amFiringRateMaxOnset < exclusionCriterion
+excludeTone = celldb.toneFiringRateBest < exclusionCriterion
+amSelective[excludeAM] = np.nan
+toneSelective[excludeTone] = np.nan
+
+## -- run stats
 bestFtSIbyArea = []
 bestVotSIbyArea = []
 speechResponsiveByArea = []
+amSelectivebyArea = []
+toneSelectivebyArea = []
+excludeCellsbyArea = []
 
 for indArea, thisArea in enumerate(audCtxAreas):
     bestFtSIbyArea.append(bestSelectivityIndexFt[recordingAreaName == thisArea])
     bestVotSIbyArea.append(bestSelectivityIndexVot[recordingAreaName == thisArea])
     speechResponsiveByArea.append(speechResponsive[recordingAreaName == thisArea])
+    amSelectivebyArea.append(amSelective[recordingAreaName == thisArea])
+    toneSelectivebyArea.append(toneSelective[recordingAreaName == thisArea])
+    excludeCellsbyArea.append(excludeCells[recordingAreaName == thisArea])
+    
+## exclude low spike count cells
+for indArea, thisArea in enumerate(audCtxAreas):
+    bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeCellsbyArea[indArea]] 
+    bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~excludeCellsbyArea[indArea]]
+    speechResponsiveByArea[indArea] = speechResponsiveByArea[indArea][~excludeCellsbyArea[indArea]]
+    amSelectivebyArea[indArea] = amSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
+    toneSelectivebyArea[indArea] = toneSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
+
 
 ## responsive cells
 kstat, pValKruskalBestVOT = stats.kruskal(bestVotSIbyArea[0][speechResponsiveByArea[0]], bestVotSIbyArea[1][speechResponsiveByArea[1]], bestVotSIbyArea[2][speechResponsiveByArea[2]], nan_policy = 'omit')
@@ -91,7 +112,7 @@ if pValKruskalBestFT < 0.05:
 kstat, pValKruskalBestVOT_allcells = stats.kruskal(bestVotSIbyArea[0], bestVotSIbyArea[1], bestVotSIbyArea[2], nan_policy = 'omit')
 kstat, pValKruskalBestFT_allcells = stats.kruskal(bestFtSIbyArea[0], bestFtSIbyArea[1], bestFtSIbyArea[2], nan_policy = 'omit')
 
-# -- if group difference, test individual compariosns:
+# -- if group difference, test individual comparisons:
 if pValKruskalBestVOT_allcells < 0.05:
     ustat, pValmannU_votAudPvsAudD_allcells = stats.mannwhitneyu(bestVotSIbyArea[0], bestVotSIbyArea[1])
     ustat, pValmannU_votAudPvsAudV_allcells = stats.mannwhitneyu(bestVotSIbyArea[0], bestVotSIbyArea[2])
@@ -100,7 +121,16 @@ if pValKruskalBestVOT_allcells < 0.05:
 if pValKruskalBestFT_allcells < 0.05:
     ustat, pValmannU_ftAudPvsAudD_allcells = stats.mannwhitneyu(bestFtSIbyArea[0], bestFtSIbyArea[1])
     ustat, pValmannU_ftAudPvsAudV_allcells = stats.mannwhitneyu(bestFtSIbyArea[0], bestFtSIbyArea[2])
-    ustat, pValmannU_ftAudDvsAudV_allcells = stats.mannwhitneyu(bestGtSIbyArea[1], bestFtSIbyArea[2])
+    ustat, pValmannU_ftAudDvsAudV_allcells = stats.mannwhitneyu(bestFtSIbyArea[1], bestFtSIbyArea[2])
+    
+## -- test correlation b/w Speech feature selectivity and basic sound selectivity
+kstat, pvalAmVot_AudP = stats.kruskal(bestVotSIbyArea[0][amSelectivebyArea[0] == 1],bestVotSIbyArea[0][amSelectivebyArea[0] == 0])
+kstat, pvalAmVot_AudD = stats.kruskal(bestVotSIbyArea[1][amSelectivebyArea[1] == 1],bestVotSIbyArea[1][amSelectivebyArea[1] == 0])
+kstat, pvalAmVot_AudV = stats.kruskal(bestVotSIbyArea[2][amSelectivebyArea[2] == 1],bestVotSIbyArea[2][amSelectivebyArea[2] == 0])
+
+kstat, pvalToneFt_AudP = stats.kruskal(bestFtSIbyArea[0][toneSelectivebyArea[0]==1], bestFtSIbyArea[0][toneSelectivebyArea[0]==0])
+kstat, pvalToneFt_AudD = stats.kruskal(bestFtSIbyArea[1][toneSelectivebyArea[1]==1], bestFtSIbyArea[1][toneSelectivebyArea[1]==0])
+kstat, pvalToneFt_AudV = stats.kruskal(bestFtSIbyArea[2][toneSelectivebyArea[2]==1], bestFtSIbyArea[2][toneSelectivebyArea[2]==0])
 
 if STATSUMMARY:
     print('--Stats Summary--')
@@ -115,10 +145,10 @@ if STATSUMMARY:
         print(f'SI-FT AudP vs AudV: p = {np.round(pValmannU_ftAudPvsAudV,3)}')
         print(f'SI-FT AudD vs AudV: p = {np.round(pValmannU_ftAudDvsAudV,3)}')
     print(f'exclusion criterion = firing rate < {exclusionCriterion} sp/s')
-    print(f'n Excluded {audCtxAreas[0]}: {np.sum(bestFtSIbyArea[0]==0)}')
-    print(f'n Excluded {audCtxAreas[1]}: {np.sum(bestFtSIbyArea[1]==0)}')
-    print(f'n Excluded {audCtxAreas[2]}: {np.sum(bestFtSIbyArea[2]==0)}')
+    print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeCellsbyArea[0])}')
+    print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeCellsbyArea[1])}')
+    print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeCellsbyArea[2])}')
 
 
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive)
-print('saved to ' f'{figDataFullPath}')
+#np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amSelective = amSelective, toneSelective = toneSelective)
+#print('saved to ' f'{figDataFullPath}')
