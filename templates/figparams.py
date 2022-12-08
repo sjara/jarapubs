@@ -8,8 +8,6 @@ import matplotlib
 matplotlib.rcParams['font.family'] = 'Helvetica'
 matplotlib.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines
 
-STUDY_NAME = 'YEARstudyname'
-
 fontSizeLabels = 12
 fontSizeTicks = 12
 fontSizePanel = 16

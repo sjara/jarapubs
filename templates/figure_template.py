@@ -1,7 +1,7 @@
-'''
+"""
 This script provides a template for scripts to generate figures.
 Replace this comment with a description of which figure will be plotted by this script.
-'''
+"""
 
 import os
 import numpy as np
