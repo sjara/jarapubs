@@ -18,8 +18,10 @@ from importlib import reload
 reload(extraplots)
 
 
-SAVE_FIGURE = 1
-outputDir = 'C:\\Users\\jenny\\tmp'
+SAVE_FIGURE = 0
+AREA_OVERLAY = 0 #note, need to be in AllenSDK virtual env to include area overlay
+#outputDir = 'C:\\Users\\jenny\\tmp'
+outputDir = '/tmp/'
 figFilename = 'cell_locations' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 #figSize = [3.35, 2.4] # In inches
@@ -97,8 +99,8 @@ for indArea, thisArea in enumerate(audCtxAreas):
 
 celldbCopy = celldb.copy()
 
-#selectedSlices = np.array([244, 260, 270])
-selectedSlices = np.array([185, 200, 215])
+#selectedSlices = np.array([185, 200, 215])
+selectedSlices = np.array([200])
 zCoords = celldb.z_coord.to_numpy()
 closestCoord = np.argmin(np.abs(zCoords[:,np.newaxis]-selectedSlices), axis=1)
 newZcoord = selectedSlices[closestCoord].astype('float')
@@ -118,11 +120,6 @@ celldbAudV = celldbCopy[recordingAreaName == audCtxAreas[2]]
 #indsEachType = [[indD1resp, indND1resp], [indD1unresp, indND1unresp]]
 indsEachType = [indResp, indUnresp]
 
-#colors = {'D1':cp.TangoPalette['SkyBlue1'],
-#          'ND1':cp.TangoPalette['ScarletRed1']}
-#colors = {'D1':'#005fd8',
-#          'ND1':cp.TangoPalette['ScarletRed1']}
-
 fontSizePanel = figparams.fontSizePanel
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -131,63 +128,47 @@ labelPosX = [[0.01, 0.25], [0.54, 0.78]]   # Horiz position for panel labels
 labelPosY = 0.93    # Vert position for panel labels
 respLabelPosx = [[0.1125, 0.355], [0.645, 0.89]]
 
-#aa = ha.AllenAverageCoronalAtlas()
 
 # -- Plot results --
-fig = plt.gcf()
-fig.clf()
-#fig.set_facecolor('w')
-
-#gsMain = gridspec.GridSpec(2, 4)
-gsMain = gridspec.GridSpec(1, 3)
-gsMain.update(left=-0.01, right=1.01, top=1.0, bottom=0.05, wspace=0.1, hspace=0.0)
-
-#for indResp, responsiveness in enumerate(respTypes):
-#gsResp = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=gsMain, wspace=0.0, hspace=0.0,)
-#for indType, cellType in enumerate(cellTypes):
-#    siteColor = figparams.colors[cellType]
-#    #siteColor = colors[cellType]
-for inds, oneSlice in enumerate(selectedSlices):
-    #thisAx = plt.subplot(gsMain[inds, indType + 2*indResp])
-    thisAx = plt.subplot(gsMain[inds])
-    thisImgFile = os.path.join(figuresDataDir, f'atlas{oneSlice}_blackBG.png')
-    img = plt.imread(thisImgFile)
-    #plt.imshow(img, cmap='gray', vmax=255)
-    plt.imshow(img, cmap='gray') #, vmax=255)
-    theseCells = (celldbCopy.z_coord==oneSlice) & includeByArea #& indsEachType[indResp]
-    xCoords = celldb.x_coord[theseCells]
-    yCoords = celldb.y_coord[theseCells]
-    plt.plot(xCoords, yCoords, 'o', mfc='none', mew=0.5, ms=3)
-    plt.axis(False)
-    #respCells = (celldbCopy.z_coord==oneSlice) & includeByArea & indsEachType[indResp]
-    #xCoords = celldb.x_coord[respCells]
-    #yCoords = celldb.y_coord[respCells]
-    #plt.plot(xCoords, yCoords, 'o', mec = cp.TangoPalette['ScarletRed1'], mfc='none', mew=0.5, ms=3)
-    #plt.axis(False)
+if ~AREA_OVERLAY:
+    fig = plt.gcf()
+    fig.clf()
+    #fig.set_facecolor('w')
 
 
-#thisAx.annotate(panelLabels[indResp], xy=(labelPosX[indResp],labelPosY),
-#                xycoords='figure fraction',
-#                fontsize=fontSizePanel, fontweight='bold')
-#respLabel = f'{respTypes[indResp]}'
-#thisAx.annotate(respLabel, xy=(respLabelPosx[indResp], 0.011),
-#                xycoords='figure fraction', ha='center',
-#                fontsize=fontSizeTicks, fontweight='normal')
+    gsMain = gridspec.GridSpec(1, 3)
+    gsMain.update(left=-0.01, right=1.01, top=1.0, bottom=0.05, wspace=0.1, hspace=0.0)
 
-plt.show()
+    for inds, oneSlice in enumerate(selectedSlices):
+        thisAx = plt.subplot(gsMain[inds])
+        thisImgFile = os.path.join(figuresDataDir, f'atlas{oneSlice}_blackBG.png')
+        img = plt.imread(thisImgFile)
+        #plt.imshow(img, cmap='gray', vmax=255)
+        plt.imshow(img, cmap='gray')
+        theseCells = (celldbCopy.z_coord==oneSlice) & includeByArea
+        xCoords = celldb.x_coord[theseCells]
+        yCoords = celldb.y_coord[theseCells]
+        plt.plot(xCoords, yCoords, 'o', mfc='none', mew=0.5, ms=3)
+        plt.axis(False)
 
-if SAVE_FIGURE:
-    extraplots.save_figure(figFilename, figFormat, figSize, outputDir, dpi=300)
+    plt.show()
+
+    if SAVE_FIGURE:
+        extraplots.save_figure(figFilename, figFormat, figSize, outputDir, dpi=300)
 
 
-sys.exit()
+#sys.exit()
 # -- Use this to explore all sites --
-if 0:
+if AREA_OVERLAY:
     aa = ha.AllenAverageCoronalAtlas()
-    #aa.add_points_from_db(celldbAll)
-    #aa.add_points_from_db(celldbAll)
-    aa.add_points_from_db(celldbND1)
-    aa.show_all_sites()
+    for inds, oneSlice in enumerate(selectedSlices):
+        aa.get_slice(oneSlice)
+        theseCells = (celldbCopy.z_coord==oneSlice) & includeByArea
+        aa.add_points_from_db(celldbCopy[theseCells])
+        aa.show_all_sites(areas=['AUDp', 'AUDv', 'AUDd', 'AUDpo'])
+
+    if SAVE_FIGURE:
+        extraplots.save_figure(figFilename, figFormat, figSize, outputDir, dpi=300)
 
 
 sys.exit()
