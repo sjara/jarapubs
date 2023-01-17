@@ -28,7 +28,7 @@ figDataFullPath = os.path.join(figDataDir, figDataFile)
 figData = np.load(figDataFullPath, allow_pickle = True)
 #databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 #dbPath = os.path.join(databaseDir, 'fulldb_paspeech_speech_tuning_allcells.h5')
-#audCtxAreas = ['Primary auditory area','Posterior auditory area', 'Ventral auditory area']
+#audCtxAreas = ['Primary auditory area','Dorsal auditory area', 'Ventral auditory area']
 
 
 PANELS = [0] # Plot panel i if PANELS[i]==1
@@ -60,7 +60,7 @@ for indArea, thisArea in enumerate(figData['audCtxAreas']):
 
 ## exclude low spike count cells
 for indArea, thisArea in enumerate(figData['audCtxAreas']):
-    bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeCellsbyArea[indArea]] 
+    bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeCellsbyArea[indArea]]
     bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~excludeCellsbyArea[indArea]]
     speechResponsiveByArea[indArea] = speechResponsiveByArea[indArea][~excludeCellsbyArea[indArea]]
 
@@ -111,7 +111,7 @@ plt.ylim([0, yMax])
 audD_votmedian = np.nanmedian(bestVotSIbyArea[1][speechResponsiveByArea[1]])
 plt.plot([audD_votmedian, audD_votmedian], [0,yMax], color = 'k', ls = '--')
 plt.title('VOT Selectivity', fontsize=fontSizeLabels, fontweight='bold')
-ax1.annotate(f'med = {np.round(audD_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax1.annotate(f'med = {np.round(audD_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax2 = plt.subplot(gsMain[1, 0], sharex = ax1)
@@ -120,7 +120,7 @@ plt.ylim([0, yMax])
 audP_votmedian = np.nanmedian(bestVotSIbyArea[0][speechResponsiveByArea[0]])
 plt.plot([audP_votmedian, audP_votmedian], [0,yMax], color = 'k', ls = '--')
 plt.ylabel('Cell Count', fontsize = fontSizeTicks)
-ax2.annotate(f'med = {np.round(audP_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax2.annotate(f'med = {np.round(audP_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax3 = plt.subplot(gsMain[2, 0], sharex = ax1)
@@ -129,7 +129,7 @@ plt.ylim([0, yMax])
 audV_votmedian = np.nanmedian(bestVotSIbyArea[2][speechResponsiveByArea[2]])
 plt.plot([audV_votmedian, audV_votmedian], [0,yMax], color = 'k', ls = '--')
 plt.xlabel('VOT Selectivity Index', fontsize=fontSizeTicks)
-ax3.annotate(f'med = {np.round(audV_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax3.annotate(f'med = {np.round(audV_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 # -- Plot FT results --
@@ -139,7 +139,7 @@ plt.ylim([0, yMax])
 audD_ftmedian = np.nanmedian(bestFtSIbyArea[1][speechResponsiveByArea[1]])
 plt.plot([audD_ftmedian, audD_ftmedian], [0,yMax], color = 'k', ls = '--')
 plt.title('FT Selectivity', fontsize=fontSizeLabels, fontweight='bold')
-ax4.annotate(f'med = {np.round(audD_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax4.annotate(f'med = {np.round(audD_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax5 = plt.subplot(gsMain[1, 1], sharex = ax1)
@@ -147,7 +147,7 @@ plt.hist(bestFtSIbyArea[0][speechResponsiveByArea[0]], bins = bins, color = audP
 plt.ylim([0, yMax])
 audP_ftmedian = np.nanmedian(bestFtSIbyArea[0][speechResponsiveByArea[0]])
 plt.plot([audP_ftmedian, audP_ftmedian], [0,yMax], color = 'k', ls = '--')
-ax5.annotate(f'med = {np.round(audP_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax5.annotate(f'med = {np.round(audP_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax6 = plt.subplot(gsMain[2, 1], sharex = ax1)
@@ -156,14 +156,14 @@ plt.ylim([0, yMax])
 audV_ftmedian = np.nanmedian(bestFtSIbyArea[2][speechResponsiveByArea[2]])
 plt.plot([audV_ftmedian, audV_ftmedian], [0,yMax], color = 'k', ls = '--')
 plt.xlabel('FT Selectivity Index', fontsize=fontSizeTicks)
-ax6.annotate(f'med = {np.round(audV_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize = 
+ax6.annotate(f'med = {np.round(audV_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
     fontSizeTicks)
 
-ax1.annotate('AudD', xy=(0.48, 0.82), xycoords='figure fraction', fontsize=fontSizeLabels, 
+ax1.annotate('AudD', xy=(0.48, 0.82), xycoords='figure fraction', fontsize=fontSizeLabels,
     fontweight='bold')
-ax2.annotate('AudP', xy=(0.48, 0.51), xycoords='figure fraction', fontsize=fontSizeLabels, 
+ax2.annotate('AudP', xy=(0.48, 0.51), xycoords='figure fraction', fontsize=fontSizeLabels,
     fontweight='bold')
-ax3.annotate('AudV', xy=(0.48, 0.20), xycoords='figure fraction', fontsize=fontSizeLabels, 
+ax3.annotate('AudV', xy=(0.48, 0.20), xycoords='figure fraction', fontsize=fontSizeLabels,
     fontweight='bold')
 
 plt.show()
