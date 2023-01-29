@@ -8,13 +8,19 @@ import matplotlib
 matplotlib.rcParams['font.family'] = 'Helvetica'
 matplotlib.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines
 
-STUDY_NAME = '2022apas'
-
-fontSizeLabels = 12
-fontSizeTicks = 12
-fontSizePanel = 16
+fontSizeLabels = 8
+fontSizeTicks = 8
+fontSizePanel = 12
 
 colors = {}
 colors['activeOnly'] = cp.TangoPalette['SkyBlue2']
 colors['activePassive'] = cp.TangoPalette['Chameleon3']
+#colors['passiveThenActive'] = cp.TangoPalette['Orange3']
+colors['passiveThenActive'] = cp.TangoPalette['ScarletRed2']
+'''
+
+colors['activeOnly'] = cp.TangoPalette['ScarletRed2']
+colors['activePassive'] = cp.TangoPalette['SkyBlue2']
+colors['passiveThenActive'] = cp.TangoPalette['Chameleon3']
+'''
 

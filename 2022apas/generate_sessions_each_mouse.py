@@ -1,5 +1,8 @@
 """
 Find sessions for each mouse on each stage.
+
+Run this script with an argument specifying which cohort to evaluate:
+run -t generate_sessions_each_mouse 3
 """
 
 import sys
@@ -12,13 +15,18 @@ from jaratoolbox import behavioranalysis
 from importlib import reload
 reload(studyparams)
 
+if len(sys.argv)>1:
+    COHORT = int(sys.argv[1])
+else:
+    raise ValueError('You need to specify which cohort to load.')
+    
 outputDir = '/tmp/sessions/'
 #outputDir = os.path.join(jaratoolbox.settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'sessions')
 
-sessionRange = studyparams.SESSIONS_RANGE
+subjects = getattr(studyparams, f'MICE_ALL_COH{COHORT}')
+sessionRange = getattr(studyparams, f'SESSIONS_RANGE_COH{COHORT}')
 excludeSessions = studyparams.EXCLUDE_SESSIONS
 
-subjects = studyparams.MICE_ALL
 paradigm = '2afc'
 
 varlist = ['outcomeMode', 'antibiasMode', 'psycurveMode']
@@ -56,7 +64,11 @@ for indsub, subject in enumerate(subjects):
         else:
             antibias = None
 
-        dflist.append({'session':session, 'stage':stage, 'antibias':antibias})
+        rig = int(bdata.session['hostname'][7:]) # Ignore 'jararig' string
+        ntrials = len(bdata['outcomeMode'])
+        
+        dflist.append({'session':session, 'stage':stage, 'antibias':antibias, 'rig':rig,
+                       'ntrials':ntrials})
 
     dframe = pd.DataFrame(dflist)
 

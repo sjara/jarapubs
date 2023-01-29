@@ -18,7 +18,7 @@ reload(figparams)
 
 FIGNAME = 'learning_curve_stage3'
 figDataFile = 'fraction_correct_stage3.csv'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, figparams.STUDY_NAME, FIGNAME)
+figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 figDataFullPath = os.path.join(figDataDir, figDataFile)
 
 SAVE_FIGURE = 0

@@ -21,7 +21,7 @@ reload(studyparams)
 
 
 paradigm = '2afc'
-subjects = studyparams.MICE_ALL
+subjects = studyparams.MICE_ALL_COH2
 
 #subjects = [subjects[0]]
 

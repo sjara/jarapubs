@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
+from scipy import optimize
 import studyparams
 import studyutils
 import figparams
@@ -19,15 +20,16 @@ reload(figparams)
 
 FIGNAME = 'learning_curve_stage3'
 figDataFile = 'fraction_correct_stage3.csv'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, figparams.STUDY_NAME, FIGNAME)
+figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 figDataFullPath = os.path.join(figDataDir, figDataFile)
 
 SAVE_FIGURE = 0
 outputDir = '/tmp/'
-avgType = 'median' # 'mean' 'median'
+#avgType = '_no_color' # 'mean' 'median'
+avgType = '_labeled' # 'mean' 'median'
 figFilename = 'learning_curve_stage3_each_mouse'+avgType # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [7, 5] # In inches
+figSize = [9, 7] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeLabels  #figparams.fontSizeTicks
@@ -35,42 +37,92 @@ fontSizePanel = figparams.fontSizePanel
 
 np.random.seed(4)
 
-sessionRange = ['2022-02-01', '2022-02-27'] # Exclude dates for very slow mouse
+# Exclude dates for very slow mouse and last session stage 3 (failed rigs)
+sessionRange = ['2022-02-01', '2022-02-26']
+#sessionRange = ['2022-02-01', '2022-02-27'] # Exclude dates for very slow mouse
 sessionsToPlot = behavioranalysis.sessions_in_range(sessionRange)
 
 dframe = pd.read_csv(figDataFullPath, index_col=0)
 dframe = dframe[sessionsToPlot]
 
 # -- Exclude mice that did not pass criteria 2->3 at the same time --
-dframe = dframe.drop(index=['pamo020','pamo024'])
+miceToExclude = ['pamo020'] #[]#['pamo020','pamo024']
+dframe = dframe.drop(index=miceToExclude)
 #subjects = ['pamo020']
+if 0:
+    mouseSubset = [f'pamo{s:03d}' for s in range(9,25)]
+    mouseSubset = [m for m in mouseSubset if m not in miceToExclude]
+    dframe = dframe.loc[mouseSubset]
 
 subjects = list(dframe.index)
 nSubjects = len(subjects)
 
+def learningcurve(xval, alpha, beta, lamb, gamma):
+    """
+    alpha:offset; beta:slope; lamb:max, gamma:min
+    """
+    return gamma + (lamb-gamma)/(1+np.exp(-(xval-alpha)/beta))
 
+def invlearningcurve(yval, alpha, beta, lamb, gamma):
+    """
+    Inverse of learningcurve()
+    """
+    return alpha - beta * np.log((lamb-gamma)/(yval-gamma) - 1)
+    
+    
 plt.clf()
 slopes = np.empty(nSubjects)
 intercepts = np.empty(nSubjects)
+cross = np.empty(nSubjects)
+finalperf = np.empty(nSubjects)
 
 for inds,subject in enumerate(subjects):
 
     perfThisSubject = dframe.loc[subject].to_numpy()
+    print(dframe.loc[subject])
 
+    '''
     if 0:
         firstNotNaN = np.flatnonzero(~np.isnan(perfThisSubject))[0]
         perfThisSubject = perfThisSubject[firstNotNaN:]
     else:
         perfThisSubject[np.isnan(perfThisSubject)] = 0.5
-    
-    dateInds = np.arange(len(perfThisSubject))
-    slope, intercept, rval, pval, se = stats.linregress(dateInds, perfThisSubject)
-    #print(f'{subject}: m={slope:0.3f}  b={intercept:0.3f}')
-    slopes[inds] = slope
-    intercepts[inds] = intercept
-    xfit = dateInds[[0,-1]]
-    yfit = slope * xfit + intercept
+    '''
+    ########### TEST NaN ############
+    #perfThisSubject[19] = np.nan
 
+    
+    FIT_TYPE = 'linear'
+    #FIT_TYPE = 'sigmoid'
+    if FIT_TYPE == 'linear':
+        # -- Linear fit --
+        dateInds = np.arange(len(perfThisSubject))
+        notNaN = ~np.isnan(perfThisSubject)  # Used to mask NaN
+        slope, intercept, rval, pval, se = stats.linregress(dateInds[notNaN], perfThisSubject[notNaN])
+        #print(f'{subject}: m={slope:0.3f}  b={intercept:0.3f}')
+        slopes[inds] = slope
+        intercepts[inds] = intercept
+        xfit = dateInds[[0,-1]]
+        yfit = slope * xfit + intercept
+    elif FIT_TYPE == 'sigmoid':
+        # -- Sigmoidal fit --
+        dateInds = np.arange(len(perfThisSubject))
+        p0 = [15.0, 5, 0.8, 0.5]
+        try:
+            popt, pcov = optimize.curve_fit(learningcurve, dateInds,
+                                            perfThisSubject, p0=p0, maxfev=5000)
+        except RuntimeError:
+            print('Could not fit {subject}')
+            popt = p0
+        xfit = dateInds
+        yfit = learningcurve(xfit, *popt)
+        yp0 = learningcurve(xfit, *p0)
+        print(popt)
+        slopes[inds] = popt[1]
+        intercepts[inds] = popt[3]
+        cross[inds] = invlearningcurve(70, *popt) 
+        finalperf[inds] = learningcurve(24, *popt) # popt[2]
+        
     if 1:
         if 0:
             plt.cla()
@@ -84,11 +136,14 @@ for inds,subject in enumerate(subjects):
                 colorThisSubject = figparams.colors['activeOnly']
             else:
                 colorThisSubject = figparams.colors['activePassive']
-            #plt.plot(dateInds, 100*perfThisSubject,'o-', color=colorThisSubject, lw=2)
-            plt.plot(dateInds, 100*perfThisSubject,'o-', color='0.75', lw=2)
-            plt.plot(xfit, 100*yfit, color=colorThisSubject, lw=3)
             plt.axhline(50, ls='--', color='0.8')
             plt.axhline(75, ls='--', color='0.8')
+            plt.axhline(70, ls='--', color='0.8')
+            plt.plot(dateInds, 100*perfThisSubject,'o-', color='0.85', lw=2, zorder=-1)
+            ###plt.plot(dateInds, 100*perfThisSubject,'o-', color=colorThisSubject, lw=2)
+            #colorThisSubject = '0.25'
+            plt.plot(xfit, 100*yfit, color=colorThisSubject, lw=3)
+            #plt.plot(xfit, 100*yp0, color='0.5', lw=3)
            
         plt.yticks(np.arange(50, 110, 10))
         plt.ylim([40, 100])
@@ -101,21 +156,46 @@ for inds,subject in enumerate(subjects):
         plt.title(f'{subject} - performance stage 3', fontweight='bold')
         plt.show()
         plt.pause(0.01)
+        #print(f'Slope ({subject}): {slopes[inds]}')
+        print(20*slope + intercept)
+        #sys.exit()
         plt.waitforbuttonpress()
 
-dframe['slope'] = slopes
-dframe['intercept'] = intercepts
-perfThreshold = 0.75
-crossPerfThreshold = (perfThreshold - intercepts)/slopes
-dframe['cross'] = crossPerfThreshold
-finalSessionInd = 25
-dframe['finalPerf'] = slopes*finalSessionInd + intercepts
+#if avgType=='labeled':
+#    legend
 
+if FIT_TYPE == 'linear':
+    dframe['slope'] = slopes
+    dframe['intercept'] = intercepts
+    perfThreshold = 0.7
+    crossPerfThreshold = (perfThreshold - intercepts)/slopes
+    dframe['cross'] = crossPerfThreshold
+    finalSessionInd = 25
+    dframe['finalPerf'] = slopes*finalSessionInd + intercepts
+elif FIT_TYPE == 'sigmoid':
+    dframe['slope'] = slopes
+    dframe['intercept'] = intercepts
+    dframe['cross'] = cross
+    dframe['finalPerf'] = finalperf
+
+
+    
 eachCond = ['activeOnly', 'activePassive']
 colorEachCond = [figparams.colors['activeOnly'], figparams.colors['activePassive']]
 
-dataEachCond = [ dframe.loc[studyparams.MICE_ACTIVE_ONLY],
-                 dframe.loc[studyparams.MICE_ACTIVE_PASSIVE] ]
+# -- Select animals by performance --
+if 1:
+    maxSessions = 21
+    dframeSubset = dframe[dframe.cross<maxSessions]
+    subjects = list(dframeSubset.index)
+else:
+    dframeSubset = dframe
+    
+miceActiveOnly = list(set(studyparams.MICE_ACTIVE_ONLY) & set(subjects))
+miceActivePassive = list(set(studyparams.MICE_ACTIVE_PASSIVE) & set(subjects))
+
+dataEachCond = [ dframeSubset.loc[miceActiveOnly],
+                 dframeSubset.loc[miceActivePassive] ]
 nSubjectsEachCond = [len(dataOneCond) for dataOneCond in dataEachCond]
 
 rstat, pval = stats.ranksums(dataEachCond[0].slope, dataEachCond[1].slope)

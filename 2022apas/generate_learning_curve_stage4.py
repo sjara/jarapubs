@@ -1,5 +1,5 @@
 """
-Save data for learning curve stage 3.
+Save data for learning curve stage 4.
 """
 
 import os
@@ -19,9 +19,16 @@ import figparams
 from importlib import reload
 reload(studyparams)
 
+if len(sys.argv)>1:
+    COHORT = int(sys.argv[1])
+else:
+    raise ValueError('You need to specify which cohort to process.')
+
+SAVE_RESULTS = 0
+
 FIGNAME = 'learning_curve_stage4'
-figDataFile = 'measurements_stage4.csv'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, figparams.STUDY_NAME, FIGNAME)
+figDataFile = f'measurements_stage4_coh{COHORT}.csv'
+figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 if not os.path.exists(figDataDir):
     #os.mkdir(figDataDir)
     print('Please create folder: {}'.format(figDataDir)); sys.exit()
@@ -30,10 +37,12 @@ scriptFullPath = os.path.realpath(__file__)
 
 varlist = ['outcome', 'valid', 'choice']
 paradigm = '2afc'
+subjects = getattr(studyparams, f'MICE_ALL_COH{COHORT}')
 
+#subjects = ['pamo009']
 #subjects = ['pamo026']
 #subjects = ['pamo025', 'pamo026'] #
-subjects = studyparams.MICE_ALL
+#subjects = studyparams.MICE_ALL
 
 measuresLabels = ['bias', 'invSlope', 'lapseHigh', 'lapseLow', 'nValid', 'nCorrect']
 nMeasures = len(measuresLabels)
@@ -44,6 +53,7 @@ plt.clf()
 for indsub, subject in enumerate(subjects):
     print(f'{indsub}  {subject}')
     sessions = studyutils.get_sessions(subject, stage=4)
+    ###sessions = sessions[:1] ######## TESTING ########
     nSessions = len(sessions)
     
     curveParamsThisSubject = np.empty((nSessions, 4))
@@ -76,7 +86,7 @@ for indsub, subject in enumerate(subjects):
         print(f'{subject} {session}: {curveParams}')
         curveParamsThisSubject[indsession,:] = curveParams 
 
-        if 0:
+        if 1:
             plt.cla()
             xPad = 0.2 * (possibleValues[-1] - possibleValues[0])
             fitxval = np.linspace(possibleValues[0]-xPad, possibleValues[-1]+xPad, 40)
@@ -97,7 +107,7 @@ for indsub, subject in enumerate(subjects):
             plt.grid(True, axis='y', color='0.9')
             plt.show()
             plt.pause(0.01)
-            #plt.waitforbuttonpress()
+            plt.waitforbuttonpress()
 
     measuresThisSuject = np.hstack((curveParamsThisSubject,
                                     validEachSession[:,np.newaxis],
@@ -114,8 +124,9 @@ for indp, measure in enumerate(measuresLabels):
     measureDict[measure] = dfThisMeasure
 
 dfMeasures = pd.concat(measureDict)
-dfMeasures.to_csv(figDataFullPath)
-print(f'Saved {figDataFullPath}')
+if SAVE_RESULTS:
+    dfMeasures.to_csv(figDataFullPath)
+    print(f'Saved {figDataFullPath}')
 
 #dfFractionCorrect = pd.DataFrame(perflist, index=subjects)
 
