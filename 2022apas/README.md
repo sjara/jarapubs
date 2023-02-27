@@ -31,6 +31,7 @@ run -t generate_psychometric_each_mouse.py early 2
 run -t generate_psychometric_each_mouse.py early 3
 run -t generate_psychometric_each_mouse.py late 2
 run -t generate_psychometric_each_mouse.py late 3
+* `figure_psychometrics.py`
 
 
 ## OBSOLETE: Calculate performance for each session/mouse for stage 4:
@@ -38,10 +39,6 @@ run -t generate_psychometric_each_mouse.py late 3
 
 # Extras
 * `figure_learning_curve_each_mouse.py`: Plot learning curve for each mouse (excluding antibias sessions)
-* ``
+* `nochoice_trials.py`: Calculate average number of trials where animals chose no port.
 
-TO DO:
-* DONE figure_example_performance: change 'fractionHitsEachValue' to 'fractionLeftEachValue'
-* DONE Same for whatever script creates these data. example_performance_{}.npz'
-* Rename generate_learning_comparison to old?  and other script?
 
