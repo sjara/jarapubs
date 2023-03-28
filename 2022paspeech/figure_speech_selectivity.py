@@ -18,8 +18,8 @@ reload(studyparams)
 SAVE_FIGURE = 1
 outputDir = 'C:\\Users\\jenny\\tmp'
 FIGNAME = 'selectivityIndices'
-figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [9.5, 8.5] # In inches
+figFormat = 'svg' # 'pdf' or 'svg'
+figSize = [6, 4] # In inches
 
 # -- Load data --
 figDataFile = 'data_selectivity_indices.npz'
@@ -101,35 +101,40 @@ fig1 = plt.figure()
 gsMain = gridspec.GridSpec(3,2)
 gsMain.update(left=0.08, right=0.98, top=0.95, bottom=0.1, wspace=0.4, hspace=0.4)
 
-bins = np.arange(0,1,0.05)
-yMax = 25
+bins = np.arange(0,1,0.025)
+yMax = 15
 
 ## -- Plot VOT results --
 ax1 = plt.subplot(gsMain[0, 0])
 plt.hist(bestVotSIbyArea[1][speechResponsiveByArea[1]], bins = bins, color = audDColor)
 plt.ylim([0, yMax])
 audD_votmedian = np.nanmedian(bestVotSIbyArea[1][speechResponsiveByArea[1]])
-plt.plot([audD_votmedian, audD_votmedian], [0,yMax], color = 'k', ls = '--')
+#plt.plot([audD_votmedian, audD_votmedian], [0,yMax], color = 'k', ls = '--')
+ax1.text(audD_votmedian, yMax-2, 'V', fontSize = fontSizeLabels)
+#    ax.text(starsXvals, yPos, starMarker, fontsize=fontSize, va='center', ha='center', clip_on=False)
 plt.title('VOT Selectivity', fontsize=fontSizeLabels, fontweight='bold')
-ax1.annotate(f'med = {np.round(audD_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+ax1.annotate(f'med = {np.round(audD_votmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax2 = plt.subplot(gsMain[1, 0], sharex = ax1)
 plt.hist(bestVotSIbyArea[0][speechResponsiveByArea[0]], bins = bins, color = audPColor)
 plt.ylim([0, yMax])
 audP_votmedian = np.nanmedian(bestVotSIbyArea[0][speechResponsiveByArea[0]])
-plt.plot([audP_votmedian, audP_votmedian], [0,yMax], color = 'k', ls = '--')
+#plt.plot([audP_votmedian, audP_votmedian], [0,yMax], color = 'k', ls = '--')
+ax2.text(audP_votmedian, yMax-2, 'V', fontSize = fontSizeLabels)
 plt.ylabel('Cell Count', fontsize = fontSizeTicks)
-ax2.annotate(f'med = {np.round(audP_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+ax2.annotate(f'med = {np.round(audP_votmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax3 = plt.subplot(gsMain[2, 0], sharex = ax1)
 plt.hist(bestVotSIbyArea[2][speechResponsiveByArea[2]], bins = bins, color = audVColor)
 plt.ylim([0, yMax])
 audV_votmedian = np.nanmedian(bestVotSIbyArea[2][speechResponsiveByArea[2]])
-plt.plot([audV_votmedian, audV_votmedian], [0,yMax], color = 'k', ls = '--')
+#plt.plot([audV_votmedian, audV_votmedian], [0,yMax], color = 'k', ls = '--')
+ax3.text(audV_votmedian, yMax-2, 'V', fontSize = fontSizeLabels)
+#ax3.annotate("", xy = (audV_votmedian, yMax-2), xycoords = 'data', arrowprops = dict(arrowstyle = "-|>", connectionstyle = "angle3,  angleA = 0, angleB=90"))
 plt.xlabel('VOT Selectivity Index', fontsize=fontSizeTicks)
-ax3.annotate(f'med = {np.round(audV_votmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+ax3.annotate(f'med = {np.round(audV_votmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 # -- Plot FT results --
@@ -137,26 +142,29 @@ ax4 = plt.subplot(gsMain[0, 1])
 plt.hist(bestFtSIbyArea[1][speechResponsiveByArea[1]], bins = bins, color = audDColor)
 plt.ylim([0, yMax])
 audD_ftmedian = np.nanmedian(bestFtSIbyArea[1][speechResponsiveByArea[1]])
-plt.plot([audD_ftmedian, audD_ftmedian], [0,yMax], color = 'k', ls = '--')
+#plt.plot([audD_ftmedian, audD_ftmedian], [0,yMax], color = 'k', ls = '--')
+ax4.text(audD_ftmedian, yMax-2, 'V', fontSize = fontSizeLabels)
 plt.title('FT Selectivity', fontsize=fontSizeLabels, fontweight='bold')
-ax4.annotate(f'med = {np.round(audD_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+ax4.annotate(f'med = {np.round(audD_ftmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax5 = plt.subplot(gsMain[1, 1], sharex = ax1)
 plt.hist(bestFtSIbyArea[0][speechResponsiveByArea[0]], bins = bins, color = audPColor)
 plt.ylim([0, yMax])
 audP_ftmedian = np.nanmedian(bestFtSIbyArea[0][speechResponsiveByArea[0]])
-plt.plot([audP_ftmedian, audP_ftmedian], [0,yMax], color = 'k', ls = '--')
-ax5.annotate(f'med = {np.round(audP_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+#plt.plot([audP_ftmedian, audP_ftmedian], [0,yMax], color = 'k', ls = '--')
+ax5.text(audP_ftmedian, yMax-2, 'V', fontSize = fontSizeLabels)
+ax5.annotate(f'med = {np.round(audP_ftmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax6 = plt.subplot(gsMain[2, 1], sharex = ax1)
 plt.hist(bestFtSIbyArea[2][speechResponsiveByArea[2]], bins = bins, color = audVColor)
 plt.ylim([0, yMax])
 audV_ftmedian = np.nanmedian(bestFtSIbyArea[2][speechResponsiveByArea[2]])
-plt.plot([audV_ftmedian, audV_ftmedian], [0,yMax], color = 'k', ls = '--')
+#plt.plot([audV_ftmedian, audV_ftmedian], [0,yMax], color = 'k', ls = '--')
+ax6.text(audD_ftmedian, yMax-2, 'V', fontSize = fontSizeLabels)
 plt.xlabel('FT Selectivity Index', fontsize=fontSizeTicks)
-ax6.annotate(f'med = {np.round(audV_ftmedian,2)}', xy=(0.6, 15), xycoords = 'data', fontsize =
+ax6.annotate(f'med = {np.round(audV_ftmedian,2)}', xy=(0.6, 10), xycoords = 'data', fontsize =
     fontSizeTicks)
 
 ax1.annotate('AudD', xy=(0.48, 0.82), xycoords='figure fraction', fontsize=fontSizeLabels,

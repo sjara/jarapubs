@@ -16,7 +16,7 @@ from importlib import reload
 reload(figparams)
 
 FIGNAME = 'figure_spectrogramsBaDaPa'
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_spectrogramsBaDaPa' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
@@ -62,7 +62,7 @@ for indVOT, thisVOT in enumerate(votValues):
 
             if a == 0:
                 plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels)
-                plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], 
+                plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'],
                     fontsize=fontSizeTicks)
                 plt.title('/da/', fontsize=fontSizeLabels, fontweight='bold',)
             elif a ==1 :

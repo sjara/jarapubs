@@ -26,7 +26,7 @@ PANELS = [2,2] # Plot panel i if PANELS[i]==1
 
 SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
-figFilename = 'figure_behavior' # Do not include extension
+figFilename = 'figure_psycurves' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [9, 7] # In inches
 
@@ -34,7 +34,7 @@ fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
 fontSizePanel = figparams.fontSizePanel
 
-labelPosX = [0.07, 0.54, 0.7]   # Horiz position for panel labels
+labelPosX = [0.07, 0.54]   # Horiz position for panel labels
 labelPosY = [0.95, 0.45]    # Vert position for panel labels
 
 # -- Assigned colors (defined in figparams) --
