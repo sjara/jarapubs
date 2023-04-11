@@ -1,3 +1,7 @@
+"""
+This creates a figure showing the location of each recorded cell in A-P/D-V space and if they are sound responsive, speech responsive (subset of sound responsive), or non-sound responsive
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +23,7 @@ reload(figparams)
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_cellLocations' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'

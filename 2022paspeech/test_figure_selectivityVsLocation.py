@@ -1,3 +1,7 @@
+"""
+This creates a figure depicting the selectivity to speech features and how it is organized in DV - AP space. 
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,6 +22,7 @@ reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
+shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
@@ -38,6 +43,14 @@ colorRandSI = cp.TangoPalette['Aluminium4']
 
 figDataFullPath = os.path.join(figDataDir,figDataFile)
 figData = np.load(figDataFullPath)
+shuffledDataFullPath = os.path.join(figDataDir,shuffledDataFile)
+shuffledData = np.load(shuffledDataFullPath, allow_pickle=True)
+
+shuffledSI = shuffledData['shuffledSI']
+shuffledSiEachCell = np.concatenate((shuffledSI[0], shuffledSI[1], shuffledSI[2], shuffledSI[3], shuffledSI[4], shuffledSI[5], shuffledSI[6]))
+avgShuffledSiEachCell = np.mean(shuffledSiEachCell, 1)
+avgShuffledSI = np.nanmean(avgShuffledSiEachCell)
+
 
 x_coords = figData['x_coord']
 y_coords = figData['y_coord']
@@ -48,8 +61,14 @@ speechResponsive = figData['speechResponsive']
 excludeCells = figData['excludeCells']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
-meanRandSelectivity = np.mean(figData['randSI'])
+#meanRandSI = np.mean(figData['randSI'])
 
+pvalPermutationtestFt = np.ones(len(bestSelectivityIndexFt))
+pvalPermutationtestVot = np.ones(len(bestSelectivityIndexFt))
+
+for indCell, thisCell in enumerate(bestSelectivityIndexFt):
+    pvalPermutationtestFt[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexFt[indCell])
+    pvalPermutationtestVot[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexVot[indCell])
 
 
 plt.figure()
@@ -60,7 +79,7 @@ axColorMapVOT = plt.subplot(gsVOT[0,0])
 axVotDV = plt.subplot(gsVOT[0,2])
 axVotAP = plt.subplot(gsVOT[0,3])
 
-gsFT = gsMain[1].subgridspec(1, 3, width_ratios = [0.26, 0.08, 0.33, 0.33])
+gsFT = gsMain[1].subgridspec(1, 4, width_ratios = [0.26, 0.08, 0.33, 0.33])
 axColorMapFT = plt.subplot(gsFT[0,0])
 axFtDV = plt.subplot(gsFT[0,2])
 axFtAP = plt.subplot(gsFT[0,3])
@@ -129,7 +148,7 @@ plt.sca(axVotDV)
 
 plt.scatter(bestSelectivityIndexVot[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesVOT_DV, positions = binsDV, vert = False, widths = 6, boxprops = dict(linewidth = 2), medianprops = dict(linewidth = 2, color = 'k'), showfliers = False)
-plt.plot([meanRandSelectivity, meanRandSelectivity] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
+plt.plot([avgShuffledSI, avgShuffledSI] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.ylim(215, 60)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlabel('VOT Selectivity Index', fontsize = fontSizeLabels)
@@ -143,7 +162,7 @@ axVotDV.spines["top"].set_visible(False)
 plt.sca(axVotAP)
 plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexVot[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesVOT_AP, positions = binsAP, vert = True, widths = 2.5, boxprops = dict(linewidth = 2), medianprops = dict(linewidth = 2, color = 'k'), showfliers = False)
-plt.plot([165,225], [meanRandSelectivity, meanRandSelectivity], linestyle = '--', linewidth = 2, c =colorRandSI)
+plt.plot([165,225], [avgShuffledSI, avgShuffledSI], linestyle = '--', linewidth = 2, c =colorRandSI)
 #plt.ylim(215, 60)
 #plt.yticks([])
 #ax2.invert_yaxis()
@@ -157,7 +176,7 @@ axVotAP.spines["top"].set_visible(False)
 
 
 #plt.suptitle('FT selectivity by location', fontsize = fontSizeTitles)
-
+& (pvalPermutationtestFt<0.05)
 plt.sca(axColorMapFT)
 plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = bestSelectivityIndexFt[speechResponsive & ~excludeCells], cmap = newMap, s = 3)
 plt.ylim(215,60)
@@ -175,7 +194,7 @@ axColorMapFT.spines["top"].set_visible(False)
 plt.sca(axFtDV)
 plt.scatter(bestSelectivityIndexFt[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts,  alpha = 0.5, s = 5)
 plt.boxplot(quantilesFT_DV, positions = binsDV, vert = False, widths = 6, boxprops = dict(linewidth = 2), medianprops = dict(linewidth = 2, color = 'k'), showfliers = False)
-plt.plot([meanRandSelectivity, meanRandSelectivity] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
+plt.plot([avgShuffledSI, avgShuffledSI] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.ylim(215, 60)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlabel('FT Selectivity Index', fontsize = fontSizeLabels)
@@ -188,7 +207,7 @@ axFtDV.spines["top"].set_visible(False)
 plt.sca(axFtAP)
 plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexFt[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesFT_AP, positions = binsAP, vert = True, widths = 2.5, boxprops = dict(linewidth = 2), medianprops = dict(linewidth = 2, color = 'k'), showfliers = False)
-plt.plot([165,225], [meanRandSelectivity, meanRandSelectivity], linestyle = '--', linewidth = 2, c =colorRandSI)
+plt.plot([165,225], [avgShuffledSI, avgShuffledSI], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.xlim(165,225)
 plt.xticks(APtickLocs, APtickLabels)
 plt.xlabel('Anterior - Posterior (mm)', fontsize = fontSizeLabels)
