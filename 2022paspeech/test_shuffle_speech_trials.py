@@ -27,24 +27,18 @@ databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 allSubjects = studyparams.EPHYS_MICE
 #allSubjects = studyparams.TEST_MOUSE
 
-shuffledSI = []
-shuffledSI_Vot_FTmin = []
-shuffledSI_Vot_FTmax = []
-shuffledSI_Ft_VOTmin = []
-shuffledSI_Ft_VOTmax = []
-
 databaseName = 'fulldb_speech_tuning.h5'
 databaseFullPath = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME, databaseName)
 celldb = celldatabase.load_hdf(databaseFullPath)
 nCells = len(celldb)
 
-shuffledSI = np.empty([nCells, 2000])
+#shuffledSI = np.empty([nCells, 2000])
 shuffledSIVot_FTmin = np.empty([nCells, 2000])
 shuffledSIVot_FTmax = np.empty([nCells, 2000])
 shuffledSIFt_VOTmin = np.empty([nCells, 2000])
 shuffledSIFt_VOTmax = np.empty([nCells, 2000])
-shuffledMinRate = np.empty([nCells, 2000])
-shuffledMaxRate = np.empty([nCells, 2000])
+#shuffledMinRate = np.empty([nCells, 2000])
+#shuffledMaxRate = np.empty([nCells, 2000])
 shuffledMinRateVot_FTmin = np.empty([nCells, 2000])
 shuffledMaxRateVot_FTmin = np.empty([nCells, 2000])
 shuffledMinRateVot_FTmax = np.empty([nCells, 2000])
@@ -53,9 +47,9 @@ shuffledMinRateFt_VOTmin = np.empty([nCells, 2000])
 shuffledMaxRateFt_VOTmin = np.empty([nCells, 2000])
 shuffledMinRateFt_VOTmax = np.empty([nCells, 2000])
 shuffledMaxRateFt_VOTmax = np.empty([nCells, 2000])
-votSI = np.empty(nCells)
-minRate = np.empty(nCells)
-maxRate = np.empty(nCells)
+#votSI = np.empty(nCells)
+#minRate = np.empty(nCells)
+#maxRate = np.empty(nCells)
 minRateVotFTmin = np.empty(nCells)
 maxRateVotFTmin = np.empty(nCells)
 votSI_FTmin = np.empty(nCells)
@@ -71,7 +65,6 @@ ftSI_VOTmax = np.empty(nCells)
 pvalPermutationtestVot = np.ones(nCells)
 pvalPermutationtestFt = np.ones(nCells)
 alpha = 0.025
-
 
 indCell = -1
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -152,10 +145,46 @@ for indMouse, thisMouse in enumerate(allSubjects):
             '''
             #-- Calculate actual SI *NOT collapsing across irrelevant feature*
             trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
+
+            meanFiringRateOnset = np.empty([nFT, nVOT])
+
+            for indFT, thisFT in enumerate(possibleFTParams):
+                for indVOT, thisVOT in enumerate(possibleVOTParams):
+                    trialsThisCond = trialsEachCond[:, indFT, indVOT]
+                    firingRateOnset = spikesEachTrialEachPeriod[0][trialsThisCond]/periodDuration[0]
+                    meanFiringRateOnset[indFT, indVOT] = firingRateOnset.mean()
+
+            minFiringRateVot_FTmin = np.min(meanFiringRateOnset[0,:])
+            maxFiringRateVot_FTmin = np.max(meanFiringRateOnset[0,:])
+            minRateVotFTmin[indCell] = minFiringRateVot_FTmin
+            maxRateVotFTmin[indCell] = maxFiringRateVot_FTmin
+            votSI_FTmin[indCell] = (maxFiringRateVot_FTmin - minFiringRateVot_FTmin)/(maxFiringRateVot_FTmin + minFiringRateVot_FTmin)
+
+            minFiringRateVot_FTmax = np.min(meanFiringRateOnset[3,:])
+            maxFiringRateVot_FTmax = np.max(meanFiringRateOnset[3,:])
+            minRateVotFTmax[indCell] = minFiringRateVot_FTmax
+            maxRateVotFTmax[indCell] = maxFiringRateVot_FTmax
+            votSI_FTmax[indCell] = (maxFiringRateVot_FTmax - minFiringRateVot_FTmax)/(maxFiringRateVot_FTmax + minFiringRateVot_FTmax)
+
+            minFiringRateFt_VOTmin = np.min(meanFiringRateOnset[:,0])
+            maxFiringRateFt_VOTmin = np.max(meanFiringRateOnset[:,0])
+            minRateFtVOTmin[indCell] = minFiringRateFt_VOTmin
+            maxRateFtVOTmin[indCell] = maxFiringRateFt_VOTmin
+            ftSI_VOTmin[indCell] = (maxFiringRateFt_VOTmin - minFiringRateFt_VOTmin)/(maxFiringRateFt_VOTmin + minFiringRateFt_VOTmin)
+
+            minFiringRateFt_VOTmax = np.min(meanFiringRateOnset[:,3])
+            maxFiringRateFt_VOTmax = np.max(meanFiringRateOnset[:,3])
+            minRateFtVOTmax[indCell] = minFiringRateFt_VOTmax
+            maxRateFtVOTmax[indCell] = maxFiringRateFt_VOTmax
+            ftSI_VOTmax[indCell] = (maxFiringRateFt_VOTmax - minFiringRateFt_VOTmax)/(maxFiringRateFt_VOTmax + minFiringRateFt_VOTmax)
+
+
+            '''
             meanFiringRateOnsetVot_FTmin = np.empty(nVOT)
             meanFiringRateOnsetVot_FTmax = np.empty(nVOT)
             meanFiringRateOnsetFt_VOTmin = np.empty(nFT)
             meanFiringRateOnsetFt_VOTmax = np.empty(nFT)
+
             for indCond, thisCond in enumerate(possibleVOTParams):
                 trialsThisCondVot_FTmin = trialsEachCond[:,0,indCond]
                 trialsThisCondVot_FTmax = trialsEachCond[:,3,indCond]
@@ -194,29 +223,46 @@ for indMouse, thisMouse in enumerate(allSubjects):
             minRateFtVOTmax[indCell] = minFiringRateFt_VOTmax
             maxRateFtVOTmax[indCell] = maxFiringRateFt_VOTmax
             ftSI_VOTmax[indCell] = (maxFiringRateFt_VOTmax - minFiringRateFt_VOTmax)/(maxFiringRateFt_VOTmax + minFiringRateFt_VOTmax)
+            '''
 
             trialsEachVot = behavioranalysis.find_trials_each_type(VOTParamsEachTrial, possibleVOTParams)
             shuffledVOTParamsEachTrial = VOTParamsEachTrial.copy()
             trialsEachFt = behavioranalysis.find_trials_each_type(FTParamsEachTrial, possibleFTParams)
             shuffledFTParamsEachTrial = FTParamsEachTrial.copy()
+
             for indShuffle, thisShuffle in enumerate(shuffledSI[0]):
                 #meanFiringRateOnset = np.empty(nVOT)
-                meanFiringRateOnsetVot_FTmin = np.empty(nVOT)
+                '''meanFiringRateOnsetVot_FTmin = np.empty(nVOT)
                 meanFiringRateOnsetVot_FTmax = np.empty(nVOT)
                 meanFiringRateOnsetVot_FTmin = np.empty(nVOT)
-                meanFiringRateOnsetVot_FTmax = np.empty(nVOT)
+                meanFiringRateOnsetVot_FTmax = np.empty(nVOT)'''
                 np.random.shuffle(shuffledVOTParamsEachTrial)
-                shuffledtrialsEachVot = behavioranalysis.find_trials_each_type(shuffledVOTParamsEachTrial, possibleVOTParams)
                 trialsEachCond_VOTshuffled = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, shuffledVOTParamsEachTrial, possibleVOTParams)
                 #--FT
+                '''
                 meanFiringRateOnsetFt_VOTmin = np.empty(nFT)
                 meanFiringRateOnsetFt_VOTmax = np.empty(nFT)
                 meanFiringRateOnsetFt_VOTmin = np.empty(nFT)
-                meanFiringRateOnsetFt_VOTmax = np.empty(nFT)
+                meanFiringRateOnsetFt_VOTmax = np.empty(nFT)'''
                 np.random.shuffle(shuffledFTParamsEachTrial)
-                shuffledtrialsEachFt = behavioranalysis.find_trials_each_type(shuffledFTParamsEachTrial, possibleFTParams)
                 trialsEachCond_FTshuffled = behavioranalysis.find_trials_each_combination(shuffledFTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
+                meanFiringRateOnsetShuffleVot = np.empty([nFT, nVOT])
+                meanFiringRateOnsetShuffleFt = np.empty([nFT, nVOT])
+
+                for indFT, thisFT in enumerate(possibleFTParams):
+                    for indVOT, thisVOT in enumerate(possibleVOTParams):
+                        #trialsThisCond = trialsEachCond[:, indFT, indVOT]
+                        trialsThisVotShuffled = trialsEachCond_VOTshuffled[:,indFT,indVOT]
+                        trialsThisFtShuffled = trialsEachCond_FTshuffled[:,indFT,indVOT]
+
+                        firingRateOnsetVotShuffle = spikesEachTrialEachPeriod[0][trialsThisVotShuffled]/periodDuration
+                        meanFiringRateOnsetShuffleVot[indFT, indVOT] = firingRateOnsetVotShuffle.mean()
+
+                        firingRateOnsetFtShuffle = spikesEachTrialEachPeriod[0][trialsThisFtShuffled]/periodDuration
+                        meanFiringRateOnsetShuffleFt[indFT, indVOT] = firingRateOnsetFtShuffle.mean()
+
+                '''
                 for indVOT, thisVOT in enumerate(possibleVOTParams):
                     #shuffledtrialsThisVOT = shuffledtrialsEachVot[:, indVOT]
                     #firingRateOnset = spikesEachTrialEachPeriod[0][shuffledtrialsThisVOT]/periodDuration
@@ -235,38 +281,33 @@ for indMouse, thisMouse in enumerate(allSubjects):
                     firingRateOnsetFt_VOTmax = spikesEachTrialEachPeriod[0][shuffledtrialsThisFT_VOTmax]/periodDuration
                     meanFiringRateOnsetFt_VOTmax[indVOT] = firingRateOnsetFt_VOTmax.mean()
                 '''
-                minFiringRateVot = np.min(meanFiringRateOnset)
-                maxFiringRateVot = np.max(meanFiringRateOnset)
-                shuffledMinRate[indCell, indShuffle] = minFiringRateVot
-                shuffledMaxRate[indCell, indShuffle] = maxFiringRateVot
 
-                shuffledSI[indCell, indShuffle] = (maxFiringRateVot - minFiringRateVot)/(maxFiringRateVot + minFiringRateVot)
-                '''
-                minFiringRateVot_FTmin = np.min(meanFiringRateOnsetVot_FTmin)
-                maxFiringRateVot_FTmin = np.max(meanFiringRateOnsetVot_FTmin)
+
+                minFiringRateVot_FTmin = np.min(meanFiringRateOnsetShuffleVot[0,:])
+                maxFiringRateVot_FTmin = np.max(meanFiringRateOnsetShuffleVot[0,:])
                 shuffledMinRateVot_FTmin[indCell, indShuffle] = minFiringRateVot_FTmin
                 shuffledMaxRateVot_FTmin[indCell, indShuffle] = maxFiringRateVot_FTmin
                 shuffledSIVot_FTmin[indCell, indShuffle] = (maxFiringRateVot_FTmin - minFiringRateVot_FTmin)/(maxFiringRateVot_FTmin + minFiringRateVot_FTmin)
 
-                minFiringRateVot_FTmax = np.min(meanFiringRateOnsetVot_FTmax)
-                maxFiringRateVot_FTmax = np.max(meanFiringRateOnsetVot_FTmax)
+                minFiringRateVot_FTmax = np.min(meanFiringRateOnsetShuffleVot[-1,:])
+                maxFiringRateVot_FTmax = np.max(meanFiringRateOnsetShuffleVot[-1,:])
                 shuffledMinRateVot_FTmax[indCell, indShuffle] = minFiringRateVot_FTmax
                 shuffledMaxRateVot_FTmax[indCell, indShuffle] = maxFiringRateVot_FTmax
                 shuffledSIVot_FTmax[indCell, indShuffle] = (maxFiringRateVot_FTmax - minFiringRateVot_FTmax)/(maxFiringRateVot_FTmax + minFiringRateVot_FTmax)
 
 
-                minFiringRateFt_VOTmin = np.min(meanFiringRateOnsetFt_VOTmin)
-                maxFiringRateFt_VOTmin = np.max(meanFiringRateOnsetFt_VOTmin)
+                minFiringRateFt_VOTmin = np.min(meanFiringRateOnsetShuffleFt[:,0])
+                maxFiringRateFt_VOTmin = np.max(meanFiringRateOnsetShuffleFt[:,0])
                 shuffledMinRateFt_VOTmin[indCell, indShuffle] = minFiringRateFt_VOTmin
                 shuffledMaxRateFt_VOTmin[indCell, indShuffle] = maxFiringRateFt_VOTmin
                 shuffledSIFt_VOTmin[indCell, indShuffle] = (maxFiringRateFt_VOTmin - minFiringRateFt_VOTmin)/(maxFiringRateFt_VOTmin + minFiringRateFt_VOTmin)
 
-                minFiringRateFt_VOTmax = np.min(meanFiringRateOnsetFt_VOTmax)
-                maxFiringRateFt_VOTmax = np.max(meanFiringRateOnsetFt_VOTmax)
+                minFiringRateFt_VOTmax = np.min(meanFiringRateOnsetShuffleFt[:,-1])
+                maxFiringRateFt_VOTmax = np.max(meanFiringRateOnsetShuffleFt[:,-1])
                 shuffledMinRateFt_VOTmax[indCell, indShuffle] = minFiringRateFt_VOTmax
                 shuffledMaxRateFt_VOTmax[indCell, indShuffle] = maxFiringRateFt_VOTmax
                 shuffledSIFt_VOTmax[indCell, indShuffle] = (maxFiringRateFt_VOTmax - minFiringRateFt_VOTmax)/(maxFiringRateFt_VOTmax + minFiringRateFt_VOTmax)
-
+                '''
                 if votSI_FTmax[indCell] > votSI_FTmin[indCell]:
                     pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
                 elif votSI_FTmax[indCell] < votSI_FTmin[indCell]:
@@ -276,6 +317,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                     pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
                 elif ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]:
                     pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >=ftSI_VOTmin[indCell])
+                '''
 
 print(f'n cells w/pvalPermutationtestVot < 0.025 = {np.sum(pvalPermutationtestVot < 0.025)}')
 print(f'n cells w/pvalPermutationtestFt < 0.025 = {np.sum(pvalPermutationtestFt < 0.025)}')

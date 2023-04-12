@@ -14,9 +14,9 @@ FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 STATSUMMARY = 1
-AREASBYDEPTH = 1
+AREASBYDEPTH = 0
 shuffledDataFile = 'data_shuffledSIs.npz'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+#figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 
 
 if not os.path.exists(figDataDir):
@@ -101,20 +101,23 @@ amSelective[excludeAM] = np.nan
 toneSelective[excludeTone] = np.nan
 
 # -- Calculate pvalues for significant selectivity (permutation test)
-shuffledSI = shuffledData['shuffledSI']
-shuffledSiEachCell = np.concatenate((shuffledSI[0], shuffledSI[1], shuffledSI[2], shuffledSI[3], shuffledSI[4], shuffledSI[5], shuffledSI[6]))
-avgShuffledSiEachCell = np.mean(shuffledSiEachCell, 1)
-avgShuffledSI = np.nanmean(avgShuffledSiEachCell)
-
+#shuffledSI = shuffledData['shuffledSI']
+#shuffledSiEachCell = np.concatenate((shuffledSI[0], shuffledSI[1], shuffledSI[2], shuffledSI[3], shuffledSI[4], shuffledSI[5], shuffledSI[6]))
+#avgShuffledSiEachCell = np.mean(shuffledSiEachCell, 1)
+#avgShuffledSI = np.nanmean(avgShuffledSiEachCell)
+pvalPermutationtestFt = shuffledData['pvalPermutationtestFt']
+pvalPermutationtestVot = shuffledData['pvalPermutationtestVot']
+'''
 pvalPermutationtestFt = np.ones(len(bestSelectivityIndexFt))
 pvalPermutationtestVot = np.ones(len(bestSelectivityIndexFt))
 
 for indCell, thisCell in enumerate(bestSelectivityIndexFt):
     pvalPermutationtestFt[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexFt[indCell])
     pvalPermutationtestVot[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexVot[indCell])
+'''
 
 ## -- get number of selective cells for each feature
-selectivityCriterion = 0.05
+selectivityCriterion = 0.025
 VOTselective = pvalPermutationtestVot < selectivityCriterion
 FTselective = pvalPermutationtestFt < selectivityCriterion
 mixedSelective = VOTselective & FTselective
