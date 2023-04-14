@@ -70,34 +70,38 @@ for indMouse, thisMouse in enumerate(allSubjects):
             subject = thisMouse
             inforecFile = os.path.join(settings.INFOREC_PATH, f'{subject}_inforec.py')
 
-            #for indRow, dbRow in celldb.iterrows():
             plt.clf()
-
-            oneCell = ephyscore.Cell(dbRow)
-
             gsMain = gs.GridSpec(5, 4, height_ratios=(5, 1, 1, 1, 1))
             #gsMain = gs.GridSpec(2, 4, height_ratios=(8, 2))
             gsMain.update(left=0.075, right=0.98, top=0.9, bottom=0.1, wspace=0.4, hspace=0.5) #Change spacing of things
             plt.gcf().set_size_inches([14, 12])
 
-            #bestFtIndex = np.round(dbRow[['selectivityIndexFT_VOTmin', 'selectivityIndexFT_VOTmax']].values.max(0),2)
-            #bestVotIndex = np.round(dbRow[['selectivityIndexVOT_FTmin', 'selectivityIndexVOT_FTmin']].values.max(0),2)
-
             bestFtIndex = figData['bestSelectivityIndexFt'][indCell]
             bestVotIndex = figData['bestSelectivityIndexVot'][indCell]
-
 
             plt.suptitle(f'{indCell}_{dbRow.subject}_{dbRow.date}_c{dbRow.cluster}\n'+ f'Recording Site:{dbRow.recordingSiteName}', fontsize=fontSizeTitles, fontweight='bold', y = 0.99)
             VOTlabels = ['0', '20', '40', '60']
             FTlabels = ['9', '3', '-3', '-9']
             colorsEachVOT = [cp.TangoPalette['ScarletRed3'], cp.TangoPalette['ScarletRed2'], cp.TangoPalette['Butter2'], cp.TangoPalette['Butter3']]
             colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue2'], cp.TangoPalette['Chameleon2'], cp.TangoPalette['Chameleon3']]
-            #FTVOTBorders
+
+
+            #--Load data FTVOTBorders
             ephysData, bdata = oneCell.load('FTVOTBorders')
 
             # Align spikes to an event
             spikeTimes = ephysData['spikeTimes']
             eventOnsetTimes = ephysData['events']['stimOn']
+            FTParamsEachTrial = bdata['targetFTpercent']
+
+
+            if (len(FTParamsEachTrial)>len(eventOnsetTimes)) or \(len(FTParamsEachTrial)<len(eventOnsetTimes)-1):
+                print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
+                      f'EphysTrials ({len(eventOnsetTimes)})')
+                continue
+            if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
+                eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
+
             timeRange = [-0.3, 0.45]  # In seconds
             (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
 
@@ -105,16 +109,8 @@ for indMouse, thisMouse in enumerate(allSubjects):
             timeRange = [-0.075, 0.15]
             VOTParamsEachTrial = bdata['targetVOTpercent']
             possibleVOTParams = np.unique(VOTParamsEachTrial)
-            FTParamsEachTrial = bdata['targetFTpercent']
             possibleFTParams = np.unique(FTParamsEachTrial)
 
-            if (len(FTParamsEachTrial) > len(eventOnsetTimes)) or \
-               (len(FTParamsEachTrial) < len(eventOnsetTimes)-1):
-                print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
-                      f'EphysTrials ({len(eventOnsetTimes)})')
-                continue
-            if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
-                eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
 
             trialsEachCond = behavioranalysis.find_trials_each_combination(VOTParamsEachTrial, possibleVOTParams, FTParamsEachTrial, possibleFTParams)
             trialsEachVOT_FTmin = trialsEachCond[:, :, 0]
