@@ -27,10 +27,12 @@ shuffledDataFullPath = os.path.join(figDataDir,shuffledDataFile)
 shuffledData = np.load(shuffledDataFullPath, allow_pickle=True)
 #scriptFullPath = os.path.realpath(__file__)
 
+
 databaseName = 'fulldb_speech_tuning.h5'
 databaseFullPath = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME, databaseName)
 celldb = celldatabase.load_hdf(databaseFullPath)
 #audCtxAreas = ['Primary auditory area', 'Posterior auditory area', 'Dorsal auditory area', 'Ventral auditory area']
+
 audCtxAreas = ['Primary auditory area','Dorsal auditory area', 'Ventral auditory area', 'Temporal association areas']
 recordingAreaName = celldb.recordingAreaName.copy()
 recordingAreaName = recordingAreaName.str.replace('Posterior auditory area', 'Dorsal auditory area')
@@ -63,10 +65,6 @@ selectivityIndex2FT_VOTmin = (celldb['maxFiringRate_FT_VOTmin'] - celldb['minFir
 selectivityIndex2FT_VOTmax = (celldb['maxFiringRate_FT_VOTmax'] - celldb['minFiringRate_FT_VOTmax'])/(celldb['minFiringRate_FT_VOTmax'])
 selectivityIndex2VOT_FTmin = (celldb['maxFiringRate_VOT_FTmin'] - celldb['minFiringRate_VOT_FTmin'])/(celldb['minFiringRate_VOT_FTmin'])
 selectivityIndex2VOT_FTmax = (celldb['maxFiringRate_VOT_FTmax'] - celldb['minFiringRate_VOT_FTmax'])/( celldb['minFiringRate_VOT_FTmax'])
-
-
-
-
 
 speechAlpha = 0.05/12
 speechResponsive = np.array(celldb.speechMinPvalOnset < speechAlpha)
@@ -105,8 +103,31 @@ toneSelective[excludeTone] = np.nan
 #shuffledSiEachCell = np.concatenate((shuffledSI[0], shuffledSI[1], shuffledSI[2], shuffledSI[3], shuffledSI[4], shuffledSI[5], shuffledSI[6]))
 #avgShuffledSiEachCell = np.mean(shuffledSiEachCell, 1)
 #avgShuffledSI = np.nanmean(avgShuffledSiEachCell)
-pvalPermutationtestFt = shuffledData['pvalPermutationtestFt']
-pvalPermutationtestVot = shuffledData['pvalPermutationtestVot']
+
+nCells = len(shuffledData['votSI_FTmax'])
+votSI_FTmax = shuffledData['votSI_FTmax']
+votSI_FTmin = shuffledData['votSI_FTmin']
+shuffledSIVot_FTmax = shuffledData['shuffledSIVot_FTmax']
+shuffledSIVot_FTmin = shuffledData['shuffledSIVot_FTmin']
+ftSI_VOTmax = shuffledData['ftSI_VOTmax']
+ftSI_VOTmin = shuffledData['ftSI_VOTmin']
+shuffledSIFt_VOTmax = shuffledData['shuffledSIFt_VOTmax']
+shuffledSIFt_VOTmin = shuffledData['shuffledSIFt_VOTmin']
+
+pvalPermutationtestFt = np.ones(nCells)
+pvalPermutationtestVot = np.ones(nCells)
+for indCell, thisCell in enumerate(votSI_FTmax):
+    if votSI_FTmax[indCell] > votSI_FTmin[indCell]:
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
+    elif votSI_FTmax[indCell] < votSI_FTmin[indCell]:
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
+
+    if ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]:
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
+    elif ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]:
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
+
+
 '''
 pvalPermutationtestFt = np.ones(len(bestSelectivityIndexFt))
 pvalPermutationtestVot = np.ones(len(bestSelectivityIndexFt))
@@ -117,7 +138,7 @@ for indCell, thisCell in enumerate(bestSelectivityIndexFt):
 '''
 
 ## -- get number of selective cells for each feature
-selectivityCriterion = 0.025
+selectivityCriterion = 0.05
 VOTselective = pvalPermutationtestVot < selectivityCriterion
 FTselective = pvalPermutationtestFt < selectivityCriterion
 mixedSelective = VOTselective & FTselective
@@ -360,8 +381,8 @@ if STATSUMMARY:
     print(f'AudD n: {len(speechResponsiveByArea[1])}, n speechResponsive: {np.sum(speechResponsiveByArea[1][speechResponsiveByArea[1]])}, n selective: VOT = {np.sum(VOTselectivebyArea[1][speechResponsiveByArea[1]])} ({np.round(np.mean(VOTselectivebyArea[1][speechResponsiveByArea[1]])*100,1)}%), FT = {np.sum(FTselectivebyArea[1][speechResponsiveByArea[1]])} ({np.round(np.mean(FTselectivebyArea[1][speechResponsiveByArea[1]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[1][speechResponsiveByArea[1]])} ({np.round(np.mean(mixedSelectivebyArea[1][speechResponsiveByArea[1]])*100,1)}%)')
     print(f'AudV n: {len(speechResponsiveByArea[2])}, n speechResponsive: {np.sum(speechResponsiveByArea[2])}, n selective: VOT = {np.sum(VOTselectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(VOTselectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%), FT = {np.sum(FTselectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(FTselectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(mixedSelectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%)')
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
-'''
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered)
-print('saved to ' f'{figDataFullPath}')
 
+'''
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot)
+print('saved to ' f'{figDataFullPath}')
 '''

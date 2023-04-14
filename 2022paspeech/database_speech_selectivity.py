@@ -1,5 +1,5 @@
 """
-Calculate speech selectivity
+Calculate speech selectivity **NOTE: this is an old script that is not used in the analysis pipeline anymore. Instead, we calculate the selectivity indices inside of the generate_selectivity_indices.py script
 """
 
 import os
