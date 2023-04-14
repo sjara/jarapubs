@@ -18,7 +18,7 @@ import figparams
 
 plt.rcParams['font.family'] = 'Helvetica'
 plt.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 LATENCY_LINES = 0
 figDir = 'C:\\Users\\jenny\\tmp\\rasters'
 #figDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 'timing_rasters','exampleCells')
@@ -107,6 +107,15 @@ for indMouse, thisMouse in enumerate(allSubjects):
             possibleVOTParams = np.unique(VOTParamsEachTrial)
             FTParamsEachTrial = bdata['targetFTpercent']
             possibleFTParams = np.unique(FTParamsEachTrial)
+
+            if (len(FTParamsEachTrial) > len(eventOnsetTimes)) or \
+               (len(FTParamsEachTrial) < len(eventOnsetTimes)-1):
+                print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
+                      f'EphysTrials ({len(eventOnsetTimes)})')
+                continue
+            if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
+                eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
+
             trialsEachCond = behavioranalysis.find_trials_each_combination(VOTParamsEachTrial, possibleVOTParams, FTParamsEachTrial, possibleFTParams)
             trialsEachVOT_FTmin = trialsEachCond[:, :, 0]
             trialsEachVOT_FTmax = trialsEachCond[:, :, -1]
