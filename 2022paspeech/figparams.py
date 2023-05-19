@@ -4,6 +4,9 @@ Common parameters for figures related to this study.
 
 from jaratoolbox import colorpalette as cp
 import matplotlib
+from matplotlib.font_manager import findfont, FontProperties
+
+font = findfont(FontProperties(family = ['Helvetica']))
 
 matplotlib.rcParams['font.family'] = 'Helvetica'
 matplotlib.rcParams['svg.fonttype'] = 'none'  # To render as font rather than outlines

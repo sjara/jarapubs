@@ -50,8 +50,8 @@ selectivityIndexFT_VOTmin = figData['selectivityIndexFT_VOTmin']
 speechResponsive = figData['speechResponsive']
 excludeCells = figData['excludeCells']
 
-allSubjects = studyparams.EPHYS_MICE
-#allSubjects = studyparams.TEST_MOUSE
+#allSubjects = studyparams.EPHYS_MICE
+allSubjects = studyparams.TEST_MOUSE
 #exampleCells = [1155, 1330, 777, 162]
 indCell = -1
 
@@ -62,6 +62,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
 
     for indRow, dbRow in celldb.iterrows():
+
         indCell += 1
         print(f'indCell = {indCell}')
         if speechResponsive[indCell] &~ excludeCells[indCell]:
@@ -95,7 +96,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
             FTParamsEachTrial = bdata['targetFTpercent']
 
 
-            if (len(FTParamsEachTrial)>len(eventOnsetTimes)) or \(len(FTParamsEachTrial)<len(eventOnsetTimes)-1):
+            if (len(FTParamsEachTrial)>len(eventOnsetTimes)) or (len(FTParamsEachTrial)<len(eventOnsetTimes)-1):
                 print(f'[{indRow}] Warning! BevahTrials ({len(rateEachTrial)}) and ' +
                       f'EphysTrials ({len(eventOnsetTimes)})')
                 continue

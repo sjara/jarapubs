@@ -12,6 +12,7 @@ from jaratoolbox import settings
 from jaratoolbox import extraplots
 from jaratoolbox import extrastats
 from jaratoolbox import soundanalysis
+from jaratoolbox import colorpalette as cp
 import scipy.stats as stats
 from scipy.io import wavfile
 import scipy.optimize
@@ -39,8 +40,8 @@ labelPosY = [0.93, 0.6, 0.3]    # Vert position for panel labels
 
 plt.figure()
 #gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.3, 0.7])
-gsMain = gridspec.GridSpec(1, 2, width_ratios = [0.3, 0.7])
-gsMain.update(left=0.1, right=0.95, top=0.9, bottom=0.1, wspace=0.3, hspace=0.4)
+gsMain = gridspec.GridSpec(1, 2, width_ratios = [0.35, 0.65])
+gsMain.update(left=0.1, right=0.95, top=0.9, bottom=0.15, wspace=0.3, hspace=0.4)
 gsLeft = gsMain[0].subgridspec(3, 2, height_ratios = [0.3, 0.3, 0.3])
 axTask = plt.subplot(gsLeft[2,0])
 axDa = plt.subplot(gsLeft[1, 0])
@@ -54,6 +55,8 @@ axExFt = plt.subplot(gsPsy[1,0])
 axExVot = plt.subplot(gsPsy[0,0])
 axPopFt = plt.subplot(gsPsy[1,1])
 axPopVot = plt.subplot(gsPsy[0,1])
+
+colorAllFits = cp.TangoPalette['Aluminium3']
 
 '''
 axDa.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
@@ -96,7 +99,7 @@ plt.gca().invert_yaxis()
 plt.xlabel('Time (s)')
 plt.ylabel('Frequency (Hz)')
 cbar = plt.colorbar(ax = axCbar, location = 'left', ticks = [], shrink = 0.8, anchor = [0,0])
-axCbar.annotate('Intensity', xy = (0.24, 0.425), xycoords='figure fraction', fontsize= fontSizeLabels, rotation = 270)
+axCbar.annotate('Intensity', xy = (0.26, 0.425), xycoords='figure fraction', fontsize= fontSizeLabels, rotation = 270)
 axCbar.set_axis_off()
 #cbar.set_label('Intensity')#, loc = 'right')
 
@@ -273,13 +276,13 @@ for indMouse, thisMouse in enumerate(studyparams.BEHAVIOR_MICE['FT']):
     fitxvalFt = np.linspace(cohortData['possibleValuesFt'][0]-xPadFt, cohortData['possibleValuesFt'][-1]+xPadFt, 40)
     fityvalFt = extrastats.psychfun(fitxvalFt, *curveParamsFt_oneMouse)
     xTicks = np.arange(-1, 1.5, 0.5)
-    hfit = plt.plot(fitxvalFt, 100*fityvalFt, '--', linewidth=1, alpha = 0.6)
+    hfit = plt.plot(fitxvalFt, 100*fityvalFt, c = colorAllFits, linewidth=1, alpha = 0.6)
 
 valRange = cohortData['possibleValuesFt'][-1]-cohortData['possibleValuesFt'][0]
 plt.xlim([cohortData['possibleValuesFt'][0]-0.1*valRange, cohortData['possibleValuesFt'][-1]+0.1*valRange])
 plt.ylim([0,100])
 plt.xticks([0,20, 40, 60, 80, 100],['9', '6', '2', '-2', '-6', '-9'], fontsize=fontSizeTicks)
-plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
+#plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
 plt.xlabel('Formant Transisiton slope \n (oct/s)', fontsize=fontSizeLabels)
 plt.title('Cohort average: FT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
 plt.grid(True, axis='y', color='0.9')
@@ -288,6 +291,24 @@ plt.grid(True, axis='y', color='0.9')
 #ax8 = plt.subplot(gsMain[2,3:])
 plt.sca(axPopVot)
 #ax8.annotate('F', xy=(labelPosX[1],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+
+for indMouse, thisMouse in enumerate(studyparams.BEHAVIOR_MICE['VOT']):
+    curveParamsVot_oneMouse, pcovVot_oneMouse = scipy.optimize.curve_fit(extrastats.psychfun, cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVot'][indMouse])
+    xPadVot = 0.2 * (cohortData['possibleValuesVot'][-1] - cohortData['possibleValuesVot'][0])
+    fitxvalVot = np.linspace(cohortData['possibleValuesVot'][0]-xPadVot, cohortData['possibleValuesVot'][-1]+xPadVot, 40)
+    fityvalVot = extrastats.psychfun(fitxvalVot, *curveParamsVot_oneMouse)
+    xTicks = np.arange(-1, 1.5, 0.5)
+    hfit = plt.plot(fitxvalVot, 100*fityvalVot, c = colorAllFits, linewidth=1, alpha = 0.6)
+
+valRange = cohortData['possibleValuesVot'][-1]-cohortData['possibleValuesVot'][0]
+plt.xlim([cohortData['possibleValuesVot'][0]-0.1*valRange, cohortData['possibleValuesVot'][-1]+0.1*valRange])
+plt.ylim([0,100])
+plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
+#plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
+plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels)
+plt.title('Cohort average: VOT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
+plt.grid(True, axis='y', color='0.9')
+
 axPopVot.annotate('n = 9 mice \n 8 sessions', xy = (0,75), xycoords = 'data')
 xPadVot = 0.2 * (cohortData['possibleValuesVot'][-1] - cohortData['possibleValuesVot'][0])
 fitxvalVot = np.linspace(cohortData['possibleValuesVot'][0]-xPadVot, cohortData['possibleValuesVot'][-1]+xPadVot, 40)
@@ -298,23 +319,6 @@ plt.errorbar(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueV
 #(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVotAvg'], cohortData['semBarsVOT'], xTicks=None, xscale='linear')
 #plt.setp(pdots, ms = 4)
 #pline.set_visible(False)
-
-for indMouse, thisMouse in enumerate(studyparams.BEHAVIOR_MICE['VOT']):
-    curveParamsVot_oneMouse, pcovVot_oneMouse = scipy.optimize.curve_fit(extrastats.psychfun, cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVot'][indMouse])
-    xPadVot = 0.2 * (cohortData['possibleValuesVot'][-1] - cohortData['possibleValuesVot'][0])
-    fitxvalVot = np.linspace(cohortData['possibleValuesVot'][0]-xPadVot, cohortData['possibleValuesVot'][-1]+xPadVot, 40)
-    fityvalVot = extrastats.psychfun(fitxvalVot, *curveParamsVot_oneMouse)
-    xTicks = np.arange(-1, 1.5, 0.5)
-    hfit = plt.plot(fitxvalVot, 100*fityvalVot, '--', linewidth=1, alpha = 0.6)
-
-valRange = cohortData['possibleValuesVot'][-1]-cohortData['possibleValuesVot'][0]
-plt.xlim([cohortData['possibleValuesVot'][0]-0.1*valRange, cohortData['possibleValuesVot'][-1]+0.1*valRange])
-plt.ylim([0,100])
-plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
-plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
-plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels)
-plt.title('Cohort average: VOT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
-plt.grid(True, axis='y', color='0.9')
 
 plt.show()
 

@@ -38,7 +38,7 @@ recordingAreaName = celldb.recordingAreaName.copy()
 recordingAreaName = recordingAreaName.str.replace('Posterior auditory area', 'Dorsal auditory area')
 recordingAreaName = np.array(recordingAreaName)
 isAudArea = celldb.recordingAreaName.str.contains('auditory area')
-ctxAreas = ['Anterolateral visual area', 'Dorsal auditory area', 'Ectorhinal area', 'Endopiriform nucleus', 'Lateral visual area', 'Laterointermediate area', 'Perirhinal area', 'Posterior auditory area', 'Primary auditory area', 'Supplemental somatosensory area', 'Temporal association areas', 'Ventral auditory area']
+ctxAreas = ['Anterolateral visual area', 'Dorsal auditory area', 'Ectorhinal area', 'Endopiriform nucleus', 'Lateral visual area', 'Laterointermediate area', 'Perirhinal area', 'Posterior auditory area', 'Primary auditory area', 'Supplemental somatosensory area', 'Temporal association areas', 'Ventral auditory area', 'auditory radiation', 'optic radiation', 'corpus callosum', 'external capsule']
 isCortical = np.zeros(len(isAudArea), dtype = bool)
 for indArea, thisArea in enumerate(ctxAreas):
     isCortical[recordingAreaName == thisArea] = True
@@ -77,17 +77,22 @@ soundResponsive = np.array(toneResponsive|amResponsive|speechResponsive)
 
 
 ## -- exclude cells with low firing rates
-exclusionCriterion = 3  # sp/s
+exclusionCriterion = 5  # sp/s
 maxFiringRateSpeechEvoked = np.max([celldb.maxFiringRate_FT_VOTmin, celldb.maxFiringRate_FT_VOTmax, celldb.maxFiringRate_VOT_FTmin, celldb.maxFiringRate_VOT_FTmax], 0)
 exclude_evoked = maxFiringRateSpeechEvoked < exclusionCriterion
 exclude_baseline = celldb.speechFiringRateBaseline < exclusionCriterion
 excludeCells = exclude_evoked & exclude_baseline
+manualExcludedCells = [1534, 1532, 1147] #manually exclude cells that are accidental subsets of other cells due to Phy issues.
+excludeCells[manualExcludedCells] = True
+excludeCells[~isCortical] = True
+
+
 
 ## -- select best index b/w conditions
 ftCombos = np.array([selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax])
 votCombos = np.array([selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax])
-bestSelectivityIndexFt = ftCombos.max(0)
-bestSelectivityIndexVot = votCombos.max(0)
+#bestSelectivityIndexFt = ftCombos.max(0)
+#bestSelectivityIndexVot = votCombos.max(0)
 
 amOnsetSelective = np.array(celldb.amSelectivityPvalOnset < 0.05)
 amSustainSelective = np.array(celldb.amSelectivityPvalSustain < 0.05)
@@ -113,19 +118,98 @@ ftSI_VOTmax = shuffledData['ftSI_VOTmax']
 ftSI_VOTmin = shuffledData['ftSI_VOTmin']
 shuffledSIFt_VOTmax = shuffledData['shuffledSIFt_VOTmax']
 shuffledSIFt_VOTmin = shuffledData['shuffledSIFt_VOTmin']
+maxRateVotFTmax = shuffledData['maxRateVotFTmax']
+maxRateVotFTmin = shuffledData['maxRateVotFTmin']
+maxRateFtVOTmax = shuffledData['maxRateFtVOTmax']
+maxRateFtVOTmin = shuffledData['maxRateFtVOTmin']
+minRateVotFTmax = shuffledData['minRateVotFTmax']
+minRateVotFTmin = shuffledData['minRateVotFTmin']
+minRateFtVOTmax = shuffledData['minRateFtVOTmax']
+minRateFtVOTmin = shuffledData['minRateFtVOTmin']
+
 
 pvalPermutationtestFt = np.ones(nCells)
 pvalPermutationtestVot = np.ones(nCells)
+bestSelectivityIndexFt = np.empty(nCells)
+bestSelectivityIndexVot = np.empty(nCells)
+shuffledVotBest = np.empty(np.shape(shuffledSIVot_FTmax))
+shuffledFtBest = np.empty(np.shape(shuffledSIVot_FTmax))
+frMinBestSI = 5
+
+rateDiffBaselineVot_FTmax = np.abs(celldb.speechFiringRateBaseline - maxRateVotFTmax)
+rateDiffBaselineVot_FTmin = np.abs(celldb.speechFiringRateBaseline - maxRateVotFTmin)
+rateDiffBaselineFt_VOTmax = np.abs(celldb.speechFiringRateBaseline - maxRateFtVOTmax)
+rateDiffBaselineFt_VOTmin = np.abs(celldb.speechFiringRateBaseline - maxRateFtVOTmin)
+
+
 for indCell, thisCell in enumerate(votSI_FTmax):
-    if votSI_FTmax[indCell] > votSI_FTmin[indCell]:
+    if (rateDiffBaselineVot_FTmax[indCell] > rateDiffBaselineVot_FTmin[indCell]) & (maxRateVotFTmax[indCell] >= frMinBestSI):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
-    elif votSI_FTmax[indCell] < votSI_FTmin[indCell]:
+        bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
+        shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+    elif (rateDiffBaselineVot_FTmin[indCell] > rateDiffBaselineVot_FTmax[indCell]) & (maxRateVotFTmin[indCell] >= frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
+        bestSelectivityIndexVot[indCell] = votSI_FTmin[indCell]
+        shuffledVotBest[indCell] = shuffledSIVot_FTmin[indCell]
+    elif (rateDiffBaselineVot_FTmax[indCell] > rateDiffBaselineVot_FTmin[indCell]) & (maxRateVotFTmax[indCell] < frMinBestSI) & (maxRateVotFTmin[indCell] >= frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
+        bestSelectivityIndexVot[indCell] = votSI_FTmin[indCell]
+        shuffledVotBest[indCell] = shuffledSIVot_FTmin[indCell]
+    elif (rateDiffBaselineVot_FTmin[indCell] > rateDiffBaselineVot_FTmax[indCell]) & (maxRateVotFTmin[indCell] < frMinBestSI) & (maxRateVotFTmax[indCell] >= frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
+        bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
+        shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+    else:
+        bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
+        shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+
+    if (rateDiffBaselineFt_VOTmax[indCell] > rateDiffBaselineFt_VOTmin[indCell]) & (maxRateFtVOTmax[indCell] >= frMinBestSI):
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
+        bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
+        shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+    elif (rateDiffBaselineFt_VOTmin[indCell] > rateDiffBaselineFt_VOTmax[indCell]) & (maxRateFtVOTmin[indCell] >= frMinBestSI):
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
+        bestSelectivityIndexFt[indCell] = ftSI_VOTmin[indCell]
+        shuffledFtBest[indCell] = shuffledSIFt_VOTmin[indCell]
+    elif (rateDiffBaselineFt_VOTmax[indCell] > rateDiffBaselineFt_VOTmin[indCell]) & (maxRateFtVOTmax[indCell] < frMinBestSI) & (maxRateFtVOTmin[indCell] >= frMinBestSI):
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
+        bestSelectivityIndexFt[indCell] = ftSI_VOTmin[indCell]
+        shuffledFtBest[indCell] = shuffledSIFt_VOTmin[indCell]
+    elif (rateDiffBaselineFt_VOTmin[indCell] > rateDiffBaselineFt_VOTmax[indCell]) & (maxRateFtVOTmin[indCell] < frMinBestSI) & (maxRateFtVOTmax[indCell] >= frMinBestSI):
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
+        bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
+        shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+    else:
+        bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
+        shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+
+
+
+'''
+for indCell, thisCell in enumerate(votSI_FTmax):
+    if (votSI_FTmax[indCell] > votSI_FTmin[indCell]) & (maxRateVotFTmax[indCell]>=frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
+    elif (votSI_FTmax[indCell] < votSI_FTmin[indCell]) & (maxRateVotFTmin[indCell]>=frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
+    elif (votSI_FTmax[indCell] < votSI_FTmin[indCell]) & ~(maxRateVotFTmin[indCell]>=frMinBestSI)  & (maxRateVotFTmax[indCell]>=frMinBestSI):
+        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
+    elif (votSI_FTmax[indCell] > votSI_FTmin[indCell]) & ~(maxRateVotFTmax[indCell]>=frMinBestSI) & (maxRateVotFTmin[indCell]>=frMinBestSI):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
 
-    if ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]:
+    if (ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]) & (maxRateFtVOTmax[indCell]>=frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
-    elif ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]:
+    elif (ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]) & (maxRateFtVOTmin[indCell]>=frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
+    elif (ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]) & ~(maxRateFtVOTmin[indCell]>=frMinBestSI) & (maxRateFtVOTmax[indCell]>=frMinBestSI):
+            pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
+    elif (ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]) & ~(maxRateFtVOTmax[indCell]>=frMinBestSI) & (maxRateFtVOTmin[indCell]>=frMinBestSI):
+        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
+'''
+
+
+
+
+
 
 
 '''
@@ -286,6 +370,15 @@ if pValKruskalBestFT < 0.05:
     ustat, pValmannU_ftAudDvsTea = stats.mannwhitneyu(bestFtSIbyArea[1][speechResponsiveByArea[1]], bestFtSIbyArea[3][speechResponsiveByArea[3]])
     ustat, pValmannU_ftAudVvsTea = stats.mannwhitneyu(bestFtSIbyArea[2][speechResponsiveByArea[2]], bestFtSIbyArea[3][speechResponsiveByArea[3]])
 
+## -- test proportion of speech responsiv eacross cortical areas
+oddsratio, pvalFracResponsive_AudPvsAudD = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[0]), np.sum(speechResponsiveByArea[1])],[np.sum(~speechResponsiveByArea[0]), np.sum(~speechResponsiveByArea[1])]]))
+oddsratio, pvalFracResponsive_AudPvsAudV = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[0]), np.sum(speechResponsiveByArea[2])],[np.sum(~speechResponsiveByArea[0]), np.sum(~speechResponsiveByArea[2])]]))
+oddsratio, pvalFracResponsive_AudDvsAudV = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[2]), np.sum(speechResponsiveByArea[1])],[np.sum(~speechResponsiveByArea[2]), np.sum(~speechResponsiveByArea[1])]]))
+oddsratio, pvalFracResponsive_AudPvsTea = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[0]), np.sum(speechResponsiveByArea[3])],[np.sum(~speechResponsiveByArea[0]), np.sum(~speechResponsiveByArea[3])]]))
+oddsratio, pvalFracResponsive_AudDvsTea = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[3]), np.sum(speechResponsiveByArea[1])],[np.sum(~speechResponsiveByArea[3]), np.sum(~speechResponsiveByArea[1])]]))
+oddsratio, pvalFracResponsive_AudVvsTea = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[3]), np.sum(speechResponsiveByArea[2])],[np.sum(~speechResponsiveByArea[3]), np.sum(~speechResponsiveByArea[2])]]))
+
+
 ## -- test selectivity distribution across cortical areas
 oddsratio, pvalFracSelective_AudPvsAudD = stats.fisher_exact(np.array([[(np.sum(singleSelectivebyArea[0]) + np.sum(mixedSelectivebyArea[0])), (np.sum(singleSelectivebyArea[1]) + np.sum(mixedSelectivebyArea[1]))],[np.sum(notSelectivebyArea[0]), np.sum(notSelectivebyArea[1])]]))
 oddsratio, pvalFracSelective_AudPvsAudV = stats.fisher_exact(np.array([[(np.sum(singleSelectivebyArea[0]) + np.sum(mixedSelectivebyArea[0])), (np.sum(singleSelectivebyArea[2]) + np.sum(mixedSelectivebyArea[2]))],[np.sum(notSelectivebyArea[0]), np.sum(notSelectivebyArea[2])]]))
@@ -334,20 +427,39 @@ kstat, pvalToneFt_AudV = stats.kruskal(bestFtSIbyArea[2][toneSelectivebyArea[2]=
 kstat, pvalToneFt_Tea = stats.kruskal(bestFtSIbyArea[3][toneSelectivebyArea[3]==1], bestFtSIbyArea[3][toneSelectivebyArea[3]==0])
 
 
+## -- test if difference in proportion of selective cells among all cells (not just speech responsive)
+oddsratio, pvalFracFtSelective_AudPvsAudD_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0]), np.sum(FTselectivebyArea[1])],[np.sum(~FTselectivebyArea[0]), np.sum(~FTselectivebyArea[1])]]))
+oddsratio, pvalFracFtSelective_AudPvsAudV_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0]), np.sum(FTselectivebyArea[2])],[np.sum(~FTselectivebyArea[0]), np.sum(~FTselectivebyArea[2])]]))
+oddsratio, pvalFracFtSelective_AudDvsAudV_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[1]), np.sum(FTselectivebyArea[2])],[np.sum(~FTselectivebyArea[1]), np.sum(~FTselectivebyArea[2])]]))
+oddsratio, pvalFracFtSelective_AudPvsTea_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0]), np.sum(FTselectivebyArea[3])],[np.sum(~FTselectivebyArea[0]), np.sum(~FTselectivebyArea[3])]]))
+oddsratio, pvalFracFtSelective_AudDvsTea_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[1]), np.sum(FTselectivebyArea[3])],[np.sum(~FTselectivebyArea[1]), np.sum(~FTselectivebyArea[3])]]))
+oddsratio, pvalFracFtSelective_AudVvsTea_allcells = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[2]), np.sum(FTselectivebyArea[3])],[np.sum(~FTselectivebyArea[2]), np.sum(~FTselectivebyArea[3])]]))
+
+
+oddsratio, pvalFracVotSelective_AudPvsAudD_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0]), np.sum(VOTselectivebyArea[1])],[np.sum(~VOTselectivebyArea[0]), np.sum(~VOTselectivebyArea[1])]]))
+oddsratio, pvalFracVotSelective_AudPvsAudV_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0]), np.sum(VOTselectivebyArea[2])],[np.sum(~VOTselectivebyArea[0]), np.sum(~VOTselectivebyArea[2])]]))
+oddsratio, pvalFracVotSelective_AudDvsAudV_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[1]), np.sum(VOTselectivebyArea[2])],[np.sum(~VOTselectivebyArea[1]), np.sum(~VOTselectivebyArea[2])]]))
+oddsratio, pvalFracVotSelective_AudPvsTea_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0]), np.sum(VOTselectivebyArea[3])],[np.sum(~VOTselectivebyArea[0]), np.sum(~VOTselectivebyArea[3])]]))
+oddsratio, pvalFracVotSelective_AudDvsTea_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[1]), np.sum(VOTselectivebyArea[3])],[np.sum(~VOTselectivebyArea[1]), np.sum(~VOTselectivebyArea[3])]]))
+oddsratio, pvalFracVotSelective_AudVvsTea_allcells = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[2]), np.sum(VOTselectivebyArea[3])],[np.sum(~VOTselectivebyArea[2]), np.sum(~VOTselectivebyArea[3])]]))
+
+
+
 
 if STATSUMMARY:
     print('--Stats Summary--')
-    print(f'Group differences SI-VOT: p = {np.round(pValKruskalBestVOT,3)}')
-    print(f'Group differences SI-FT: p = {np.round(pValKruskalBestFT,3)}')
     print(f'Bonferroni corrected alpha = {np.round(0.05/6, 3)}')
-    if pValKruskalBestVOT < 0.05:
+    print(f'Min FR threshold for best SI = {frMinBestSI}sp/s')
+    print(f'Group differences SI-VOT: p = {np.round(pValKruskalBestVOT_selective,3)}')
+    print(f'Group differences SI-FT: p = {np.round(pValKruskalBestFT_selective,3)}')
+    if pValKruskalBestVOT_selective < 0.05:
         print(f'SI-VOT AudP vs AudD: p = {np.round(pValmannU_votAudPvsAudD,3)}')
         print(f'SI-VOT AudP vs AudV: p = {np.round(pValmannU_votAudPvsAudV,3)}')
         print(f'SI-VOT AudD vs AudV: p = {np.round(pValmannU_votAudDvsAudV,3)}')
         print(f'SI-VOT AudP vs. Tea: p = {np.round(pValmannU_votAudPvsTea,3)}')
         print(f'SI-VOT AudD vs. Tea: p = {np.round(pValmannU_votAudDvsTea,3)}')
         print(f'SI-VOT AudV vs. Tea: p = {np.round(pValmannU_votAudVvsTea,3)}')
-    if pValKruskalBestFT < 0.05:
+    if pValKruskalBestFT_selective < 0.05:
         print(f'SI-FT AudP vs AudD: p = {np.round(pValmannU_ftAudPvsAudD,3)}')
         print(f'SI-FT AudP vs AudV: p = {np.round(pValmannU_ftAudPvsAudV,3)}')
         print(f'SI-FT AudD vs AudV: p = {np.round(pValmannU_ftAudDvsAudV,3)}')
@@ -366,11 +478,11 @@ if STATSUMMARY:
     print(f'Frac FT selective AudP vs Tea p = {np.round(pvalFracFtSelective_AudPvsTea,3)}')
     print(f'Frac FT selective AudD vs Tea p = {np.round(pvalFracFtSelective_AudDvsTea,3)}')
     print(f'Frac FT selective AudV vs Tea p = {np.round(pvalFracFtSelective_AudVvsTea,3)}')
-    print(f'exclusion criterion = firing rate < {exclusionCriterion} sp/s')
-    print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeCellsbyArea[0])}')
-    print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeCellsbyArea[1])}')
-    print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeCellsbyArea[2])}')
-    print(f'n Excluded {audCtxAreas[3]}: {np.sum(excludeCellsbyArea[3])}')
+    #print(f'exclusion criterion = firing rate < {exclusionCriterion} sp/s')
+    #print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeCellsbyArea[0])}')
+    #print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeCellsbyArea[1])}')
+    #print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeCellsbyArea[2])}')
+    #print(f'n Excluded {audCtxAreas[3]}: {np.sum(excludeCellsbyArea[3])}')
     print(f'Frac mixed selective AudP vs AudD:  p = {np.round(pvalFracMixed_AudPvsAudD,3)}')
     print(f'Frac mixed selective AudP vs AudV:  p = {np.round(pvalFracMixed_AudPvsAudV,3)}')
     print(f'Frac mixed selective AudD vs AudV:  p = {np.round(pvalFracMixed_AudDvsAudV,3)}')
@@ -383,6 +495,6 @@ if STATSUMMARY:
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
 
 '''
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot)
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest)
 print('saved to ' f'{figDataFullPath}')
 '''

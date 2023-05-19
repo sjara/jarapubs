@@ -1,5 +1,5 @@
 """
-Calculate responsiveness to speech sounds (FT/VOT).
+This shuffles the the trial labels for FT and VOT, computes the stimulus average firing rate from these shuffled labels, and calculates selectivity indices from these shuffled labels. This procedure is repeated 2000x per cell.
 """
 import os
 import sys
@@ -32,13 +32,10 @@ databaseFullPath = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME, 
 celldb = celldatabase.load_hdf(databaseFullPath)
 nCells = len(celldb)
 
-#shuffledSI = np.empty([nCells, 2000])
 shuffledSIVot_FTmin = np.empty([nCells, 2000])
 shuffledSIVot_FTmax = np.empty([nCells, 2000])
 shuffledSIFt_VOTmin = np.empty([nCells, 2000])
 shuffledSIFt_VOTmax = np.empty([nCells, 2000])
-#shuffledMinRate = np.empty([nCells, 2000])
-#shuffledMaxRate = np.empty([nCells, 2000])
 shuffledMinRateVot_FTmin = np.empty([nCells, 2000])
 shuffledMaxRateVot_FTmin = np.empty([nCells, 2000])
 shuffledMinRateVot_FTmax = np.empty([nCells, 2000])
@@ -47,9 +44,6 @@ shuffledMinRateFt_VOTmin = np.empty([nCells, 2000])
 shuffledMaxRateFt_VOTmin = np.empty([nCells, 2000])
 shuffledMinRateFt_VOTmax = np.empty([nCells, 2000])
 shuffledMaxRateFt_VOTmax = np.empty([nCells, 2000])
-#votSI = np.empty(nCells)
-#minRate = np.empty(nCells)
-#maxRate = np.empty(nCells)
 minRateVotFTmin = np.empty(nCells)
 maxRateVotFTmin = np.empty(nCells)
 votSI_FTmin = np.empty(nCells)
@@ -62,9 +56,6 @@ ftSI_VOTmin = np.empty(nCells)
 minRateFtVOTmax = np.empty(nCells)
 maxRateFtVOTmax = np.empty(nCells)
 ftSI_VOTmax = np.empty(nCells)
-pvalPermutationtestVot = np.ones(nCells)
-pvalPermutationtestFt = np.ones(nCells)
-alpha = 0.025
 
 indCell = -1
 for indMouse, thisMouse in enumerate(allSubjects):
@@ -75,11 +66,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
     mousedb = celldb[celldb.subject==thisMouse]
     nCellsThisMouse = len(mousedb)
 
-    #newdbPath = os.path.join(databaseDir, f'{subject}t.h5')
-    '''
-    periodsName = ['base200', 'respOnset', 'respSustained']
-    allPeriods = [ [-0.2, 0], [0, 0.12] , [0.12, 0.24] ] #try with shorter period for onset response.
-    '''
+
     periodsName = ['respOnset']
     allPeriods = [[0, 0.12]]
     #for speed and usefulness, only calculating shuffled indices for response onset (which is what we used for the selectivity indices)
@@ -124,7 +111,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
             spikesEachTrial = spikeCountMat[:,0]
             spikesEachTrialEachPeriod.append(spikesEachTrial)
 
-            ## Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
+            ##-- Calculate mean firing rates and responsiveness for each speech sound (FT-VOT combination)
             #-- Calculate actual SI *NOT collapsing across irrelevant feature*
             trialsEachCond = behavioranalysis.find_trials_each_combination(FTParamsEachTrial, possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
@@ -212,23 +199,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 shuffledMinRateFt_VOTmax[indCell, indShuffle] = minFiringRateFt_VOTmax
                 shuffledMaxRateFt_VOTmax[indCell, indShuffle] = maxFiringRateFt_VOTmax
                 shuffledSIFt_VOTmax[indCell, indShuffle] = (maxFiringRateFt_VOTmax - minFiringRateFt_VOTmax)/(maxFiringRateFt_VOTmax + minFiringRateFt_VOTmax)
-                '''
-                if votSI_FTmax[indCell] > votSI_FTmin[indCell]:
-                    pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
-                elif votSI_FTmax[indCell] < votSI_FTmin[indCell]:
-                    pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
-
-                if ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]:
-                    pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
-                elif ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]:
-                    pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >=ftSI_VOTmin[indCell])
-                '''
-
-print(f'n cells w/pvalPermutationtestVot < 0.025 = {np.sum(pvalPermutationtestVot < 0.025)}')
-print(f'n cells w/pvalPermutationtestFt < 0.025 = {np.sum(pvalPermutationtestFt < 0.025)}')
-#print(f'n cells w/pvalPermutationtestVot < 0.05 = {np.sum(pvalPermutationtestVot < 0.05)}')
-#print(f'n cells w/pvalPermutationtestFt < 0.05 = {np.sum(pvalPermutationtestFt < 0.05)}')
 
 
-np.savez(figDataFullPath, shuffledSIVot_FTmin = shuffledSIVot_FTmin, shuffledSIVot_FTmax = shuffledSIVot_FTmax, shuffledSIFt_VOTmin = shuffledSIFt_VOTmin, shuffledSIFt_VOTmax = shuffledSIFt_VOTmax, shuffledMinRateVot_FTmin = shuffledMinRateVot_FTmin, shuffledMaxRateVot_FTmin = shuffledMaxRateVot_FTmin, shuffledMinRateVot_FTmax = shuffledMinRateVot_FTmax, shuffledMaxRateVot_FTmax = shuffledMaxRateVot_FTmax, shuffledMinRateFt_VOTmin = shuffledMinRateFt_VOTmin, shuffledMaxRateFt_VOTmin = shuffledMaxRateFt_VOTmin, shuffledMinRateFt_VOTmax = shuffledMinRateFt_VOTmax, shuffledMaxRateFt_VOTmax = shuffledMaxRateFt_VOTmax, minRateVotFTmin = minRateVotFTmin,  maxRateVotFTmin = maxRateVotFTmin, votSI_FTmin = votSI_FTmin, minRateVotFTmax = minRateVotFTmax, maxRateVotFTmax = maxRateVotFTmax, votSI_FTmax = votSI_FTmax, minRateFtVOTmin = minRateFtVOTmin, maxRateFtVOTmin = maxRateFtVOTmin, ftSI_VOTmin = ftSI_VOTmin, minRateFtVOTmax = minRateFtVOTmax, maxRateFtVOTmax = maxRateFtVOTmax, ftSI_VOTmax = ftSI_VOTmax, pvalPermutationtestVot = pvalPermutationtestVot, pvalPermutationtestFt = pvalPermutationtestFt, alpha = alpha)
+np.savez(figDataFullPath, shuffledSIVot_FTmin = shuffledSIVot_FTmin, shuffledSIVot_FTmax = shuffledSIVot_FTmax, shuffledSIFt_VOTmin = shuffledSIFt_VOTmin, shuffledSIFt_VOTmax = shuffledSIFt_VOTmax, shuffledMinRateVot_FTmin = shuffledMinRateVot_FTmin, shuffledMaxRateVot_FTmin = shuffledMaxRateVot_FTmin, shuffledMinRateVot_FTmax = shuffledMinRateVot_FTmax, shuffledMaxRateVot_FTmax = shuffledMaxRateVot_FTmax, shuffledMinRateFt_VOTmin = shuffledMinRateFt_VOTmin, shuffledMaxRateFt_VOTmin = shuffledMaxRateFt_VOTmin, shuffledMinRateFt_VOTmax = shuffledMinRateFt_VOTmax, shuffledMaxRateFt_VOTmax = shuffledMaxRateFt_VOTmax, minRateVotFTmin = minRateVotFTmin,  maxRateVotFTmin = maxRateVotFTmin, votSI_FTmin = votSI_FTmin, minRateVotFTmax = minRateVotFTmax, maxRateVotFTmax = maxRateVotFTmax, votSI_FTmax = votSI_FTmax, minRateFtVOTmin = minRateFtVOTmin, maxRateFtVOTmin = maxRateFtVOTmin, ftSI_VOTmin = ftSI_VOTmin, minRateFtVOTmax = minRateFtVOTmax, maxRateFtVOTmax = maxRateFtVOTmax, ftSI_VOTmax = ftSI_VOTmax)
 print('saved to ' f'{figDataFullPath}')
