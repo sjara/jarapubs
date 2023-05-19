@@ -60,10 +60,10 @@ These are additional columns calculated for a selected set of cells:
 
 
 # Generate files
-`generate_psycurve_cohortAverages.py` : This generates a population average psychometric stored in `data_cohort_average_psycurves.npz`
-`generate_psycurve_exampleMouse.py` :  This generates a psychometric for a single example mouse, stored in `data_example_mice_psycurves.npz`
-`generate_selectivity_indices.py`: This generates FT and VOT selectivity indices for each cell, stored in `data_selectivity_indices.npz`
-`generate_shuffle_speech_trials.py`: This generates shuffled FT and VOT selectivity index distributions for each cell, also saves shuffled min/max firing rate for each cell, stored in `data_shuffledSIs.npz`
+- `generate_psycurve_cohortAverages.py` : This generates a population average psychometric stored in `data_cohort_average_psycurves.npz`
+- `generate_psycurve_exampleMouse.py` :  This generates a psychometric for a single example mouse, stored in `data_example_mice_psycurves.npz`
+- `generate_selectivity_indices.py`: This generates FT and VOT selectivity indices for each cell, stored in `data_selectivity_indices.npz`
+- `generate_shuffle_speech_trials.py`: This generates shuffled FT and VOT selectivity index distributions for each cell, also saves shuffled min/max firing rate for each cell, stored in `data_shuffledSIs.npz`
 
 # Figures
 All figures require access to the databases, the clustered ephys data, and the behavior data.
