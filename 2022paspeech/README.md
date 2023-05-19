@@ -15,9 +15,7 @@ You need to run the database generation scripts in the order listed here, as eac
 - `database_combine_subjects`: Combines the databases from each individual subject into one database. It creates `fulldb_speech_tuning.h5`
 
  For all databases, "BEST" indicates the maximum absolute value difference between the mean firing rate for a given stimulus (e.g. modulation rate) and baseline firing rate for each cell.
-
-## `database_generation_funcs.py`
-Contains functions called during database generation.
+- `database_generation_funcs.py`: Contains functions called during database generation.
 
 # Database contents
 
@@ -72,44 +70,29 @@ All figures require access to the databases, the clustered ephys data, and the b
 
 ## Figure 1 (Mice can discriminate speech sounds)
 Created by `figure_behavior.py`.
-### Panel A
-3 spectrograms: /ba/, /pa/, and /da/ at 8x human freq range
-(using sounds from `jarahub:/data/jarasounds/ft_vot_8x_20220115/`)
-### Panel B
-2AFC cartoon
-### Panel C
-Psycurve for example mouse performing VOT task (using data generated from `generate_psycurve_exampleMouse.py`)
-### Panel D
-Population averaged Psycurve from the VOT cohort (using data generated from `generate_psycurve_cohortAverages.py`)
-### Panel E
-Psycurve for example mouse performing FT task (using data generated from `generate_psycurve_exampleMouse.py`)
-### Panel F
-Population averaged Psycurve from the FT cohort (using data generated from `generate_psycurve_cohortAverages.py`)
+- Panel A: 3 spectrograms: /ba/, /pa/, and /da/ at 8x human freq range (using sounds from `jarahub:/data/jarasounds/ft_vot_8x_20220115/`)
+- Panel B: 2AFC cartoon
+- Panel C: Psycurve for example mouse performing VOT task (using data generated from `generate_psycurve_exampleMouse.py`)
+- Panel D: Population averaged Psycurve from the VOT cohort (using data generated from `generate_psycurve_cohortAverages.py`)
+- Panel E: Psycurve for example mouse performing FT task (using data generated from `generate_psycurve_exampleMouse.py`)
+- Panel F: Population averaged Psycurve from the FT cohort (using data generated from `generate_psycurve_cohortAverages.py`)
 
 ## Figure 2 (Ephys methods and cell responsiveness)
 Created by `figure_neuropix_ac.py`
-### Panel A
-Cartoon of headfixed, awake mouse ephys
-### Panel B
-Diagram of sound matrix
-### Panel C
-Histology image of recording track
-### Panel D
-Scatter plot of recording location of each cell. (Using data generated from `generate_selectivity_indices.py`) Add AC areas image in inkscape.
-### Panel E
-Donut plots of fraction of cells in AudP, AudD, AudV and TeA that were responsive to our speech sounds, responsive to AM/PT but not speech sounds, or not sound responsive (using data generated from `generate_selectivity_indices.py`)
+- Panel A: Cartoon of headfixed, awake mouse ephys
+- Panel B: Diagram of sound matrix
+- Panel C: Histology image of recording track
+- Panel D: Scatter plot of recording location of each cell. (Using data generated from `generate_selectivity_indices.py`) Add AC areas image in inkscape.
+- Panel E: Donut plots of fraction of cells in AudP, AudD, AudV and TeA that were responsive to our speech sounds, responsive to AM/PT but not speech sounds, or not sound responsive (using data generated from `generate_selectivity_indices.py`)
 
 ## Figure 3 (Example cells)
 
-## Figure 4 (Selectivity sumamry figure)
+## Figure 4 (VOT/FT Selectivity summary figure)
 Created by `figure_selectivityVsLocation.py`
-### Panel A
-Plot of VOT selectivity indices (color map) in A-P/D-V space (using data generated from `generate_selectivity_indices.py`). Add AC areas image in inkscape.
-### Panel B
-Donut plots of fraction of VOT selective cells (among speech responsive cells) for each Aud Area (using data generated from `generate_selectivity_indices.py`).
-### Panel C
-VOT selectivity indices binned in D-V space (using data generated from `generate_selectivity_indices.py` and `generate_shuffle_speech_trials.py`)
-### Panel D
-VOT selectivity indices binned in A-P space (using data generated from `generate_selectivity_indices.py` and `generate_shuffle_speech_trials.py`)
-### Panels E-H
-As in Panels A-D, but for FT rather than VOT
+- Panel A: Plot of VOT selectivity indices (color map) in A-P/D-V space (using data generated from `generate_selectivity_indices.py`). Add AC areas image in inkscape.
+- Panel B: Donut plots of fraction of VOT selective cells (among speech responsive cells) for each Aud Area (using data generated from `generate_selectivity_indices.py`).
+- Panel C: VOT selectivity indices binned in D-V space (using data generated from `generate_selectivity_indices.py` and `generate_shuffle_speech_trials.py`)
+- Panel D: VOT selectivity indices binned in A-P space (using data generated from `generate_selectivity_indices.py` and `generate_shuffle_speech_trials.py`)
+- Panels E-H: As in Panels A-D, but for FT rather than VOT
+
+## Figure 5 (Mixed selectivity summary figure)
