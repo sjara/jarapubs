@@ -33,39 +33,41 @@ PANELS = [3,1] # Plot panel i if PANELS[i]==1
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
 fontSizePanel = figparams.fontSizePanel
+colorAllFits = cp.TangoPalette['Aluminium3']
 
-
-labelPosX = [0.07, 0.54] # Horiz position for panel labels
-labelPosY = [0.93, 0.6, 0.3]    # Vert position for panel labels
+labelPosX = [0.04, 0.42, 0.72] # Horiz position for panel labels
+labelPosY = [0.95, 0.67, 0.47]    # Vert position for panel labels
 
 plt.figure()
 #gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.3, 0.7])
 gsMain = gridspec.GridSpec(1, 2, width_ratios = [0.35, 0.65])
-gsMain.update(left=0.1, right=0.95, top=0.9, bottom=0.15, wspace=0.3, hspace=0.4)
-gsLeft = gsMain[0].subgridspec(3, 2, height_ratios = [0.3, 0.3, 0.3])
-axTask = plt.subplot(gsLeft[2,0])
-axDa = plt.subplot(gsLeft[1, 0])
-axBa = plt.subplot(gsLeft[0, 0])
-axPa = plt.subplot(gsLeft[0, 1])
-axCbar = plt.subplot(gsLeft[1,1])
+gsMain.update(left=0.1, right=0.95, top=0.89, bottom=0.12, wspace=0.45, hspace=0.4)
+
+gsLeft = gsMain[0].subgridspec(3, 2, height_ratios = [0.3, 0.3, 0.3], hspace = 0.6, wspace = 0.3)
+axTask = plt.subplot(gsLeft[0,0])
+axDa = plt.subplot(gsLeft[2, 0])
+axBa = plt.subplot(gsLeft[1, 0])
+axPa = plt.subplot(gsLeft[1, 1])
+axCbar = plt.subplot(gsLeft[2,1])
+plt.subplots_adjust(top = 0.95, bottom = 0.1, hspace = 0.4, left = 0.05)
 
 
-gsPsy = gsMain[1].subgridspec(2,2, wspace = 0.3, hspace = 0.4)
+gsPsy = gsMain[1].subgridspec(2,2, wspace = 0.3, hspace = 0.6)
 axExFt = plt.subplot(gsPsy[1,0])
 axExVot = plt.subplot(gsPsy[0,0])
 axPopFt = plt.subplot(gsPsy[1,1])
 axPopVot = plt.subplot(gsPsy[0,1])
+plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.4, left = 0.05)
 
-colorAllFits = cp.TangoPalette['Aluminium3']
 
-'''
-axDa.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axTask.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axExFt.annotate('C', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axPopFt.annotate('D', xy=(labelPosX[1],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axExVot.annotate('E', xy=(labelPosX[0],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axPopVot.annotate('F', xy=(labelPosX[1],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-'''
+axTask.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axBa.annotate('B', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axExVot.annotate('C', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axPopVot.annotate('D', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axExFt.annotate('E', xy=(labelPosX[1],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axPopFt.annotate('F', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+
+
 
 
 
@@ -94,22 +96,18 @@ VMAX=None; VMIN = sgramVals.min()+0.25*intensityRange
 plt.imshow(sgramVals, cmap='viridis', aspect='auto',
            interpolation=INTERP, vmin=VMIN, vmax=VMAX,
            extent=(sgramT[0],sgramT[-1],sgramF[-1],sgramF[0]))
-#plt.ylim(np.array([200,0]))
 plt.gca().invert_yaxis()
-plt.xlabel('Time (s)')
-plt.ylabel('Frequency (Hz)')
-cbar = plt.colorbar(ax = axCbar, location = 'left', ticks = [], shrink = 0.8, anchor = [0,0])
-axCbar.annotate('Intensity', xy = (0.26, 0.425), xycoords='figure fraction', fontsize= fontSizeLabels, rotation = 270)
-axCbar.set_axis_off()
-#cbar.set_label('Intensity')#, loc = 'right')
-
+plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], fontsize=fontSizeTicks)
 plt.ylim([0,28000])
 plt.xlim([0,.1])
 plt.xticks(np.arange(0, .11, 0.05),['0', '50', '100'], fontsize=fontSizeTicks)
-plt.xlabel('Time (ms)', fontsize=fontSizeLabels)
-plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels)
-plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], fontsize=fontSizeTicks)
+plt.xlabel('Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.title('/da/', fontsize=fontSizeLabels, fontweight='bold')
+
+cbar = plt.colorbar(ax = axCbar, orientation = 'vertical', location = 'left', ticks = [], pad = 0.4) #shrink = 0.8,
+axCbar.annotate('Intensity', xy = (0.26, 0.16), xycoords='subfigure fraction', fontsize= fontSizeLabels, rotation = 270)
+axCbar.set_axis_off()
 
 # -- /ba/ --
 #ax2 = plt.subplot(gsMain[0,1])
@@ -135,17 +133,13 @@ plt.imshow(sgramVals, cmap='viridis', aspect='auto',
            extent=(sgramT[0],sgramT[-1],sgramF[-1],sgramF[0]))
 #plt.ylim(np.array([200,0]))
 plt.gca().invert_yaxis()
-plt.xlabel('Time (s)')
-plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels)
+plt.ylabel('Frequency (kHz)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.yticks(np.arange(0, 28000, 5000), ['0', '5', '10', '15', '20', '25'], fontsize=fontSizeTicks)
-
-
 plt.ylim([0,28000]) ##CHANGE THIS TO SHARE AX W/DA
 plt.xlim([0,.1])
-plt.xticks(np.arange(0, .11, 0.05),['0', '50', '100'], fontsize=fontSizeTicks)
-plt.xlabel('Time (ms)', fontsize=fontSizeLabels)
+plt.xticks(np.arange(0, .11, 0.05), labels = '', fontsize=fontSizeTicks)
+#plt.xlabel('Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.title('/ba/', fontsize=fontSizeLabels, fontweight='bold')
-plt.xticks([])
 plt.xlabel('')
 
 # -- /pa/ --
@@ -172,17 +166,12 @@ plt.imshow(sgramVals, cmap='viridis', aspect='auto',
            extent=(sgramT[0],sgramT[-1],sgramF[-1],sgramF[0]))
 #plt.ylim(np.array([200,0]))
 plt.gca().invert_yaxis()
-plt.xlabel('Time (s)')
-plt.ylabel('Frequency (Hz)')
-
-
-
 plt.ylim([0,28000])
 plt.xlim([0,.1])
 plt.xticks(np.arange(0, .11, 0.05),['0', '50', '100'], fontsize=fontSizeTicks)
-plt.xlabel('Time (ms)', fontsize=fontSizeLabels)
+plt.xlabel('Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.title('/pa/', fontsize=fontSizeLabels, fontweight='bold')
-plt.yticks([])
+plt.yticks(np.arange(0, 28000, 5000), labels = '', fontsize=fontSizeTicks)
 plt.ylabel('')
 
 
@@ -226,11 +215,12 @@ hfit = plt.plot(fitxvalFt, 100*fityvalFt, '-', linewidth=2, color='k')
 plt.setp(pdots, ms = 4)
 pline.set_visible(False)
 plt.xticks([0,20, 40, 60, 80, 100],['9', '6', '2', '-2', '-6', '-9'], fontsize=fontSizeTicks)
-plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
-plt.xlabel('Formant Transition slope \n (oct/s)', fontsize=fontSizeLabels)
-plt.title('Example mouse: FT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
-plt.grid(True, axis='y', color='0.9')
-
+plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.xlabel('Formant Transition slope \n (oct/s)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.title('Example mouse: FT', fontsize=fontSizeLabels, pad=5)
+#plt.grid(True, axis='y', color='0.9')
+axExFt.spines["right"].set_visible(False)
+axExFt.spines["top"].set_visible(False)
 
 ## -- Panel: VOT example mouse --
 #ax6 = plt.subplot(gsMain[2,0:3])
@@ -249,10 +239,12 @@ hfit = plt.plot(fitxvalVot, 100*fityvalVot, '-', linewidth=2, color='k')
 plt.setp(pdots, ms = 4)
 pline.set_visible(False)
 plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
-plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
-plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels)
-plt.title('Example mouse: VOT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
-plt.grid(True, axis='y', color='0.9')
+plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.title('Example mouse: VOT', fontsize=fontSizeLabels, pad=5)
+#plt.grid(True, axis='y', color='0.9')
+axExVot.spines["right"].set_visible(False)
+axExVot.spines["top"].set_visible(False)
 
 
 # -- Panel: FT cohort average --
@@ -283,9 +275,11 @@ plt.xlim([cohortData['possibleValuesFt'][0]-0.1*valRange, cohortData['possibleVa
 plt.ylim([0,100])
 plt.xticks([0,20, 40, 60, 80, 100],['9', '6', '2', '-2', '-6', '-9'], fontsize=fontSizeTicks)
 #plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
-plt.xlabel('Formant Transisiton slope \n (oct/s)', fontsize=fontSizeLabels)
-plt.title('Cohort average: FT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
-plt.grid(True, axis='y', color='0.9')
+plt.xlabel('Formant Transisiton slope \n (oct/s)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.title('Cohort average: FT', fontsize=fontSizeLabels, pad=5)
+#plt.grid(True, axis='y', color='0.9')
+axPopFt.spines["right"].set_visible(False)
+axPopFt.spines["top"].set_visible(False)
 
 ## -- Panel: VOT cohort average --
 #ax8 = plt.subplot(gsMain[2,3:])
@@ -305,9 +299,9 @@ plt.xlim([cohortData['possibleValuesVot'][0]-0.1*valRange, cohortData['possibleV
 plt.ylim([0,100])
 plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
 #plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
-plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels)
-plt.title('Cohort average: VOT', fontsize=fontSizeLabels, fontweight='bold', pad=10)
-plt.grid(True, axis='y', color='0.9')
+plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
+plt.title('Cohort average: VOT', fontsize=fontSizeLabels, pad=5)
+#plt.grid(True, axis='y', color='0.9')
 
 axPopVot.annotate('n = 9 mice \n 8 sessions', xy = (0,75), xycoords = 'data')
 xPadVot = 0.2 * (cohortData['possibleValuesVot'][-1] - cohortData['possibleValuesVot'][0])
@@ -316,6 +310,8 @@ fityvalVot = extrastats.psychfun(fitxvalVot, *cohortData['curveParamsVot'])
 xTicks = (np.arange(-1, 1.5, 0.5),['ba','pa'])
 hfit = plt.plot(fitxvalVot, 100*fityvalVot, '-', linewidth=2, color='k')
 plt.errorbar(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVotAvg']*100, cohortData['semBarsVOT']*100, marker = 'o', linestyle = '', color = 'k', ms = 3)
+axPopVot.spines["right"].set_visible(False)
+axPopVot.spines["top"].set_visible(False)
 #(pline, pcaps, pbars, pdots) = extraplots.plot_psychometric(cohortData['possibleValuesVot'], cohortData['fractionHitsEachValueVotAvg'], cohortData['semBarsVOT'], xTicks=None, xscale='linear')
 #plt.setp(pdots, ms = 4)
 #pline.set_visible(False)

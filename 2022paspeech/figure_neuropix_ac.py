@@ -34,7 +34,7 @@ fontSizePanel = figparams.fontSizePanel
 fontSizeTitles = figparams.fontSizeTitles
 colorSpeechResp = cp.TangoPalette['ScarletRed2']
 colorNotAud = cp.TangoPalette['Aluminium3']
-colorSoundResp = cp.TangoPalette['Chocolate1']
+colorSoundResp = cp.TangoPalette['SkyBlue2']
 
 
 labelPosX = [0.07, 0.3, 0.53] # Horiz position for panel labels
