@@ -13,7 +13,7 @@ import studyparams
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-STATSUMMARY = 1
+STATSUMMARY = 0
 AREASBYDEPTH = 0
 shuffledDataFile = 'data_shuffledSIs.npz'
 #figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
@@ -134,6 +134,8 @@ bestSelectivityIndexFt = np.empty(nCells)
 bestSelectivityIndexVot = np.empty(nCells)
 shuffledVotBest = np.empty(np.shape(shuffledSIVot_FTmax))
 shuffledFtBest = np.empty(np.shape(shuffledSIVot_FTmax))
+whichFT = np.empty(nCells)
+whichVOT = np.empty(nCells)
 frMinBestSI = 5
 
 rateDiffBaselineVot_FTmax = np.abs(celldb.speechFiringRateBaseline - maxRateVotFTmax)
@@ -147,79 +149,52 @@ for indCell, thisCell in enumerate(votSI_FTmax):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
         bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
         shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+        whichVOT[indCell] = 1
     elif (rateDiffBaselineVot_FTmin[indCell] > rateDiffBaselineVot_FTmax[indCell]) & (maxRateVotFTmin[indCell] >= frMinBestSI):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
         bestSelectivityIndexVot[indCell] = votSI_FTmin[indCell]
         shuffledVotBest[indCell] = shuffledSIVot_FTmin[indCell]
+        whichVOT[indCell] = 0
     elif (rateDiffBaselineVot_FTmax[indCell] > rateDiffBaselineVot_FTmin[indCell]) & (maxRateVotFTmax[indCell] < frMinBestSI) & (maxRateVotFTmin[indCell] >= frMinBestSI):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
         bestSelectivityIndexVot[indCell] = votSI_FTmin[indCell]
         shuffledVotBest[indCell] = shuffledSIVot_FTmin[indCell]
+        whichVOT[indCell] = 0
     elif (rateDiffBaselineVot_FTmin[indCell] > rateDiffBaselineVot_FTmax[indCell]) & (maxRateVotFTmin[indCell] < frMinBestSI) & (maxRateVotFTmax[indCell] >= frMinBestSI):
         pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
         bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
         shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+        whichVOT[indCell] = 1
     else:
         bestSelectivityIndexVot[indCell] = votSI_FTmax[indCell]
         shuffledVotBest[indCell] = shuffledSIVot_FTmax[indCell]
+        whichVOT[indCell] = 1
 
     if (rateDiffBaselineFt_VOTmax[indCell] > rateDiffBaselineFt_VOTmin[indCell]) & (maxRateFtVOTmax[indCell] >= frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
         bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
         shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+        whichFT[indCell] = 1
     elif (rateDiffBaselineFt_VOTmin[indCell] > rateDiffBaselineFt_VOTmax[indCell]) & (maxRateFtVOTmin[indCell] >= frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
         bestSelectivityIndexFt[indCell] = ftSI_VOTmin[indCell]
         shuffledFtBest[indCell] = shuffledSIFt_VOTmin[indCell]
+        whichFT[indCell] = 0
     elif (rateDiffBaselineFt_VOTmax[indCell] > rateDiffBaselineFt_VOTmin[indCell]) & (maxRateFtVOTmax[indCell] < frMinBestSI) & (maxRateFtVOTmin[indCell] >= frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
         bestSelectivityIndexFt[indCell] = ftSI_VOTmin[indCell]
         shuffledFtBest[indCell] = shuffledSIFt_VOTmin[indCell]
+        whichFT[indCell] = 0
     elif (rateDiffBaselineFt_VOTmin[indCell] > rateDiffBaselineFt_VOTmax[indCell]) & (maxRateFtVOTmin[indCell] < frMinBestSI) & (maxRateFtVOTmax[indCell] >= frMinBestSI):
         pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
         bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
         shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+        whichFT[indCell] = 1
     else:
         bestSelectivityIndexFt[indCell] = ftSI_VOTmax[indCell]
         shuffledFtBest[indCell] = shuffledSIFt_VOTmax[indCell]
+        whichFT[indCell] = 1
 
-
-
-'''
-for indCell, thisCell in enumerate(votSI_FTmax):
-    if (votSI_FTmax[indCell] > votSI_FTmin[indCell]) & (maxRateVotFTmax[indCell]>=frMinBestSI):
-        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
-    elif (votSI_FTmax[indCell] < votSI_FTmin[indCell]) & (maxRateVotFTmin[indCell]>=frMinBestSI):
-        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
-    elif (votSI_FTmax[indCell] < votSI_FTmin[indCell]) & ~(maxRateVotFTmin[indCell]>=frMinBestSI)  & (maxRateVotFTmax[indCell]>=frMinBestSI):
-        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmax[indCell,:] >=votSI_FTmax[indCell])
-    elif (votSI_FTmax[indCell] > votSI_FTmin[indCell]) & ~(maxRateVotFTmax[indCell]>=frMinBestSI) & (maxRateVotFTmin[indCell]>=frMinBestSI):
-        pvalPermutationtestVot[indCell] = np.mean(shuffledSIVot_FTmin[indCell,:] >=votSI_FTmin[indCell])
-
-    if (ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]) & (maxRateFtVOTmax[indCell]>=frMinBestSI):
-        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
-    elif (ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]) & (maxRateFtVOTmin[indCell]>=frMinBestSI):
-        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
-    elif (ftSI_VOTmax[indCell] < ftSI_VOTmin[indCell]) & ~(maxRateFtVOTmin[indCell]>=frMinBestSI) & (maxRateFtVOTmax[indCell]>=frMinBestSI):
-            pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmax[indCell,:] >=ftSI_VOTmax[indCell])
-    elif (ftSI_VOTmax[indCell] > ftSI_VOTmin[indCell]) & ~(maxRateFtVOTmax[indCell]>=frMinBestSI) & (maxRateFtVOTmin[indCell]>=frMinBestSI):
-        pvalPermutationtestFt[indCell] = np.mean(shuffledSIFt_VOTmin[indCell,:] >= ftSI_VOTmin[indCell])
-'''
-
-
-
-
-
-
-
-'''
-pvalPermutationtestFt = np.ones(len(bestSelectivityIndexFt))
-pvalPermutationtestVot = np.ones(len(bestSelectivityIndexFt))
-
-for indCell, thisCell in enumerate(bestSelectivityIndexFt):
-    pvalPermutationtestFt[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexFt[indCell])
-    pvalPermutationtestVot[indCell] = np.mean(shuffledSiEachCell[indCell,:] >= bestSelectivityIndexVot[indCell])
-'''
 
 ## -- get number of selective cells for each feature
 selectivityCriterion = 0.05
@@ -494,7 +469,6 @@ if STATSUMMARY:
     print(f'AudV n: {len(speechResponsiveByArea[2])}, n speechResponsive: {np.sum(speechResponsiveByArea[2])}, n selective: VOT = {np.sum(VOTselectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(VOTselectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%), FT = {np.sum(FTselectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(FTselectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[2][speechResponsiveByArea[2]])} ({np.round(np.mean(mixedSelectivebyArea[2][speechResponsiveByArea[2]])*100,1)}%)')
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
 
-'''
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest)
+
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT)
 print('saved to ' f'{figDataFullPath}')
-'''

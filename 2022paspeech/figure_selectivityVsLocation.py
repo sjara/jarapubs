@@ -22,19 +22,20 @@ import studyparams
 import figparams
 from importlib import reload
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
+from matplotlib.font_manager import findfont, FontProperties
+font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_selectivityIndices' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 10.5] # In inches
-STATSUMMARY = 0
+STATSUMMARY = 1
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -99,15 +100,15 @@ axFtTeA = plt.subplot(axFtDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=0.3)
 plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
-nBins = 8
-
-
+nBins = 2
 if nBins == 10:
     nCompar = 45
 elif nBins == 9:
     nCompar = 36
 elif nBins == 8:
     nCompar = 28
+elif nBins == 2:
+    nCompar = 1
 
 binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
 binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
@@ -171,6 +172,11 @@ if STATSUMMARY:
         kstat, pvalKruskalVotAP= stats.kruskal(quantilesVOT_AP[0], quantilesVOT_AP[1], quantilesVOT_AP[2], quantilesVOT_AP[3], quantilesVOT_AP[4], quantilesVOT_AP[5], quantilesVOT_AP[6], quantilesVOT_AP[7])
         kstat, pvalKruskalFtDV= stats.kruskal(quantilesFT_DV[0], quantilesFT_DV[1], quantilesFT_DV[2], quantilesFT_DV[3], quantilesFT_DV[4], quantilesFT_DV[5], quantilesFT_DV[6], quantilesFT_DV[7])
         kstat, pvalKruskalFtAP= stats.kruskal(quantilesFT_AP[0], quantilesFT_AP[1], quantilesFT_AP[2], quantilesFT_AP[3], quantilesFT_AP[4], quantilesFT_AP[5], quantilesFT_AP[6], quantilesFT_AP[7])
+    elif nBins == 2:
+        kstat, pvalKruskalVotDV= stats.mannwhitneyu(quantilesVOT_DV[0], quantilesVOT_DV[1])
+        kstat, pvalKruskalVotAP= stats.mannwhitneyu(quantilesVOT_AP[0], quantilesVOT_AP[1])
+        kstat, pvalKruskalFtDV= stats.mannwhitneyu(quantilesFT_DV[0], quantilesFT_DV[1])
+        kstat, pvalKruskalFtAP= stats.mannwhitneyu(quantilesFT_AP[0], quantilesFT_AP[1])
 
     if pvalKruskalVotAP < 0.025:
         binByBinComparVotAP = np.ones(nCompar)
@@ -282,7 +288,8 @@ if STATSUMMARY:
         binByBinLabels = np.array(['bin0v1', 'bin0v2', 'bin0v3', 'bin0v4', 'bin0v5', 'bin0v6', 'bin0v7', 'bin0v8', 'bin0v9', 'bin1v2', 'bin1v3', 'bin1v4', 'bin1v5', 'bin1v6', 'bin1v7', 'bin1v8', 'bin1v9', 'bin2v3', 'bin2v4', 'bin2v5', 'bin2v6', 'bin2v7', 'bin2v8', 'bin2v9', 'bin3v4', 'bin3v5', 'bin3v6', 'bin3v7', 'bin3v8', 'bin3v9', 'bin4v5', 'bin4v6', 'bin4v7', 'bin4v8', 'bin4v9', 'bin5v6', 'bin5v7', 'bin5v8', 'bin5v9', 'bin6v7', 'bin6v8', 'bin6v9', 'bin7v8', 'bin7v9', 'bin8v9'])
     elif nBins == 8:
         binByBinLabels = np.array(['bin0v1', 'bin0v2', 'bin0v3', 'bin0v4', 'bin0v5', 'bin0v6', 'bin0v7', 'bin1v2', 'bin1v3', 'bin1v4', 'bin1v5', 'bin1v6', 'bin1v7', 'bin2v3', 'bin2v4', 'bin2v5', 'bin2v6', 'bin2v7', 'bin3v4', 'bin3v5', 'bin3v6', 'bin3v7', 'bin4v5', 'bin4v6', 'bin4v7', 'bin5v6', 'bin5v7', 'bin6v7'])
-
+    elif nBins == 2:
+        binByBinLabels = np.array(['bin0v1'])
     print('--Stats Summary--')
     print(f'nBins = {nBins}, nCompar = {nCompar}')
     print(f'pvalKruskal Vot_AP = {np.round(pvalKruskalVotAP, 3)}')
@@ -353,8 +360,8 @@ chanceDVposition = [binsDV[0] - 2*binSizeDV]
 
 plt.sca(axVotDV)
 plt.scatter(bestSelectivityIndexVot[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
-plt.boxplot(quantilesVOT_DV, positions = binsDV, vert = False, widths = 6.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
-plt.boxplot(avgShuffledSIVot, positions = chanceDVposition, vert = False, widths = 6.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
+plt.boxplot(quantilesVOT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
+plt.boxplot(avgShuffledSIVot, positions = chanceDVposition, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([avgShuffledSIVot, avgShuffledSIVot] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.ylim(190, 40)
 plt.yticks(DVtickLocs, DVtickLabels)
@@ -367,8 +374,8 @@ axVotDV.spines["top"].set_visible(False)
 
 plt.sca(axVotAP)
 plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexVot[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
-plt.boxplot(quantilesVOT_AP, positions = binsAP, vert = True, widths = 2.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
-plt.boxplot(avgShuffledSIVot, positions = chanceAPposition, vert = True, widths = 2.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
+plt.boxplot(quantilesVOT_AP, positions = binsAP, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
+plt.boxplot(avgShuffledSIVot, positions = chanceAPposition, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([165,225], [avgShuffledSIVot, avgShuffledSIVot], linestyle = '--', linewidth = 2, c =colorRandSI)
 #plt.ylim(215, 60)
 #plt.yticks([])
@@ -441,8 +448,8 @@ axColorMapFT.spines["top"].set_visible(False)
 
 plt.sca(axFtDV)
 plt.scatter(bestSelectivityIndexFt[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts,  alpha = 0.5, s = 5)
-plt.boxplot(quantilesFT_DV, positions = binsDV, vert = False, widths = 6.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
-plt.boxplot(avgShuffledSIFt, positions = chanceDVposition, vert = False, widths = 6.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
+plt.boxplot(quantilesFT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
+plt.boxplot(avgShuffledSIFt, positions = chanceDVposition, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([avgShuffledSIFt, avgShuffledSIFt] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.ylim(190, 40)
 plt.yticks(DVtickLocs, DVtickLabels)
@@ -455,8 +462,8 @@ axFtDV.spines["top"].set_visible(False)
 
 plt.sca(axFtAP)
 plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexFt[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
-plt.boxplot(quantilesFT_AP, positions = binsAP, vert = True, widths = 2.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
-plt.boxplot(avgShuffledSIFt, positions = chanceAPposition, vert = True, widths = 2.75, boxprops = dict(linewidth = 1.5, color = colorRandSI, ), medianprops = dict(linewidth = 1.5, color = colorRandSI, ), whiskerprops = dict(linewidth = 1.5, color = colorRandSI, ), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
+plt.boxplot(quantilesFT_AP, positions = binsAP, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
+plt.boxplot(avgShuffledSIFt, positions = chanceAPposition, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI, ), medianprops = dict(linewidth = 1.5, color = colorRandSI, ), whiskerprops = dict(linewidth = 1.5, color = colorRandSI, ), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([165,225], [avgShuffledSIFt, avgShuffledSIFt], linestyle = '--', linewidth = 2, c =colorRandSI)
 plt.xlim(165,225)
 plt.xticks(APtickLocs, APtickLabels)

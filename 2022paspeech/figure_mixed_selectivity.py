@@ -22,6 +22,8 @@ import studyparams
 import figparams
 from importlib import reload
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib.font_manager import findfont, FontProperties
+font = findfont(FontProperties(family = ['Helvetica']))
 
 reload(figparams)
 
@@ -29,7 +31,7 @@ FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 1
+SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_mixed_selectivity_wResponsive' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -84,13 +86,15 @@ axMixTeA = plt.subplot(axMixDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.1, wspace=0.25, hspace=0.4)
 plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
-nBins = 8
+nBins = 2
 if nBins == 10:
     nCompar = 45
 elif nBins == 9:
     nCompar = 36
 elif nBins == 8:
     nCompar = 28
+elif nBins == 2:
+    nCompar = 1
 
 binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
 binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
@@ -147,7 +151,7 @@ DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 plt.sca(axMixeSelMap)
-nonSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
+#nonSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
 singSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & singleSelective], y_coords[speechResponsive & ~excludeCells & singleSelective], c = colorSingleSelective, s = 6)
 mixSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & mixedSelective], y_coords[speechResponsive & ~excludeCells & mixedSelective], c = colorMixedSelective, s = 6)
 plt.ylim(220,40)

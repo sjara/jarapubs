@@ -18,7 +18,9 @@ from scipy.io import wavfile
 import scipy.optimize
 import figparams
 import studyparams
+from matplotlib.font_manager import findfont, FontProperties
 from importlib import reload
+font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 FIGNAME = 'figure_behavior'
@@ -217,7 +219,7 @@ pline.set_visible(False)
 plt.xticks([0,20, 40, 60, 80, 100],['9', '6', '2', '-2', '-6', '-9'], fontsize=fontSizeTicks)
 plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.xlabel('Formant Transition slope \n (oct/s)', fontsize=fontSizeLabels, labelpad = 0.3)
-plt.title('Example mouse: FT', fontsize=fontSizeLabels, pad=5)
+#plt.title('Example mouse: FT', fontsize=fontSizeLabels, pad=5)
 #plt.grid(True, axis='y', color='0.9')
 axExFt.spines["right"].set_visible(False)
 axExFt.spines["top"].set_visible(False)
@@ -241,7 +243,7 @@ pline.set_visible(False)
 plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
 plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
-plt.title('Example mouse: VOT', fontsize=fontSizeLabels, pad=5)
+#plt.title('Example mouse: VOT', fontsize=fontSizeLabels, pad=5)
 #plt.grid(True, axis='y', color='0.9')
 axExVot.spines["right"].set_visible(False)
 axExVot.spines["top"].set_visible(False)
@@ -276,7 +278,7 @@ plt.ylim([0,100])
 plt.xticks([0,20, 40, 60, 80, 100],['9', '6', '2', '-2', '-6', '-9'], fontsize=fontSizeTicks)
 #plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
 plt.xlabel('Formant Transisiton slope \n (oct/s)', fontsize=fontSizeLabels, labelpad = 0.3)
-plt.title('Cohort average: FT', fontsize=fontSizeLabels, pad=5)
+#plt.title('Cohort average: FT', fontsize=fontSizeLabels, pad=5)
 #plt.grid(True, axis='y', color='0.9')
 axPopFt.spines["right"].set_visible(False)
 axPopFt.spines["top"].set_visible(False)
@@ -300,7 +302,7 @@ plt.ylim([0,100])
 plt.xticks([0,20,40,60,80,100], ['2', '4', '8', '16', '32', '64'], fontsize=fontSizeTicks)
 #plt.ylabel('Rightward choice (%)', fontsize=fontSizeLabels)
 plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
-plt.title('Cohort average: VOT', fontsize=fontSizeLabels, pad=5)
+#plt.title('Cohort average: VOT', fontsize=fontSizeLabels, pad=5)
 #plt.grid(True, axis='y', color='0.9')
 
 axPopVot.annotate('n = 9 mice \n 8 sessions', xy = (0,75), xycoords = 'data')

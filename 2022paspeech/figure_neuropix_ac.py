@@ -16,7 +16,8 @@ import figparams
 import studyparams
 from importlib import reload
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
+from matplotlib.font_manager import findfont, FontProperties
+font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
