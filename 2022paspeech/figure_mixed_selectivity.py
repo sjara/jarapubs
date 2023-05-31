@@ -36,7 +36,6 @@ outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_mixed_selectivity_wResponsive' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 5.25] # In inches
-STATSUMMARY = 0
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -87,14 +86,6 @@ gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.1, wspace=0.25, hspace=0
 plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
 nBins = 2
-if nBins == 10:
-    nCompar = 45
-elif nBins == 9:
-    nCompar = 36
-elif nBins == 8:
-    nCompar = 28
-elif nBins == 2:
-    nCompar = 1
 
 binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
 binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
@@ -160,7 +151,7 @@ plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
-plt.legend(['Non-selective', 'Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
+plt.legend(['Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
 #plt.title('Mixed selectivity', fontsize = fontSizeTitles)
 axMixeSelMap.spines["right"].set_visible(False)
 axMixeSelMap.spines["top"].set_visible(False)
@@ -169,8 +160,8 @@ binCountsMixed_AP = np.zeros(nBins)
 binCountsMixed_DV = np.zeros(nBins)
 binCountsSingle_AP = np.zeros(nBins)
 binCountsSingle_DV = np.zeros(nBins)
-binCountsNonSel_AP = np.zeros(nBins)
-binCountsNonSel_DV = np.zeros(nBins)
+#binCountsNonSel_AP = np.zeros(nBins)
+#binCountsNonSel_DV = np.zeros(nBins)
 
 
 # Not showing non-responsive

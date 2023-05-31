@@ -101,14 +101,7 @@ gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=
 plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
 nBins = 2
-if nBins == 10:
-    nCompar = 45
-elif nBins == 9:
-    nCompar = 36
-elif nBins == 8:
-    nCompar = 28
-elif nBins == 2:
-    nCompar = 1
+nCompar = np.sum(np.arange(nBins-1,0,-1))
 
 binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
 binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
@@ -133,6 +126,9 @@ quantilesSingleSelective_AP = []
 quantilesSingleSelective_DV = []
 quantilesMixedSelective_AP = []
 quantilesMixedSelective_DV = []
+quantilesResponsive_AP = []
+quantilesResponsive_DV = []
+
 
 for indBin, thisBin in enumerate(binsDV):
     if indBin < len(binsDV) - 1:
@@ -153,6 +149,8 @@ for indBin, thisBin in enumerate(binsDV):
     quantilesSingleSelective_DV.append(singleSelective[thisQuantileDV])
     quantilesMixedSelective_AP.append(mixedSelective[thisQuantileAP])
     quantilesMixedSelective_DV.append(mixedSelective[thisQuantileDV])
+    quantilesResponsive_AP.append(speechResponsive[thisQuantileAP])
+    quantilesResponsive_DV.append(speechResponsive[thisQuantileDV])
 
 
 if STATSUMMARY:
@@ -226,7 +224,7 @@ if STATSUMMARY:
         nBinCompar = nBins - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quantilesVotSelective_DV[indBin]), np.sum(quantilesVotSelective_DV[x + indBin + 1])],[np.sum(~quantilesVotSelective_DV[indBin]), np.sum(~quantilesVotSelective_DV[x + indBin + 1])]]))
+            oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quantilesVotSelective_DV[indBin]), np.sum(quantilesVotSelective_DV[x + indBin + 1])],[np.sum(quantilesResponsive_DV[indBin]), np.sum(quantilesResponsive_DV[x + indBin + 1])]]))
             binByBinComparFracVotSelectiveDV[a] = pvalFracVOTSelective
 
     ##--Test frac VOT selective AP
@@ -236,7 +234,7 @@ if STATSUMMARY:
         nBinCompar = nBins - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quantilesVotSelective_AP[indBin]), np.sum(quantilesVotSelective_AP[x + indBin + 1])],[np.sum(~quantilesVotSelective_AP[indBin]), np.sum(~quantilesVotSelective_AP[x + indBin + 1])]]))
+            oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quantilesVotSelective_AP[indBin]), np.sum(quantilesVotSelective_AP[x + indBin + 1])],[np.sum(quantilesResponsive_AP[indBin]), np.sum(quantilesResponsive_AP[x + indBin + 1])]]))
             binByBinComparFracVotSelectiveAP[a] = pvalFracVOTSelective
 
     ##--Test frac FT selective DV
@@ -246,7 +244,7 @@ if STATSUMMARY:
         nBinCompar = nBins - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quantilesFtSelective_DV[indBin]), np.sum(quantilesFtSelective_DV[x + indBin + 1])],[np.sum(~quantilesFtSelective_DV[indBin]), np.sum(~quantilesFtSelective_DV[x + indBin + 1])]]))
+            oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quantilesFtSelective_DV[indBin]), np.sum(quantilesFtSelective_DV[x + indBin + 1])],[np.sum(quantilesResponsive_DV[indBin]), np.sum(quantilesResponsive_DV[x + indBin + 1])]]))
             binByBinComparFracFtSelectiveDV[a] = pvalFracFTSelective
 
 
@@ -257,7 +255,7 @@ if STATSUMMARY:
         nBinCompar = nBins - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quantilesFtSelective_AP[indBin]), np.sum(quantilesFtSelective_AP[x + indBin + 1])],[np.sum(~quantilesFtSelective_AP[indBin]), np.sum(~quantilesFtSelective_AP[x + indBin + 1])]]))
+            oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quantilesFtSelective_AP[indBin]), np.sum(quantilesFtSelective_AP[x + indBin + 1])],[np.sum(    quantilesResponsive_AP[indBin]), np.sum(quantilesResponsive_AP[x + indBin + 1])]]))
             binByBinComparFracFtSelectiveAP[a] = pvalFracFTSelective
 
 

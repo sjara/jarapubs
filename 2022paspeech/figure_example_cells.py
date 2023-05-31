@@ -11,6 +11,7 @@ from jaratoolbox import colorpalette as cp
 from scipy import signal
 import matplotlib.gridspec as gs
 import matplotlib.pyplot as plt
+from matplotlib import patches
 from jaratoolbox import extraplots
 import studyparams
 import figparams
@@ -19,7 +20,7 @@ from matplotlib.font_manager import findfont, FontProperties
 font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_example_cells'
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -46,17 +47,17 @@ selectivityIndexFT_VOTmax = figData['selectivityIndexFT_VOTmax']
 selectivityIndexFT_VOTmin = figData['selectivityIndexFT_VOTmin']
 whichFT = figData['whichFT']
 whichVOT = figData['whichVOT']
-#exampleCells = [1155, 1330, 777, 162]
+#exampleCells = [898, 1155, 1054, 687] #VOT selective, FT selective, Mixed, Responsive-nonselective
 exampleCells = [12, 14, 15, 18]
 
 VOTlabels = ['0', '20', '40', '60']
 FTlabels = ['9', '3', '-3', '-9']
-colorsEachVOT = [cp.TangoPalette['ScarletRed3'], cp.TangoPalette['ScarletRed2'], cp.TangoPalette['Butter2'], cp.TangoPalette['Butter3']]
-colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue2'], cp.TangoPalette['Chameleon2'], cp.TangoPalette['Chameleon3']]
+colorSounds = cp.TangoPalette['Butter2']
+colorsEachVOT = [cp.TangoPalette['Orange1'], cp.TangoPalette['Orange2'], cp.TangoPalette['ScarletRed2'], cp.TangoPalette['ScarletRed3']]
+colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue1'], cp.TangoPalette['Plum1'], cp.TangoPalette['Plum3']]
 plt.figure()
 gsMain = gs.GridSpec(2, 2)
-gsMain.update(left=0.075, right=0.98, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)
-
+gsMain.update(left=0.075, right=0.925, top=0.925, bottom=0.0725, wspace=0.3, hspace=0.3)
 #plt.gcf().set_size_inches([14, 12])
 
 for indCell, thisCell in enumerate(exampleCells):
@@ -65,6 +66,8 @@ for indCell, thisCell in enumerate(exampleCells):
     axRasterFt = plt.subplot(gsCell[0,1])
     axPsthVot = plt.subplot(gsCell[1,0])
     axPsthFt = plt.subplot(gsCell[1,1])
+    plt.subplots_adjust(wspace = 0.45)
+
 
     dbRow = celldb.loc[thisCell]
     oneCell = ephyscore.Cell(dbRow)
@@ -89,7 +92,7 @@ for indCell, thisCell in enumerate(exampleCells):
     (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
 
     # Type-sorted rasters -- FTVOTBorders
-    timeRange = [-0.075, 0.15]
+    #timeRange = [-0.075, 0.15]
     VOTParamsEachTrial = bdata['targetVOTpercent']
     possibleVOTParams = np.unique(VOTParamsEachTrial)
     possibleFTParams = np.unique(FTParamsEachTrial)
@@ -108,41 +111,29 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.sca(axRasterVot)
     if whichVOT[thisCell] == 1: #VOT used for SI == FTmax
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachVOT_FTmax, colorsEachVOT, labels = VOTlabels)
-        plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        ymax = np.sum(trialsEachVOT_FTmax)
+        #plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
     else:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachVOT_FTmin, colorsEachVOT, labels = VOTlabels)
-        plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        #plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        ymax = np.sum(trialsEachVOT_FTmin)
     plt.setp(pRaster, ms=pointSize)
     plt.xticks([])
     plt.ylabel('VOT (ms)', fontsize=fontSizeLabels, fontweight='bold')
+    #rect = patches.Rectangle((0, ymax), 0.24, 10, edgecolor='none', facecolor=colorSounds)
+    #axRasterVot.add_patch(rect)
+    axRasterVot.text(0, ymax, '', bbox=dict(boxstyle="square", facecolor = colorSounds))
 
-    '''
-    # Raster -- VOT (FTmax)
-    axRaster_VotFtmax = plt.subplot(gsMain[0, 1])
-    pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachVOT_FTmax, colorsEachVOT, labels = VOTlabels)
-    plt.setp(pRaster, ms=pointSize)
-    plt.xticks([])
-    plt.ylabel('VOT (ms)', fontsize=fontSizeLabels, fontweight='bold')
-    plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[indCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
 
-    # Raster -- FT (VOT = min)
-    axRaster_FtVotmin = plt.subplot(gsMain[0, 2])
-    pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachFT_VOTmin, colorsEachFT, labels = FTlabels)
-    plt.setp(pRaster, ms=pointSize)
-    plt.xticks([])
-    plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='bold')
-    plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[indCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
-    '''
 
-    # Raster -- FT (VOT = max)
-    #axRaster_FtVotmax = plt.subplot(gsMain[0, 3])
+    # Raster -- FT
     plt.sca(axRasterFt)
     if whichFT[thisCell] == 1:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachFT_VOTmax, colorsEachFT, labels = FTlabels)
-        plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        #plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
     else:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachFT_VOTmin, colorsEachFT, labels = FTlabels)
-        plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
     plt.setp(pRaster, ms=pointSize)
     plt.xticks([])
     plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='bold')
@@ -156,40 +147,30 @@ for indCell, thisCell in enumerate(exampleCells):
     downsampleFactorPsth = 3
     spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset, indexLimitsEachTrial, timeVec)
 
-    # PSTH -- VOT (FTmin)
-    #axPSTH_VotFtmax = plt.subplot(gsMain[1, 1], sharex = axRaster_VotFtmax)
+    # PSTH -- VOT
     plt.sca(axPsthVot)
     if whichVOT[thisCell] == 1:
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmax, colorsEachVOT, linestyle=None)
     else:
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmin, colorsEachVOT, linestyle=None)
+    plt.ylabel('Firing rate (spk/s)', fontsize=fontSizeLabels, fontweight='bold')
+    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
 
+
+    # PSTH -- FT
     plt.sca(axPsthFt)
     if whichFT[thisCell] == 1:
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmax, colorsEachFT, linestyle=None)
     else:
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmin, colorsEachFT, linestyle=None)
-
-    '''
-    # PSTH -- VOT (FTmax)
-    axPSTH_VotFtmax = plt.subplot(gsMain[1, 1], sharex = axRaster_VotFtmax)
-    extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmax, colorsEachVOT, linestyle=None)
+    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
 
 
-    #--FT--
-    # PSTH -- FT (VOTmin)
-    axPSTH_FtVotmin = plt.subplot(gsMain[1, 2], sharex = axRaster_FtVotmin)
-    extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmin, colorsEachFT, linestyle=None)
 
-    # PSTH -- FT (VOTmax)
-    axPSTH_FtVotmax = plt.subplot(gsMain[1, 3], sharex = axRaster_FtVotmax)
-    extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmax, colorsEachFT, linestyle=None)
-    '''
 
-    plt.show()
-    #input("press enter for next cell")
+plt.show()
 
-    if SAVE_FIGURE:
-        extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
+if SAVE_FIGURE:
+    extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
 
-    #plt.close()
+#plt.close()
