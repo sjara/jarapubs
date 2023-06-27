@@ -64,8 +64,8 @@ for indCell, thisCell in enumerate(exampleCells):
     gsCell = gsMain[indCell].subgridspec(2,2, height_ratios = [0.6, 0.4])
     axRasterVot = plt.subplot(gsCell[0,0])
     axRasterFt = plt.subplot(gsCell[0,1])
-    axPsthVot = plt.subplot(gsCell[1,0])
-    axPsthFt = plt.subplot(gsCell[1,1])
+    axPsthVot = plt.subplot(gsCell[1,0], sharex = axRasterVot)
+    axPsthFt = plt.subplot(gsCell[1,1], sharex = axRasterFt)
     plt.subplots_adjust(wspace = 0.45)
 
 
@@ -119,6 +119,7 @@ for indCell, thisCell in enumerate(exampleCells):
         ymax = np.sum(trialsEachVOT_FTmin)
     plt.setp(pRaster, ms=pointSize)
     plt.xticks([])
+    plt.xlim(-0.1,0.35)
     plt.ylabel('VOT (ms)', fontsize=fontSizeLabels, fontweight='bold')
     #rect = patches.Rectangle((0, ymax), 0.24, 10, edgecolor='none', facecolor=colorSounds)
     #axRasterVot.add_patch(rect)
@@ -136,6 +137,7 @@ for indCell, thisCell in enumerate(exampleCells):
         #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
     plt.setp(pRaster, ms=pointSize)
     plt.xticks([])
+    plt.xlim(-0.1,0.35)
     plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='bold')
 
 
@@ -146,6 +148,7 @@ for indCell, thisCell in enumerate(exampleCells):
     smoothWinSizePsth = 6
     downsampleFactorPsth = 3
     spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset, indexLimitsEachTrial, timeVec)
+    xTicks = [0,0.25]
 
     # PSTH -- VOT
     plt.sca(axPsthVot)
@@ -155,7 +158,7 @@ for indCell, thisCell in enumerate(exampleCells):
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmin, colorsEachVOT, linestyle=None)
     plt.ylabel('Firing rate (spk/s)', fontsize=fontSizeLabels, fontweight='bold')
     plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
-
+    plt.xticks(xTicks)
 
     # PSTH -- FT
     plt.sca(axPsthFt)
@@ -164,7 +167,7 @@ for indCell, thisCell in enumerate(exampleCells):
     else:
         extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmin, colorsEachFT, linestyle=None)
     plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
-
+    plt.xticks(xTicks)
 
 
 

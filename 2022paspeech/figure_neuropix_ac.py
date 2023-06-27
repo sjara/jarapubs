@@ -14,6 +14,7 @@ from jaratoolbox import extraplots
 from jaratoolbox import colorpalette as cp
 import figparams
 import studyparams
+from scipy import stats
 from importlib import reload
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.font_manager import findfont, FontProperties
@@ -21,11 +22,12 @@ font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
+STATSUMMARY = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_neuropix_methods' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
-figSize = [7, 5] # In inches
+figSize = [5.25, 6.75] # In inches
 
 PANELS = [3,1] # Plot panel i if PANELS[i]==1
 
@@ -38,32 +40,37 @@ colorNotAud = cp.TangoPalette['Aluminium3']
 colorSoundResp = cp.TangoPalette['SkyBlue2']
 
 
-labelPosX = [0.07, 0.3, 0.53] # Horiz position for panel labels
-labelPosY = [0.93, 0.48]    # Vert position for panel labels
+labelPosX = [0.07, 0.28, 0.58, 0.73] # Horiz position for panel labels
+labelPosY = [0.93, 0.75]    # Vert position for panel labels
 
-plt.figure()
-gsMain = gridspec.GridSpec(1, 2, width_ratios=[0.3, 0.7])
-gsMain.update(left=0.1, right=0.93, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)
-gsLeft = gsMain[0].subgridspec(2,1)
+gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.15, 0.85])
+gsMain.update(left=0.1, right=0.97, top=0.9, bottom=0.08, wspace=0.3, hspace=0.3)
+gsTop = gsMain[0].subgridspec(1,3, width_ratios = [0.2, 0.35, 0.45])
 
-axCartoon = plt.subplot(gsLeft[0,0])
+axCartoon = plt.subplot(gsTop[0,0])
 axCartoon.set_axis_off()
 
-axSoundMatrix = plt.subplot(gsLeft[1,0])
-axSoundMatrix.set_axis_off()
-
-gsRight = gsMain[1].subgridspec(1,2, width_ratios = [0.3, 0.7])
-axHist = plt.subplot(gsRight[0,0])
+axHist = plt.subplot(gsTop[0,1])
 axHist.set_axis_off()
 
-axCellLocs = plt.subplot(gsRight[0,1])
+axSoundMatrix = plt.subplot(gsTop[0,2])
+axSoundMatrix.set_axis_off()
+
+gsBottom = gsMain[1].subgridspec(4,2, width_ratios = [0.7, 0.3])
+
+axCellLocs = plt.subplot(gsBottom[:,0])
+
+axDonutAudP = plt.subplot(gsBottom[0,1])
+axDonutAudD = plt.subplot(gsBottom[1,1])
+axDonutAudV = plt.subplot(gsBottom[2,1])
+axDonutTeA = plt.subplot(gsBottom[3,1])
 
 
 axCartoon.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axSoundMatrix.annotate('B', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axHist.annotate('C', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axCellLocs.annotate('D', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-
+axSoundMatrix.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axHist.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axDonutAudP.annotate('D', xy=(labelPosX[3],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axCellLocs.annotate('E', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
@@ -78,8 +85,9 @@ x_coords_jittered = figData['x_coords_jittered']
 z_coords_jittered = figData['z_coords_jittered']
 speechResponsive = figData['speechResponsive']
 soundResponsive = figData['soundResponsive']
-excludeCells = figData['excludeCells']
+isCortical = figData['isCortical']
 recordingAreaName = figData['recordingAreaName']
+audCtxAreas = figData['audCtxAreas']
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
 APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
@@ -88,37 +96,103 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 
 plt.sca(axCellLocs)
-nonResp = plt.scatter(z_coords_jittered[~(speechResponsive | excludeCells)], y_coords[~(speechResponsive | excludeCells)], c = colorNotAud, s=6)
-soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive], y_coords[soundResponsive & ~speechResponsive], c = colorSoundResp, s = 6)
-speechResp = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells] , y_coords[speechResponsive & ~excludeCells], c = colorSpeechResp, s=6)
+nonResp = plt.scatter(z_coords_jittered[~soundResponsive & isCortical], y_coords[~soundResponsive & isCortical], c = colorNotAud, s=6)
+soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & isCortical], y_coords[soundResponsive & ~speechResponsive & isCortical], c = colorSoundResp, s = 6)
+speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical] , y_coords[speechResponsive & isCortical], c = colorSpeechResp, s=6)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.legend([nonResp, soundResp, speechResp], ['All cells', 'Sound responsive','Speech responsive'], loc = 'upper center', markerscale = 2 , bbox_to_anchor = (0.5,1.1))
+plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
 
+##-- Donut Plots --
+nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]))
+nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1]))
+nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2]) )
+nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3]))
 
-#plt.sca(axCellLocs)
-'''
-plt.scatter(z_coords[areaName == figData['audCtxAreas'][0]], y_coords[areaName == figData['audCtxAreas'][0]], c = colorAudP)
-plt.scatter(z_coords[areaName == figData['audCtxAreas'][1]], y_coords[areaName == figData['audCtxAreas'][1]], c = colorAudD)
-plt.scatter(z_coords[areaName == figData['audCtxAreas'][2]], y_coords[areaName == figData['audCtxAreas'][2]], c = colorAudV)
-plt.legend(labels = ['AudP', 'AudD', 'AudV'], loc = 'lower left', bbox_to_anchor=(-0.3,0.8))
-'''
+nSoundResponsiveAudP = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[0]))
+nSoundResponsiveAudD = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[1]))
+nSoundResponsiveAudV = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[2]))
+nSoundResponsiveTeA = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[3]))
+
+nCellsAudP = np.sum((recordingAreaName == audCtxAreas[0]))
+nCellsAudD = np.sum((recordingAreaName == audCtxAreas[1]))
+nCellsAudV = np.sum((recordingAreaName == audCtxAreas[2]))
+nCellsTeA = np.sum((recordingAreaName == audCtxAreas[3]))
 
 
-#axCellLocs.invert_yaxis()
-#cbar = plt.colorbar(cmap = 'viridis')
+plt.sca(axDonutAudP)
+circle1 = plt.Circle((0,0), 0.7, color = 'white')
+plt.pie([nSpeechResponsiveAudP, nSoundResponsiveAudP - nSpeechResponsiveAudP, nCellsAudP - nSoundResponsiveAudP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
+axDonutAudP.add_artist(circle1)
+plt.title(f'AudP,\n n = {nCellsAudP}', pad = -0.3 , fontsize = fontSizeTicks)
 
-#axFt = plt.subplot(gsSelectivity[0,1])
+
+plt.sca(axDonutAudD)
+circle2 = plt.Circle((0,0), 0.7, color = 'white')
+plt.pie([nSpeechResponsiveAudD, nSoundResponsiveAudD - nSpeechResponsiveAudD, nCellsAudD - nSoundResponsiveAudD], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
+axDonutAudD.add_artist(circle2)
+plt.title(f'AudD,\n n = {nCellsAudD}', pad = -0.3, fontsize = fontSizeTicks)
 
 
+plt.sca(axDonutAudV)
+circle3 = plt.Circle((0,0), 0.7, color = 'white')
+plt.pie([nSpeechResponsiveAudV, nSoundResponsiveAudV - nSpeechResponsiveAudV, nCellsAudV - nSoundResponsiveAudV], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
+axDonutAudV.add_artist(circle3)
+plt.title(f'AudV,\n n = {nCellsAudV}', pad = -0.3, fontsize = fontSizeTicks)
+
+plt.sca(axDonutTeA)
+circle4 = plt.Circle((0,0), 0.7, color = 'white')
+plt.pie([nSpeechResponsiveTeA, nSoundResponsiveTeA - nSpeechResponsiveTeA, nCellsTeA - nSoundResponsiveTeA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
+axDonutTeA.add_artist(circle4)
+plt.title(f'TeA,\n n = {nCellsTeA}', pad = -0.3, fontsize = fontSizeTicks)
 
 plt.show()
 
 if SAVE_FIGURE:
     extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
+
+
+if STATSUMMARY:
+    # Test proportion of speech responsive cells between areas (of sound responsive cells)
+    oddsratio, pvalFracResponsive_AudPvsAudD = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudD],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveAudD - nSpeechResponsiveAudD]]))
+    oddsratio, pvalFracResponsive_AudPvsAudV = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudV],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveAudV - nSpeechResponsiveAudV]]))
+    oddsratio, pvalFracResponsive_AudDvsAudV = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveAudV],[nSoundResponsiveAudD - nSpeechResponsiveAudD, nSoundResponsiveAudV - nSpeechResponsiveAudV]]))
+    oddsratio, pvalFracResponsive_AudPvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudDvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nSoundResponsiveAudD - nSpeechResponsiveAudD, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudVvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nSoundResponsiveAudV - nSpeechResponsiveAudV, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+
+    # Test proportion of speech responsive cells between areas (of all cells)
+    oddsratio, pvalFracResponsive_AudPvsAudD_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudD],[nCellsAudP - nSpeechResponsiveAudP, nCellsAudD - nSpeechResponsiveAudD]]))
+    oddsratio, pvalFracResponsive_AudPvsAudV_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudV],[nCellsAudP - nSpeechResponsiveAudP, nCellsAudV - nSpeechResponsiveAudV]]))
+    oddsratio, pvalFracResponsive_AudDvsAudV_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveAudV],[nCellsAudD - nSpeechResponsiveAudD, nCellsAudV - nSpeechResponsiveAudV]]))
+    oddsratio, pvalFracResponsive_AudPvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nCellsAudP - nSpeechResponsiveAudP, nCellsTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudDvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nCellsAudD - nSpeechResponsiveAudD, nCellsTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudVvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nCellsAudV - nSpeechResponsiveAudV, nCellsTeA - nSpeechResponsiveTeA]]))
+
+
+    print('--Stats Summary--')
+    print(f'AudP n: {nCellsAudP}, n any sound responsive: {nSoundResponsiveAudP} ({np.round((nSoundResponsiveAudP/nCellsAudP)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudP}, ({np.round((nSpeechResponsiveAudP/nCellsAudP)*100, 1)}% total, {np.round((nSpeechResponsiveAudP/nSoundResponsiveAudP)*100, 1)}% soundResponsive)')
+    print(f'AudD n: {nCellsAudD}, n any sound responsive: {nSoundResponsiveAudD} ({np.round((nSoundResponsiveAudD/nCellsAudD)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudD}, ({np.round((nSpeechResponsiveAudD/nCellsAudD)*100, 1)}% total, {np.round((nSpeechResponsiveAudD/nSoundResponsiveAudD)*100, 1)}% soundResponsive)')
+    print(f'AudV n: {nCellsAudV}, n any sound responsive: {nSoundResponsiveAudV} ({np.round((nSoundResponsiveAudV/nCellsAudV)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudV}, ({np.round((nSpeechResponsiveAudV/nCellsAudV)*100, 1)}% total, {np.round((nSpeechResponsiveAudV/nSoundResponsiveAudV)*100, 1)}% soundResponsive)')
+    print(f'TeA n: {nCellsTeA}, n any sound responsive: {nSoundResponsiveTeA} ({np.round((nSoundResponsiveTeA/nCellsTeA)*100, 1)}%), n speech responsive: {nSpeechResponsiveTeA}, ({np.round((nSpeechResponsiveTeA/nCellsTeA)*100, 1)}% total, {np.round((nSpeechResponsiveTeA/nSoundResponsiveTeA)*100, 1)}% soundResponsive)')
+    print(f'Bonferroni corrected alpha = 0.05/6 = {np.round(0.05/6,3)}')
+    print('--Frac speech responsive of sound responsive --')
+    print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD,3)}')
+    print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV,3)}')
+    print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV,3)}')
+    print(f'AudP vs Tea p = {np.round(pvalFracResponsive_AudPvsTea,3)}')
+    print(f'AudD vs Tea p = {np.round(pvalFracResponsive_AudDvsTea,3)}')
+    print(f'AudV vs Tea p = {np.round(pvalFracResponsive_AudVvsTea,3)}')
+    print('--Frac speech responsive of total cells --')
+    print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD_allcells,3)}')
+    print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV_allcells,3)}')
+    print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV_allcells,3)}')
+    print(f'AudP vs Tea p = {np.round(pvalFracResponsive_AudPvsTea_allcells,3)}')
+    print(f'AudD vs Tea p = {np.round(pvalFracResponsive_AudDvsTea_allcells,3)}')
+    print(f'AudV vs Tea p = {np.round(pvalFracResponsive_AudVvsTea_allcells,3)}')

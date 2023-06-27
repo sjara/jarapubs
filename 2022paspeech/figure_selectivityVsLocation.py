@@ -59,7 +59,7 @@ z_coords = figData['z_coord']
 z_coords_jittered = figData['z_coords_jittered']
 x_coords_jittered = figData['x_coords_jittered']
 speechResponsive = figData['speechResponsive']
-excludeCells = figData['excludeCells']
+excludeSpeech = figData['excludeSpeech']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
 pvalPermutationtestFt = figData['pvalPermutationtestFt']
@@ -68,11 +68,11 @@ shuffledVotBest = figData['shuffledVotBest']
 shuffledFtBest = figData['shuffledFtBest']
 recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
-avgShuffledSIVot = np.mean(shuffledVotBest[~excludeCells & speechResponsive],1)
-avgShuffledSIFt = np.mean(shuffledFtBest[~excludeCells & speechResponsive], 1)
+avgShuffledSIVot = np.mean(shuffledVotBest[~excludeSpeech & speechResponsive],1)
+avgShuffledSIFt = np.mean(shuffledFtBest[~excludeSpeech & speechResponsive], 1)
 
 
-plt.figure()
+#plt.figure()
 gsMain = gridspec.GridSpec(2, 1)
 
 gsVOT = gsMain[0].subgridspec(4, 3, width_ratios = [0.4, 0.25, 0.35])
@@ -100,17 +100,26 @@ axFtTeA = plt.subplot(axFtDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=0.3)
 plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
-nBins = 2
+nBins = 8
 nCompar = np.sum(np.arange(nBins-1,0,-1))
 
-binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
-binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
+spreadDV = np.max(y_coords[speechResponsive]) - np.min(y_coords[speechResponsive])
+binSizeDV = spreadDV/nBins
+binsDV = np.arange(np.min(y_coords[speechResponsive]), np.max(y_coords[speechResponsive]), binSizeDV)
+binsDV_AAtransform = np.round((binsDV-10)*0.025,1)
 
-binSizeAP = (np.max(z_coords[speechResponsive & ~excludeCells]) - np.min(z_coords[speechResponsive & ~excludeCells]))/nBins
-binsAP = np.arange(np.min(z_coords[speechResponsive & ~excludeCells]), np.max(z_coords[speechResponsive & ~excludeCells]), binSizeAP)
 
-votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive & ~excludeCells
-ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive & ~excludeCells
+
+spreadAP = np.max(z_coords[speechResponsive]) - np.min(z_coords[speechResponsive])
+binSizeAP = spreadAP/nBins
+binsAP = np.arange(np.min(z_coords[speechResponsive]), np.max(z_coords[speechResponsive]), binSizeAP)
+binsAP_AAtransform = np.round(-0.94 - (280-binsAP)*0.025,1)
+
+
+
+
+votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
+ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
@@ -128,19 +137,40 @@ quantilesMixedSelective_AP = []
 quantilesMixedSelective_DV = []
 quantilesResponsive_AP = []
 quantilesResponsive_DV = []
+quantilesDV = np.zeros([nBins, len(speechResponsive)], dtype = bool)
+quantilesAP = np.zeros([nBins, len(speechResponsive)], dtype = bool)
+
+quadrantsVOT_DV = np.empty([4, len(speechResponsive)])
+quadrantsFT_DV = []
+quadrantsVOT_AP = []
+quadrantsFT_AP = []
+quadrantsVotSelective_DV = []
+quadrantsVotSelective_AP = []
+quadrantsFtSelective_DV = []
+quadrantsFtSelective_AP = []
+quadrantsSingleSelective_AP = []
+quadrantsSingleSelective_DV = []
+quadrantsMixedSelective_AP = []
+quadrantsMixedSelective_DV = []
+quadrantsResponsive_AP = []
+quadrantsResponsive_DV = []
 
 
+
+# -- BINS in AP and DV
 for indBin, thisBin in enumerate(binsDV):
     if indBin < len(binsDV) - 1:
         thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords < binsDV[indBin+1])
         thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords < binsAP[indBin+1])
     elif indBin == len(binsDV) - 1:
-        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords <= np.max(y_coords[speechResponsive & ~excludeCells]))
-        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords <= np.max(z_coords[speechResponsive & ~excludeCells]))
-    quantilesVOT_DV.append(bestSelectivityIndexVot[thisQuantileDV & speechResponsive & ~excludeCells])
-    quantilesFT_DV.append(bestSelectivityIndexFt[thisQuantileDV & speechResponsive & ~excludeCells])
-    quantilesVOT_AP.append(bestSelectivityIndexVot[thisQuantileAP & speechResponsive & ~excludeCells])
-    quantilesFT_AP.append(bestSelectivityIndexFt[thisQuantileAP & speechResponsive & ~excludeCells])
+        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords <= np.max(y_coords[speechResponsive]))
+        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords <= np.max(z_coords[speechResponsive]))
+    quantilesAP[indBin] = thisQuantileAP
+    quantilesDV[indBin] = thisQuantileDV
+    quantilesVOT_DV.append(bestSelectivityIndexVot[thisQuantileDV & speechResponsive])
+    quantilesFT_DV.append(bestSelectivityIndexFt[thisQuantileDV & speechResponsive])
+    quantilesVOT_AP.append(bestSelectivityIndexVot[thisQuantileAP & speechResponsive])
+    quantilesFT_AP.append(bestSelectivityIndexFt[thisQuantileAP & speechResponsive])
     quantilesVotSelective_AP.append(votSelective[thisQuantileAP])
     quantilesFtSelective_AP.append(ftSelective[thisQuantileAP])
     quantilesVotSelective_DV.append(votSelective[thisQuantileDV])
@@ -152,8 +182,85 @@ for indBin, thisBin in enumerate(binsDV):
     quantilesResponsive_AP.append(speechResponsive[thisQuantileAP])
     quantilesResponsive_DV.append(speechResponsive[thisQuantileDV])
 
+# -- QUADRANTS
+quadrantsVOT = []
+quadrantsFT = []
+quadrantsVotSelective = []
+quadrantsFtSelective = []
+quadrantsSingleSelective = []
+quadrantsMixedSelective = []
+quadrantsResponsive = []
+
+for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+    for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+        quadrantsVOT.append(bestSelectivityIndexVot[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsFT.append(bestSelectivityIndexFt[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsVotSelective.append(votSelective[thisQuantileAP & thisQuantileDV])
+        quadrantsFtSelective.append(ftSelective[thisQuantileAP & thisQuantileDV])
+        quadrantsSingleSelective.append(singleSelective[thisQuantileDV & thisQuantileAP])
+        quadrantsMixedSelective.append(mixedSelective[thisQuantileDV & thisQuantileAP])
+        quadrantsResponsive.append(speechResponsive[thisQuantileDV & thisQuantileAP])
+
 
 if STATSUMMARY:
+    # -- QUADRANTS
+    kstat, pvalQuadrantsVOT = stats.kruskal(quadrantsVOT[0], quadrantsVOT[1], quadrantsVOT[2], quadrantsVOT[3])
+    kstat, pvalQuadrantsFT = stats.kruskal(quadrantsFT[0], quadrantsFT[1], quadrantsFT[2], quadrantsFT[3])
+    nQuadCompar = 6
+    quadAlpha = 0.05/6
+    quadComparLabels = np.array(['DP vs DA', 'DP vs. VP', 'DP vs. VA', 'DA vs. VP', 'DA vs. VA', 'VP vs. VA'])
+
+    if pvalQuadrantsVOT < 0.05:
+        quadrantComparVot = np.ones(nQuadCompar)
+        a = -1
+        for indBin, thisBin in enumerate(quadrantsVOT):
+            nBinCompar = 4 - indBin -1
+            for x in range(nBinCompar):
+                a = a+1
+                ustat, pvalMannU = stats.mannwhitneyu(quadrantsVOT[indBin], quadrantsVOT[x + indBin + 1])
+                quadrantComparVot[a] = pvalMannU
+    if pvalQuadrantsFT < 0.05:
+        quadrantComparFt = np.ones(nQuadCompar)
+        a = -1
+        for indBin, thisBin in enumerate(quadrantsFT):
+            nBinCompar = 4 - indBin -1
+            for x in range(nBinCompar):
+                a = a+1
+                ustat, pvalMannU = stats.mannwhitneyu(quadrantsFT[indBin], quadrantsFT[x + indBin + 1])
+                quadrantComparFt[a] = pvalMannU
+
+        ##--Test frac VOT selective
+        quadrantComparFracVotSelective = np.ones(nQuadCompar)
+        a = -1
+        for indBin, thisBin in enumerate(quadrantsVotSelective):
+            nBinCompar = 4 - indBin -1
+            for x in range(nBinCompar):
+                a = a+1
+                oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsVotSelective[x + indBin + 1])],[np.sum(quadrantsResponsive[indBin]) -np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsResponsive[x + indBin + 1]) - np.sum(quadrantsVotSelective[x + indBin + 1])]]))
+                quadrantComparFracVotSelective[a] = pvalFracVOTSelective
+
+        ##--Test frac FT selective
+        quadrantComparFracFtSelective = np.ones(nQuadCompar)
+        a = -1
+        for indBin, thisBin in enumerate(quadrantsFtSelective):
+            nBinCompar = 4 - indBin -1
+            for x in range(nBinCompar):
+                a = a+1
+                oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsFtSelective[x + indBin + 1])],[np.sum(quadrantsResponsive[indBin]) - np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsResponsive[x + indBin + 1]) - np.sum(quadrantsFtSelective[x + indBin + 1])]]))
+                quadrantComparFracFtSelective[a] = pvalFracFTSelective
+
+    ##--Test frac mixed selective
+    quadrantComparFracMixedSelective = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSingleSelective[indBin]), np.sum(quadrantsSingleSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
+            quadrantComparFracMixedSelective[a] = pvalFracMixedSelective
+
+
+    # -- BINS
     binAlpha = 0.05/nCompar
     if nBins == 10:
         kstat, pvalKruskalVotDV= stats.kruskal(quantilesVOT_DV[0], quantilesVOT_DV[1], quantilesVOT_DV[2], quantilesVOT_DV[3], quantilesVOT_DV[4], quantilesVOT_DV[5], quantilesVOT_DV[6], quantilesVOT_DV[7], quantilesVOT_DV[8], quantilesVOT_DV[9])
@@ -170,11 +277,6 @@ if STATSUMMARY:
         kstat, pvalKruskalVotAP= stats.kruskal(quantilesVOT_AP[0], quantilesVOT_AP[1], quantilesVOT_AP[2], quantilesVOT_AP[3], quantilesVOT_AP[4], quantilesVOT_AP[5], quantilesVOT_AP[6], quantilesVOT_AP[7])
         kstat, pvalKruskalFtDV= stats.kruskal(quantilesFT_DV[0], quantilesFT_DV[1], quantilesFT_DV[2], quantilesFT_DV[3], quantilesFT_DV[4], quantilesFT_DV[5], quantilesFT_DV[6], quantilesFT_DV[7])
         kstat, pvalKruskalFtAP= stats.kruskal(quantilesFT_AP[0], quantilesFT_AP[1], quantilesFT_AP[2], quantilesFT_AP[3], quantilesFT_AP[4], quantilesFT_AP[5], quantilesFT_AP[6], quantilesFT_AP[7])
-    elif nBins == 2:
-        kstat, pvalKruskalVotDV= stats.mannwhitneyu(quantilesVOT_DV[0], quantilesVOT_DV[1])
-        kstat, pvalKruskalVotAP= stats.mannwhitneyu(quantilesVOT_AP[0], quantilesVOT_AP[1])
-        kstat, pvalKruskalFtDV= stats.mannwhitneyu(quantilesFT_DV[0], quantilesFT_DV[1])
-        kstat, pvalKruskalFtAP= stats.mannwhitneyu(quantilesFT_AP[0], quantilesFT_AP[1])
 
     if pvalKruskalVotAP < 0.025:
         binByBinComparVotAP = np.ones(nCompar)
@@ -286,8 +388,7 @@ if STATSUMMARY:
         binByBinLabels = np.array(['bin0v1', 'bin0v2', 'bin0v3', 'bin0v4', 'bin0v5', 'bin0v6', 'bin0v7', 'bin0v8', 'bin0v9', 'bin1v2', 'bin1v3', 'bin1v4', 'bin1v5', 'bin1v6', 'bin1v7', 'bin1v8', 'bin1v9', 'bin2v3', 'bin2v4', 'bin2v5', 'bin2v6', 'bin2v7', 'bin2v8', 'bin2v9', 'bin3v4', 'bin3v5', 'bin3v6', 'bin3v7', 'bin3v8', 'bin3v9', 'bin4v5', 'bin4v6', 'bin4v7', 'bin4v8', 'bin4v9', 'bin5v6', 'bin5v7', 'bin5v8', 'bin5v9', 'bin6v7', 'bin6v8', 'bin6v9', 'bin7v8', 'bin7v9', 'bin8v9'])
     elif nBins == 8:
         binByBinLabels = np.array(['bin0v1', 'bin0v2', 'bin0v3', 'bin0v4', 'bin0v5', 'bin0v6', 'bin0v7', 'bin1v2', 'bin1v3', 'bin1v4', 'bin1v5', 'bin1v6', 'bin1v7', 'bin2v3', 'bin2v4', 'bin2v5', 'bin2v6', 'bin2v7', 'bin3v4', 'bin3v5', 'bin3v6', 'bin3v7', 'bin4v5', 'bin4v6', 'bin4v7', 'bin5v6', 'bin5v7', 'bin6v7'])
-    elif nBins == 2:
-        binByBinLabels = np.array(['bin0v1'])
+
     print('--Stats Summary--')
     print(f'nBins = {nBins}, nCompar = {nCompar}')
     print(f'pvalKruskal Vot_AP = {np.round(pvalKruskalVotAP, 3)}')
@@ -333,7 +434,7 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 #plt.suptitle('VOT selectivity by location', fontsize = fontSizeTitles)
 
 plt.sca(axColorMapVOT)
-plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = bestSelectivityIndexVot[speechResponsive & ~excludeCells], cmap = newMap, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexVot[speechResponsive], cmap = newMap, s = 3)
 #plt.ylim(215,60)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
@@ -357,7 +458,7 @@ chanceDVposition = [binsDV[0] - 2*binSizeDV]
 
 
 plt.sca(axVotDV)
-plt.scatter(bestSelectivityIndexVot[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
+plt.scatter(bestSelectivityIndexVot[speechResponsive], y_coords[speechResponsive], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesVOT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
 plt.boxplot(avgShuffledSIVot, positions = chanceDVposition, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([avgShuffledSIVot, avgShuffledSIVot] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
@@ -371,7 +472,7 @@ axVotDV.spines["top"].set_visible(False)
 
 
 plt.sca(axVotAP)
-plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexVot[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
+plt.scatter(z_coords_jittered[speechResponsive], bestSelectivityIndexVot[speechResponsive], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesVOT_AP, positions = binsAP, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
 plt.boxplot(avgShuffledSIVot, positions = chanceAPposition, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([165,225], [avgShuffledSIVot, avgShuffledSIVot], linestyle = '--', linewidth = 2, c =colorRandSI)
@@ -388,7 +489,7 @@ axVotAP.spines["top"].set_visible(False)
 
 plt.sca(axVotAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudP = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[0] ))
+nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0] ))
 nVOTselectiveAudP = np.sum(votSelective[recordingAreaName == audCtxAreas[0]])
 plt.pie([nSpeechResponsiveAudP - nVOTselectiveAudP,  nVOTselectiveAudP], colors = [colorNotSelective, colorVotSelective])
 axVotAudP.add_artist(circle1)
@@ -396,7 +497,7 @@ plt.title(f'AudP,\n n = {int(nSpeechResponsiveAudP)}')
 
 plt.sca(axVotAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudD = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[1] ))
+nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1] ))
 nVOTselectiveAudD = np.sum(votSelective[recordingAreaName == audCtxAreas[1]])
 plt.pie([nSpeechResponsiveAudD - nVOTselectiveAudD,  nVOTselectiveAudD], colors = [colorNotSelective, colorVotSelective])
 axVotAudD.add_artist(circle2)
@@ -408,7 +509,7 @@ plt.title(f'AudD,\n n = {int(nSpeechResponsiveAudD)}')
 
 plt.sca(axVotAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudV = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[2] ))
+nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2] ))
 nVOTselectiveAudV = np.sum(votSelective[recordingAreaName == audCtxAreas[2]])
 plt.pie([nSpeechResponsiveAudV - nVOTselectiveAudV,  nVOTselectiveAudV], colors = [colorNotSelective, colorVotSelective])
 axVotAudV.add_artist(circle3)
@@ -416,7 +517,7 @@ plt.title(f'AudV,\n n = {int(nSpeechResponsiveAudV)}')
 
 plt.sca(axVotTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveTeA = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[3] ))
+nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3] ))
 nVOTselectiveTeA = np.sum(votSelective[recordingAreaName == audCtxAreas[3]])
 plt.pie([nSpeechResponsiveTeA - nVOTselectiveTeA,  nVOTselectiveTeA], colors = [colorNotSelective, colorVotSelective])
 axVotTeA.add_artist(circle4)
@@ -429,7 +530,7 @@ plt.legend(labels = ['VOT non-selective', 'VOT selective'], loc = 'lower center'
 #plt.suptitle('FT selectivity by location', fontsize = fontSizeTitles)
 
 plt.sca(axColorMapFT)
-plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = bestSelectivityIndexFt[speechResponsive & ~excludeCells], cmap = newMap, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexFt[speechResponsive], cmap = newMap, s = 3)
 #plt.ylim(215,60)
 #plt.xlim(165,225)
 plt.ylim(220,40)
@@ -445,7 +546,7 @@ axColorMapFT.spines["top"].set_visible(False)
 
 
 plt.sca(axFtDV)
-plt.scatter(bestSelectivityIndexFt[speechResponsive & ~excludeCells], y_coords[speechResponsive & ~excludeCells], c = colorPts,  alpha = 0.5, s = 5)
+plt.scatter(bestSelectivityIndexFt[speechResponsive], y_coords[speechResponsive], c = colorPts,  alpha = 0.5, s = 5)
 plt.boxplot(quantilesFT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
 plt.boxplot(avgShuffledSIFt, positions = chanceDVposition, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI), medianprops = dict(linewidth = 1.5, color = colorRandSI), whiskerprops = dict(linewidth = 1.5, color = colorRandSI), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([avgShuffledSIFt, avgShuffledSIFt] ,[215,60], linestyle = '--', linewidth = 2, c =colorRandSI)
@@ -459,7 +560,7 @@ axFtDV.spines["top"].set_visible(False)
 
 
 plt.sca(axFtAP)
-plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells], bestSelectivityIndexFt[speechResponsive & ~excludeCells], c = colorPts, alpha = 0.7, s = 5)
+plt.scatter(z_coords_jittered[speechResponsive], bestSelectivityIndexFt[speechResponsive], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesFT_AP, positions = binsAP, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
 plt.boxplot(avgShuffledSIFt, positions = chanceAPposition, vert = True, widths = binSizeAP/1.75, boxprops = dict(linewidth = 1.5, color = colorRandSI, ), medianprops = dict(linewidth = 1.5, color = colorRandSI, ), whiskerprops = dict(linewidth = 1.5, color = colorRandSI, ), capprops = dict(linewidth = 1.5, color = colorRandSI), showfliers = False )
 #plt.plot([165,225], [avgShuffledSIFt, avgShuffledSIFt], linestyle = '--', linewidth = 2, c =colorRandSI)

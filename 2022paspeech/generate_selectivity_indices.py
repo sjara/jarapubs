@@ -13,8 +13,7 @@ import studyparams
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-STATSUMMARY = 0
-AREASBYDEPTH = 0
+STATSUMMARY = 1
 shuffledDataFile = 'data_shuffledSIs.npz'
 #figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 
@@ -66,40 +65,40 @@ selectivityIndex2FT_VOTmax = (celldb['maxFiringRate_FT_VOTmax'] - celldb['minFir
 selectivityIndex2VOT_FTmin = (celldb['maxFiringRate_VOT_FTmin'] - celldb['minFiringRate_VOT_FTmin'])/(celldb['minFiringRate_VOT_FTmin'])
 selectivityIndex2VOT_FTmax = (celldb['maxFiringRate_VOT_FTmax'] - celldb['minFiringRate_VOT_FTmax'])/( celldb['minFiringRate_VOT_FTmax'])
 
-speechAlpha = 0.05/12
-speechResponsive = np.array(celldb.speechMinPvalOnset < speechAlpha)
-amAlpha = 0.05/11 #11 AM frequencies presented
-toneAlpha = 0.05/16 #16 pure tones presented
-toneResponsive = np.array(celldb.toneMinPval < toneAlpha)
-amResponsive = np.array((celldb.amMinPvalOnset < amAlpha) |
-                    (celldb.amMinPvalSustain < amAlpha))
-soundResponsive = np.array(toneResponsive|amResponsive|speechResponsive)
-
 
 ## -- exclude cells with low firing rates
 exclusionCriterion = 5  # sp/s
 maxFiringRateSpeechEvoked = np.max([celldb.maxFiringRate_FT_VOTmin, celldb.maxFiringRate_FT_VOTmax, celldb.maxFiringRate_VOT_FTmin, celldb.maxFiringRate_VOT_FTmax], 0)
-exclude_evoked = maxFiringRateSpeechEvoked < exclusionCriterion
-exclude_baseline = celldb.speechFiringRateBaseline < exclusionCriterion
-excludeCells = exclude_evoked & exclude_baseline
-manualExcludedCells = [1534, 1532, 1147] #manually exclude cells that are accidental subsets of other cells due to Phy issues.
-excludeCells[manualExcludedCells] = True
-excludeCells[~isCortical] = True
+excludeSpeech = (maxFiringRateSpeechEvoked < exclusionCriterion) & (celldb.speechFiringRateBaseline < exclusionCriterion)
+excludeAM = (celldb.amFiringRateMaxOnset < exclusionCriterion) & (celldb.amFiringRateBaseline < exclusionCriterion)
+excludeTone = (celldb.toneFiringRateBest < exclusionCriterion) & (celldb.amFiringRateBaseline < exclusionCriterion)
 
+manualExcludedCells = [1534, 1532, 1147] #manually exclude cells that are accidental subsets of other cells due to Phy issues.
+excludeSpeech[manualExcludedCells] = True
+excludeAM[manualExcludedCells] = True
+excludeTone[manualExcludedCells] = True
+
+
+speechAlpha = 0.05/12
+speechResponsive = np.array((celldb.speechMinPvalOnset < speechAlpha) & ~excludeSpeech)
+amAlpha = 0.05/11 #11 AM frequencies presented
+toneAlpha = 0.05/16 #16 pure tones presented
+toneResponsive = np.array((celldb.toneMinPval < toneAlpha) & ~excludeTone)
+amResponsive = np.array(((celldb.amMinPvalOnset < amAlpha) |
+                    (celldb.amMinPvalSustain < amAlpha)) & ~excludeAM)
+soundResponsive = np.array(toneResponsive|amResponsive|speechResponsive)
 
 
 ## -- select best index b/w conditions
 ftCombos = np.array([selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax])
 votCombos = np.array([selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax])
-#bestSelectivityIndexFt = ftCombos.max(0)
-#bestSelectivityIndexVot = votCombos.max(0)
+
 
 amOnsetSelective = np.array(celldb.amSelectivityPvalOnset < 0.05)
 amSustainSelective = np.array(celldb.amSelectivityPvalSustain < 0.05)
 amSelective = amOnsetSelective| amSustainSelective
 toneSelective = np.array(celldb.toneSelectivityPval < 0.05)
-excludeAM = celldb.amFiringRateMaxOnset < exclusionCriterion
-excludeTone = celldb.toneFiringRateBest < exclusionCriterion
+
 amSelective[excludeAM] = np.nan
 toneSelective[excludeTone] = np.nan
 
@@ -218,83 +217,44 @@ VOTselectivebyArea = []
 FTselectivebyArea = []
 amSelectivebyArea = []
 toneSelectivebyArea = []
-excludeCellsbyArea = []
+excludeSpeechbyArea = []
 mixedSelectivebyArea = []
 singleSelectivebyArea = []
 notSelectivebyArea = []
 y_coordsbyArea = []
 z_coordsbyArea = []
 
-if AREASBYDEPTH == 0:
-    for indArea, thisArea in enumerate(audCtxAreas):
-        bestFtSIbyArea.append(bestSelectivityIndexFt[recordingAreaName == thisArea])
-        bestVotSIbyArea.append(bestSelectivityIndexVot[recordingAreaName == thisArea])
-        speechResponsiveByArea.append(speechResponsive[recordingAreaName == thisArea])
-        amSelectivebyArea.append(amSelective[recordingAreaName == thisArea])
-        toneSelectivebyArea.append(toneSelective[recordingAreaName == thisArea])
-        excludeCellsbyArea.append(excludeCells[recordingAreaName == thisArea])
-        VOTselectivebyArea.append(VOTselective[recordingAreaName == thisArea])
-        FTselectivebyArea.append(FTselective[recordingAreaName == thisArea])
-        mixedSelectivebyArea.append(mixedSelective[recordingAreaName == thisArea])
-        singleSelectivebyArea.append(singleSelective[recordingAreaName == thisArea])
-        notSelectivebyArea.append(notSelective[recordingAreaName == thisArea])
-        y_coordsbyArea.append(y_coords[recordingAreaName == thisArea])
-        z_coordsbyArea.append(z_coords[recordingAreaName == thisArea])
 
-if AREASBYDEPTH: ## used for test where we defined ACtx area by depth
-    print('using depth to define auditory areas')
-    isAudArea = celldb.recordingAreaName.str.contains('auditory area')
-    # Coords as seen as splits on hist: audD < 105 < audP < 133 < audV
-    # Coords as even thirds: audD < 110 < audP < 124 < audV
-
-    audP_coords = (y_coords > 106) & (y_coords <= 124) & isCortical#& isAudArea #& (celldb.z_coord > 185)
-    audD_coords = (y_coords <= 106) & isCortical #& isAudArea #& (celldb.z_coord > 185)
-    audV_coords = (y_coords > 124) & (y_coords <=145) & isCortical#& isAudArea #& (celldb.z_coord > 185)
-    tea_coords = (y_coords > 145) & isCortical
-    '''
-    nBins = 4
-    binSize = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
-    bins = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSize)
-    audD_coords = (y_coords >= bins[0]) & (y_coords < bins[1])
-    audP_coords = (y_coords >= bins[1]) & (y_coords < bins[2])
-    if nBins == 3:
-        audV_coords = y_coords >= bins[2]
-    elif nBins == 4:
-        audV_coords = (y_coords >= bins[2]) & (y_coords < bins[3])
-    '''
-    audAreas_byCoords = np.array([audP_coords, audD_coords, audV_coords, tea_coords])
-
-
-    for indArea, thisArea in enumerate(audAreas_byCoords):
-        bestFtSIbyArea.append(bestSelectivityIndexFt[audAreas_byCoords[indArea]])
-        bestVotSIbyArea.append(bestSelectivityIndexVot[audAreas_byCoords[indArea]])
-        speechResponsiveByArea.append(speechResponsive[audAreas_byCoords[indArea]])
-        amSelectivebyArea.append(amSelective[audAreas_byCoords[indArea]])
-        toneSelectivebyArea.append(toneSelective[audAreas_byCoords[indArea]])
-        excludeCellsbyArea.append(excludeCells[audAreas_byCoords[indArea]])
-        VOTselectivebyArea.append(VOTselective[audAreas_byCoords[indArea]])
-        FTselectivebyArea.append(FTselective[audAreas_byCoords[indArea]])
-        mixedSelectivebyArea.append(mixedSelective[audAreas_byCoords[indArea]])
-        singleSelectivebyArea.append(singleSelective[audAreas_byCoords[indArea]])
-        notSelectivebyArea.append(notSelective[audAreas_byCoords[indArea]])
-        y_coordsbyArea.append(y_coords[audAreas_byCoords[indArea]])
-        z_coordsbyArea.append(z_coords[audAreas_byCoords[indArea]])
+for indArea, thisArea in enumerate(audCtxAreas):
+    bestFtSIbyArea.append(bestSelectivityIndexFt[recordingAreaName == thisArea])
+    bestVotSIbyArea.append(bestSelectivityIndexVot[recordingAreaName == thisArea])
+    speechResponsiveByArea.append(speechResponsive[recordingAreaName == thisArea])
+    amSelectivebyArea.append(amSelective[recordingAreaName == thisArea])
+    toneSelectivebyArea.append(toneSelective[recordingAreaName == thisArea])
+    excludeSpeechbyArea.append(excludeSpeech[recordingAreaName == thisArea])
+    VOTselectivebyArea.append(VOTselective[recordingAreaName == thisArea])
+    FTselectivebyArea.append(FTselective[recordingAreaName == thisArea])
+    mixedSelectivebyArea.append(mixedSelective[recordingAreaName == thisArea])
+    singleSelectivebyArea.append(singleSelective[recordingAreaName == thisArea])
+    notSelectivebyArea.append(notSelective[recordingAreaName == thisArea])
+    y_coordsbyArea.append(y_coords[recordingAreaName == thisArea])
+    z_coordsbyArea.append(z_coords[recordingAreaName == thisArea])
 
 
 ## -- exclude low spike count cells
 for indArea, thisArea in enumerate(audCtxAreas):
-    bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeCellsbyArea[indArea]]
-    bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~excludeCellsbyArea[indArea]]
-    speechResponsiveByArea[indArea] = speechResponsiveByArea[indArea][~excludeCellsbyArea[indArea]]
-    amSelectivebyArea[indArea] = amSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    toneSelectivebyArea[indArea] = toneSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    VOTselectivebyArea[indArea] = VOTselectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    FTselectivebyArea[indArea] = FTselectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    mixedSelectivebyArea[indArea] = mixedSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    singleSelectivebyArea[indArea] = singleSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    notSelectivebyArea[indArea] = notSelectivebyArea[indArea][~excludeCellsbyArea[indArea]]
-    y_coordsbyArea[indArea] = y_coordsbyArea[indArea][~excludeCellsbyArea[indArea]]
-    z_coordsbyArea[indArea] = z_coordsbyArea[indArea][~excludeCellsbyArea[indArea]]
+    bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeSpeechbyArea[indArea]]
+    bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~excludeSpeechbyArea[indArea]]
+    speechResponsiveByArea[indArea] = speechResponsiveByArea[indArea][~excludeSpeechbyArea[indArea]]
+    amSelectivebyArea[indArea] = amSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    toneSelectivebyArea[indArea] = toneSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    VOTselectivebyArea[indArea] = VOTselectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    FTselectivebyArea[indArea] = FTselectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    mixedSelectivebyArea[indArea] = mixedSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    singleSelectivebyArea[indArea] = singleSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    notSelectivebyArea[indArea] = notSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
+    y_coordsbyArea[indArea] = y_coordsbyArea[indArea][~excludeSpeechbyArea[indArea]]
+    z_coordsbyArea[indArea] = z_coordsbyArea[indArea][~excludeSpeechbyArea[indArea]]
 
 
 
@@ -454,10 +414,10 @@ if STATSUMMARY:
     print(f'Frac FT selective AudD vs Tea p = {np.round(pvalFracFtSelective_AudDvsTea,3)}')
     print(f'Frac FT selective AudV vs Tea p = {np.round(pvalFracFtSelective_AudVvsTea,3)}')
     #print(f'exclusion criterion = firing rate < {exclusionCriterion} sp/s')
-    #print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeCellsbyArea[0])}')
-    #print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeCellsbyArea[1])}')
-    #print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeCellsbyArea[2])}')
-    #print(f'n Excluded {audCtxAreas[3]}: {np.sum(excludeCellsbyArea[3])}')
+    #print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeSpeechbyArea[0])}')
+    #print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeSpeechbyArea[1])}')
+    #print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeSpeechbyArea[2])}')
+    #print(f'n Excluded {audCtxAreas[3]}: {np.sum(excludeSpeechbyArea[3])}')
     print(f'Frac mixed selective AudP vs AudD:  p = {np.round(pvalFracMixed_AudPvsAudD,3)}')
     print(f'Frac mixed selective AudP vs AudV:  p = {np.round(pvalFracMixed_AudPvsAudV,3)}')
     print(f'Frac mixed selective AudD vs AudV:  p = {np.round(pvalFracMixed_AudDvsAudV,3)}')
@@ -470,5 +430,6 @@ if STATSUMMARY:
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
 
 
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeCells = excludeCells, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT)
+
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical)
 print('saved to ' f'{figDataFullPath}')

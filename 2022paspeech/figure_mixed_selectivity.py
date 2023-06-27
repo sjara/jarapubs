@@ -33,7 +33,7 @@ shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 0
 outputDir = 'C:/Users/jenny/tmp/'
-figFilename = 'figure_mixed_selectivity_wResponsive' # Do not include extension
+figFilename = 'figure_mixed_selectivity_8bins' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 5.25] # In inches
 
@@ -57,7 +57,7 @@ z_coords = figData['z_coord']
 z_coords_jittered = figData['z_coords_jittered']
 x_coords_jittered = figData['x_coords_jittered']
 speechResponsive = figData['speechResponsive']
-excludeCells = figData['excludeCells']
+excludeSpeech = figData['excludeSpeech']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
 pvalPermutationtestFt = figData['pvalPermutationtestFt']
@@ -66,8 +66,8 @@ shuffledVotBest = figData['shuffledVotBest']
 shuffledFtBest = figData['shuffledFtBest']
 recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
-avgShuffledSIVot = np.mean(shuffledVotBest[~excludeCells & speechResponsive],1)
-avgShuffledSIFt = np.mean(shuffledFtBest[~excludeCells & speechResponsive], 1)
+avgShuffledSIVot = np.mean(shuffledVotBest[~excludeSpeech & speechResponsive],1)
+avgShuffledSIFt = np.mean(shuffledFtBest[~excludeSpeech & speechResponsive], 1)
 
 
 plt.figure()
@@ -87,14 +87,14 @@ plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
 nBins = 2
 
-binSizeDV = (np.max(y_coords[speechResponsive & ~excludeCells]) - np.min(y_coords[speechResponsive & ~excludeCells]))/nBins
-binsDV = np.arange(np.min(y_coords[speechResponsive & ~excludeCells]), np.max(y_coords[speechResponsive & ~excludeCells]), binSizeDV)
+binSizeDV = (np.max(y_coords[speechResponsive]) - np.min(y_coords[speechResponsive]))/nBins
+binsDV = np.arange(np.min(y_coords[speechResponsive]), np.max(y_coords[speechResponsive]), binSizeDV)
 
-binSizeAP = (np.max(z_coords[speechResponsive & ~excludeCells]) - np.min(z_coords[speechResponsive & ~excludeCells]))/nBins
-binsAP = np.arange(np.min(z_coords[speechResponsive & ~excludeCells]), np.max(z_coords[speechResponsive & ~excludeCells]), binSizeAP)
+binSizeAP = (np.max(z_coords[speechResponsive]) - np.min(z_coords[speechResponsive]))/nBins
+binsAP = np.arange(np.min(z_coords[speechResponsive]), np.max(z_coords[speechResponsive]), binSizeAP)
 
-votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive & ~excludeCells
-ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive & ~excludeCells
+votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
+ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
@@ -118,12 +118,12 @@ for indBin, thisBin in enumerate(binsDV):
         thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords < binsDV[indBin+1])
         thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords < binsAP[indBin+1])
     elif indBin == len(binsDV) - 1:
-        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords <= np.max(y_coords[speechResponsive & ~excludeCells]))
-        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords <= np.max(z_coords[speechResponsive & ~excludeCells]))
-    quantilesVOT_DV.append(bestSelectivityIndexVot[thisQuantileDV & speechResponsive & ~excludeCells])
-    quantilesFT_DV.append(bestSelectivityIndexFt[thisQuantileDV & speechResponsive & ~excludeCells])
-    quantilesVOT_AP.append(bestSelectivityIndexVot[thisQuantileAP & speechResponsive & ~excludeCells])
-    quantilesFT_AP.append(bestSelectivityIndexFt[thisQuantileAP & speechResponsive & ~excludeCells])
+        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords <= np.max(y_coords[speechResponsive]))
+        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords <= np.max(z_coords[speechResponsive]))
+    quantilesVOT_DV.append(bestSelectivityIndexVot[thisQuantileDV & speechResponsive])
+    quantilesFT_DV.append(bestSelectivityIndexFt[thisQuantileDV & speechResponsive])
+    quantilesVOT_AP.append(bestSelectivityIndexVot[thisQuantileAP & speechResponsive])
+    quantilesFT_AP.append(bestSelectivityIndexFt[thisQuantileAP & speechResponsive])
     quantilesVotSelective_AP.append(votSelective[thisQuantileAP])
     quantilesFtSelective_AP.append(ftSelective[thisQuantileAP])
     quantilesVotSelective_DV.append(votSelective[thisQuantileDV])
@@ -142,16 +142,16 @@ DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 plt.sca(axMixeSelMap)
-#nonSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~excludeCells & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
-singSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & singleSelective], y_coords[speechResponsive & ~excludeCells & singleSelective], c = colorSingleSelective, s = 6)
-mixSel = plt.scatter(z_coords_jittered[speechResponsive & ~excludeCells & mixedSelective], y_coords[speechResponsive & ~excludeCells & mixedSelective], c = colorMixedSelective, s = 6)
+#nonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
+singSel = plt.scatter(z_coords_jittered[speechResponsive & singleSelective], y_coords[speechResponsive & singleSelective], c = colorSingleSelective, s = 6)
+mixSel = plt.scatter(z_coords_jittered[speechResponsive & mixedSelective], y_coords[speechResponsive & mixedSelective], c = colorMixedSelective, s = 6)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
-plt.legend(['Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
+plt.legend(handles = [singSel, mixSel], labels = ['Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
 #plt.title('Mixed selectivity', fontsize = fontSizeTitles)
 axMixeSelMap.spines["right"].set_visible(False)
 axMixeSelMap.spines["top"].set_visible(False)
@@ -221,7 +221,7 @@ axMixAP.spines["top"].set_visible(False)
 
 plt.sca(axMixAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudP = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[0] ))
+nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0] ))
 nMixselectiveAudP = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveAudP = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
 #plt.pie([nSpeechResponsiveAudP - (nMixselectiveAudP + nSingleselectiveAudP),  nMixselectiveAudP, nSingleselectiveAudP], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
@@ -234,7 +234,7 @@ plt.title(f'AudP,\n n = {int(nMixselectiveAudP+nSingleselectiveAudP)}', pad = 0 
 
 plt.sca(axMixAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudD = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[1] ))
+nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1] ))
 nMixselectiveAudD = np.sum(mixedSelective[recordingAreaName == audCtxAreas[1]])
 nSingleselectiveAudD = np.sum(singleSelective[recordingAreaName == audCtxAreas[1]])
 #plt.pie([nSpeechResponsiveAudD - (nMixselectiveAudD + nSingleselectiveAudD),  nMixselectiveAudD, nSingleselectiveAudD], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
@@ -246,7 +246,7 @@ plt.title(f'AudD,\n n = {int(nMixselectiveAudD+nSingleselectiveAudD)}', pad = 0)
 
 plt.sca(axMixAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudV = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[2] ))
+nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2] ))
 nMixselectiveAudV = np.sum(mixedSelective[recordingAreaName == audCtxAreas[2]])
 nSingleselectiveAudV = np.sum(singleSelective[recordingAreaName == audCtxAreas[2]])
 #plt.pie([nSpeechResponsiveAudV - (nMixselectiveAudV + nSingleselectiveAudV),  nMixselectiveAudV, nSingleselectiveAudV], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
@@ -257,7 +257,7 @@ plt.title(f'AudV,\n n = {int(nMixselectiveAudV+nSingleselectiveAudV)}', pad = 0)
 
 plt.sca(axMixTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveTeA = np.sum(speechResponsive & ~excludeCells & (recordingAreaName == audCtxAreas[3] ))
+nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3] ))
 nMixselectiveTeA = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveTeA = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
 #plt.pie([nSpeechResponsiveTeA - (nMixselectiveTeA + nSingleselectiveTeA),  nMixselectiveTeA, nSingleselectiveTeA], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])

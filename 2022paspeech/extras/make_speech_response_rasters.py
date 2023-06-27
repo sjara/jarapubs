@@ -48,7 +48,6 @@ selectivityIndexFT_VOTmax = figData['selectivityIndexFT_VOTmax']
 selectivityIndexFT_VOTmin = figData['selectivityIndexFT_VOTmin']
 
 speechResponsive = figData['speechResponsive']
-excludeCells = figData['excludeCells']
 
 #allSubjects = studyparams.EPHYS_MICE
 allSubjects = studyparams.TEST_MOUSE
@@ -65,7 +64,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
         indCell += 1
         print(f'indCell = {indCell}')
-        if speechResponsive[indCell] &~ excludeCells[indCell]:
+        if speechResponsive[indCell]:
             #dbRow = celldb.loc[thisCell]
             oneCell = ephyscore.Cell(dbRow)
             subject = thisMouse
