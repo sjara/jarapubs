@@ -59,7 +59,7 @@ z_coords = figData['z_coord']
 z_coords_jittered = figData['z_coords_jittered']
 x_coords_jittered = figData['x_coords_jittered']
 speechResponsive = figData['speechResponsive']
-excludeSpeech = figData['excludeSpeech']
+soundResponsive = figData['soundResponsive']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
 pvalPermutationtestFt = figData['pvalPermutationtestFt']
@@ -68,8 +68,8 @@ shuffledVotBest = figData['shuffledVotBest']
 shuffledFtBest = figData['shuffledFtBest']
 recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
-avgShuffledSIVot = np.mean(shuffledVotBest[~excludeSpeech & speechResponsive],1)
-avgShuffledSIFt = np.mean(shuffledFtBest[~excludeSpeech & speechResponsive], 1)
+avgShuffledSIVot = np.mean(shuffledVotBest[speechResponsive],1)
+avgShuffledSIFt = np.mean(shuffledFtBest[speechResponsive], 1)
 
 
 #plt.figure()
@@ -100,22 +100,19 @@ axFtTeA = plt.subplot(axFtDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=0.3)
 plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
-nBins = 8
+nBins = 2
 nCompar = np.sum(np.arange(nBins-1,0,-1))
 
-spreadDV = np.max(y_coords[speechResponsive]) - np.min(y_coords[speechResponsive])
+spreadDV = np.max(y_coords[soundResponsive]) - np.min(y_coords[soundResponsive])
 binSizeDV = spreadDV/nBins
-binsDV = np.arange(np.min(y_coords[speechResponsive]), np.max(y_coords[speechResponsive]), binSizeDV)
+binsDV = np.arange(np.min(y_coords[soundResponsive]), np.max(y_coords[soundResponsive]), binSizeDV)
 binsDV_AAtransform = np.round((binsDV-10)*0.025,1)
 
 
-
-spreadAP = np.max(z_coords[speechResponsive]) - np.min(z_coords[speechResponsive])
+spreadAP = np.max(z_coords[soundResponsive]) - np.min(z_coords[soundResponsive])
 binSizeAP = spreadAP/nBins
-binsAP = np.arange(np.min(z_coords[speechResponsive]), np.max(z_coords[speechResponsive]), binSizeAP)
+binsAP = np.arange(np.min(z_coords[soundResponsive]), np.max(z_coords[soundResponsive]), binSizeAP)
 binsAP_AAtransform = np.round(-0.94 - (280-binsAP)*0.025,1)
-
-
 
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
@@ -123,6 +120,7 @@ ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
+'''
 quantilesVOT_DV = []
 quantilesFT_DV = []
 quantilesVOT_AP = []
@@ -139,21 +137,6 @@ quantilesResponsive_AP = []
 quantilesResponsive_DV = []
 quantilesDV = np.zeros([nBins, len(speechResponsive)], dtype = bool)
 quantilesAP = np.zeros([nBins, len(speechResponsive)], dtype = bool)
-
-quadrantsVOT_DV = np.empty([4, len(speechResponsive)])
-quadrantsFT_DV = []
-quadrantsVOT_AP = []
-quadrantsFT_AP = []
-quadrantsVotSelective_DV = []
-quadrantsVotSelective_AP = []
-quadrantsFtSelective_DV = []
-quadrantsFtSelective_AP = []
-quadrantsSingleSelective_AP = []
-quadrantsSingleSelective_DV = []
-quadrantsMixedSelective_AP = []
-quadrantsMixedSelective_DV = []
-quadrantsResponsive_AP = []
-quadrantsResponsive_DV = []
 
 
 
@@ -181,25 +164,95 @@ for indBin, thisBin in enumerate(binsDV):
     quantilesMixedSelective_DV.append(mixedSelective[thisQuantileDV])
     quantilesResponsive_AP.append(speechResponsive[thisQuantileAP])
     quantilesResponsive_DV.append(speechResponsive[thisQuantileDV])
+'''
 
 # -- QUADRANTS
+
+quantilesDV = np.zeros([nBins, len(soundResponsive)], dtype = bool)
+quantilesAP = np.zeros([nBins, len(soundResponsive)], dtype = bool)
+'''
+## --OLD--
+spreadDV = np.max(y_coords[soundResponsive]) - np.min(y_coords[soundResponsive])
+binSizeDV = spreadDV/nBins
+binsDV = np.arange(np.min(y_coords[soundResponsive]), np.max(y_coords[soundResponsive]), binSizeDV)
+binsDV_AAtransform = np.round((binsDV-10)*0.025,1)
+
+
+spreadAP = np.max(z_coords[soundResponsive]) - np.min(z_coords[soundResponsive])
+binSizeAP = spreadAP/nBins
+binsAP = np.arange(np.min(z_coords[soundResponsive]), np.max(z_coords[soundResponsive]), binSizeAP)
+binsAP_AAtransform = np.round(-0.94 - (280-binsAP)*0.025,1)
+'''
+
+audCtxAPbounds = np.array([-3.95,-1.9])
+spreadAP = audCtxAPbounds[1]-audCtxAPbounds[0]
+quadrantAPThreshold = audCtxAPbounds[0] + (spreadAP/2)
+quadrantBoundsAP = np.array([audCtxAPbounds[0], quadrantAPThreshold, audCtxAPbounds[1]])
+quadrantBoundsAP_AAtransform = 280 + (quadrantBoundsAP + 0.94)/0.025
+
+audCtxDVbounds = np.array([1.65, 4.65])
+spreadDV = audCtxDVbounds[1] - audCtxDVbounds[0]
+quadrantDVThreshold = audCtxDVbounds[0] + (spreadDV/2)
+quadrantBoundsDV = np.array([audCtxDVbounds[0], quadrantDVThreshold, audCtxDVbounds[1]])
+quadrantBoundsDV_AAtransform = (quadrantBoundsDV/0.025)+10
+
+
+quantilesDV = np.zeros([nBins, len(soundResponsive)], dtype = bool)
+quantilesAP = np.zeros([nBins, len(soundResponsive)], dtype = bool)
+for indBin, thisBin in enumerate(quantilesDV):
+    thisQuantileDV = (y_coords >= quadrantBoundsDV_AAtransform[indBin]) & (y_coords < quadrantBoundsDV_AAtransform[indBin+1])
+    thisQuantileAP = (z_coords >= quadrantBoundsAP_AAtransform[indBin]) & (z_coords < quadrantBoundsAP_AAtransform[indBin+1])
+    quantilesAP[indBin] = thisQuantileAP
+    quantilesDV[indBin] = thisQuantileDV
+
+quadrantLabelsAP = ['posterior', 'anterior']
+quadrantLabelsDV = ['dorsal', 'ventral']
+quadrantLabels = ['dorsal posterior', 'dorsal anterior', 'ventral posterior', 'ventral anterior']
+
 quadrantsVOT = []
 quadrantsFT = []
 quadrantsVotSelective = []
 quadrantsFtSelective = []
 quadrantsSingleSelective = []
 quadrantsMixedSelective = []
-quadrantsResponsive = []
+quadrantsSpeechResponsive = []
+quadrantsSoundResponsive = []
+
 
 for indBinDV, thisQuantileDV in enumerate(quantilesDV):
     for indBinAP, thisQuantileAP in enumerate(quantilesAP):
         quadrantsVOT.append(bestSelectivityIndexVot[thisQuantileDV & thisQuantileAP & speechResponsive])
         quadrantsFT.append(bestSelectivityIndexFt[thisQuantileDV & thisQuantileAP & speechResponsive])
-        quadrantsVotSelective.append(votSelective[thisQuantileAP & thisQuantileDV])
-        quadrantsFtSelective.append(ftSelective[thisQuantileAP & thisQuantileDV])
-        quadrantsSingleSelective.append(singleSelective[thisQuantileDV & thisQuantileAP])
-        quadrantsMixedSelective.append(mixedSelective[thisQuantileDV & thisQuantileAP])
-        quadrantsResponsive.append(speechResponsive[thisQuantileDV & thisQuantileAP])
+        quadrantsVotSelective.append(votSelective[thisQuantileAP & thisQuantileDV & speechResponsive])
+        quadrantsFtSelective.append(ftSelective[thisQuantileAP & thisQuantileDV & speechResponsive])
+        quadrantsSingleSelective.append(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsMixedSelective.append(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsSpeechResponsive.append(speechResponsive[thisQuantileDV & thisQuantileAP])
+        quadrantsSoundResponsive.append(soundResponsive[thisQuantileDV & thisQuantileAP])
+
+
+
+# -- TEST EACH ANIMAL
+CHECKBYANIMAL = 0
+if CHECKBYANIMAL:
+    for indMouse, thisMouse in enumerate(np.unique(celldb.subject)):
+        print(thisMouse)
+        for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+            for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+                print(f'Quadrant: {quadrantLabelsDV[indBinDV]} {quadrantLabelsAP[indBinAP]}')
+                print(f'n Total {np.sum(thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse))}')
+                print(f'n SoundResponsive {np.sum(soundResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
+                print(f'n SpeechResponsive {np.sum(speechResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
+                print(f'n Speech Selective {np.sum(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)]) + np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n Vot Selective {np.sum(votSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n Ft Selective {np.sum(ftSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n MixedSelective {np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+
+#baselineRateByQuad = np.array([celldb.amFiringRateBaseline[quantilesDV[0] & quantilesAP[0]], celldb.amFiringRateBaseline[quantilesDV[0] & quantilesAP[1]], celldb.amFiringRateBaseline[quantilesDV[1] & quantilesAP[0]], celldb.amFiringRateBaseline[quantilesDV[1] & quantilesAP[1]]], dtype=object)
+
+
+#evokedRateByQuad = np.array([celldb.speechFiringRateBestSustain[quantilesDV[0] & quantilesAP[0]], celldb.speechFiringRateBestSustain[quantilesDV[0] & quantilesAP[1]], celldb.speechFiringRateBestSustain[quantilesDV[1] & quantilesAP[0]], celldb.speechFiringRateBestSustain[quantilesDV[1] & quantilesAP[1]]], dtype = object)
+
 
 
 if STATSUMMARY:
@@ -220,7 +273,7 @@ if STATSUMMARY:
                 ustat, pvalMannU = stats.mannwhitneyu(quadrantsVOT[indBin], quadrantsVOT[x + indBin + 1])
                 quadrantComparVot[a] = pvalMannU
     if pvalQuadrantsFT < 0.05:
-        quadrantComparFt = np.ones(nQuadCompar)
+        quadrantComparFt = np.ones(nBinCompar)
         a = -1
         for indBin, thisBin in enumerate(quadrantsFT):
             nBinCompar = 4 - indBin -1
@@ -229,25 +282,55 @@ if STATSUMMARY:
                 ustat, pvalMannU = stats.mannwhitneyu(quadrantsFT[indBin], quadrantsFT[x + indBin + 1])
                 quadrantComparFt[a] = pvalMannU
 
-        ##--Test frac VOT selective
-        quadrantComparFracVotSelective = np.ones(nQuadCompar)
-        a = -1
-        for indBin, thisBin in enumerate(quadrantsVotSelective):
-            nBinCompar = 4 - indBin -1
-            for x in range(nBinCompar):
-                a = a+1
-                oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsVotSelective[x + indBin + 1])],[np.sum(quadrantsResponsive[indBin]) -np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsResponsive[x + indBin + 1]) - np.sum(quadrantsVotSelective[x + indBin + 1])]]))
-                quadrantComparFracVotSelective[a] = pvalFracVOTSelective
+    ##--Test frac sound responsive
+    quadrantComparFracSoundResponsive = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSoundResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSoundResponsive = stats.fisher_exact(np.array([[np.sum(quadrantsSoundResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]==0), np.sum(quadrantsSoundResponsive[x + indBin + 1]==0)]]))
+            quadrantComparFracSoundResponsive[a] = pvalFracSoundResponsive
 
-        ##--Test frac FT selective
-        quadrantComparFracFtSelective = np.ones(nQuadCompar)
-        a = -1
-        for indBin, thisBin in enumerate(quadrantsFtSelective):
-            nBinCompar = 4 - indBin -1
-            for x in range(nBinCompar):
-                a = a+1
-                oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsFtSelective[x + indBin + 1])],[np.sum(quadrantsResponsive[indBin]) - np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsResponsive[x + indBin + 1]) - np.sum(quadrantsFtSelective[x + indBin + 1])]]))
-                quadrantComparFracFtSelective[a] = pvalFracFTSelective
+    ##--Test frac speech responsive out of total
+    quadrantComparFracSpeechResponsive_allcells = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSpeechResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSpeechResponsive_allcells = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[len(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), len(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            quadrantComparFracSpeechResponsive_allcells[a] = pvalFracSpeechResponsive_allcells
+
+    ##--Test frac speech responsive out of soundResponsive
+    quadrantComparFracSpeechResponsive_soundResp = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSpeechResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSpeechResponsive_soundResp = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            quadrantComparFracSpeechResponsive_soundResp[a] = pvalFracSpeechResponsive_soundResp
+
+    ##--Test frac VOT selective
+    quadrantComparFracVotSelective = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsVotSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracVOTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsVotSelective[x + indBin + 1])],[np.sum(quadrantsSpeechResponsive[indBin]) -np.sum(quadrantsVotSelective[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1]) - np.sum(quadrantsVotSelective[x + indBin + 1])]]))
+            quadrantComparFracVotSelective[a] = pvalFracVOTSelective
+
+    ##--Test frac FT selective
+    quadrantComparFracFtSelective = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsFtSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsFtSelective[x + indBin + 1])],[np.sum(quadrantsSpeechResponsive[indBin]) - np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1]) - np.sum(quadrantsFtSelective[x + indBin + 1])]]))
+            quadrantComparFracFtSelective[a] = pvalFracFTSelective
 
     ##--Test frac mixed selective
     quadrantComparFracMixedSelective = np.ones(nQuadCompar)
@@ -258,8 +341,28 @@ if STATSUMMARY:
             a = a+1
             oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSingleSelective[indBin]), np.sum(quadrantsSingleSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
             quadrantComparFracMixedSelective[a] = pvalFracMixedSelective
+    #
+    print('--Quadrants Stat Summary --')
+    print(f'DP Quadrant: total n = {len(quadrantsSoundResponsive[0])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[0])} ({np.round((np.sum(quadrantsSoundResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[0])} ({np.round((np.sum(quadrantsSpeechResponsive[0])/np.sum(quadrantsSoundResponsive[0]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}% of total), n VOT selective = {np.sum(quadrantsVotSelective[0])} ({np.round((np.sum(quadrantsVotSelective[0])/np.sum(quadrantsSpeechResponsive[0]))*100,1)}% of speech responsive), n FT selective = {np.sum(quadrantsFtSelective[0])} ({np.round((np.sum(quadrantsFtSelective[0])/np.sum(quadrantsSpeechResponsive[0]))*100,1)}% of speech responsive), n mixed selective = {np.sum(quadrantsMixedSelective[0])} ({np.round((np.sum(quadrantsMixedSelective[0])/(np.sum(quadrantsMixedSelective[0]) + np.sum(quadrantsSingleSelective[0])))*100,1)}% of speech selective)')
+    print(f'DA Quadrant: total n = {len(quadrantsSoundResponsive[1])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[1])} ({np.round((np.sum(quadrantsSoundResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[1])} ({np.round((np.sum(quadrantsSpeechResponsive[1])/np.sum(quadrantsSoundResponsive[1]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}% of total), n VOT selective = {np.sum(quadrantsVotSelective[1])} ({np.round((np.sum(quadrantsVotSelective[1])/np.sum(quadrantsSpeechResponsive[1]))*100,1)}% of speech responsive), n FT selective = {np.sum(quadrantsFtSelective[1])} ({np.round((np.sum(quadrantsFtSelective[1])/np.sum(quadrantsSpeechResponsive[1]))*100,1)}% of speech responsive), n mixed selective = {np.sum(quadrantsMixedSelective[1])} ({np.round((np.sum(quadrantsMixedSelective[1])/(np.sum(quadrantsMixedSelective[1]) + np.sum(quadrantsSingleSelective[1])))*100,1)}% of speech selective)')
+    print(f'VP Quadrant: total n = {len(quadrantsSoundResponsive[2])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[2])} ({np.round((np.sum(quadrantsSoundResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[2])} ({np.round((np.sum(quadrantsSpeechResponsive[2])/np.sum(quadrantsSoundResponsive[2]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}% of total), n VOT selective = {np.sum(quadrantsVotSelective[2])} ({np.round((np.sum(quadrantsVotSelective[2])/np.sum(quadrantsSpeechResponsive[2]))*100,1)}% of speech responsive), n FT selective = {np.sum(quadrantsFtSelective[2])} ({np.round((np.sum(quadrantsFtSelective[2])/np.sum(quadrantsSpeechResponsive[2]))*100,1)}% of speech responsive), n mixed selective = {np.sum(quadrantsMixedSelective[2])} ({np.round((np.sum(quadrantsMixedSelective[2])/(np.sum(quadrantsMixedSelective[2]) + np.sum(quadrantsSingleSelective[2])))*100,1)}% of speech selective)')
+    print(f'VA Quadrant: total n = {len(quadrantsSoundResponsive[3])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[3])} ({np.round((np.sum(quadrantsSoundResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[3])} ({np.round((np.sum(quadrantsSpeechResponsive[3])/np.sum(quadrantsSoundResponsive[3]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}% of total), n VOT selective = {np.sum(quadrantsVotSelective[3])} ({np.round((np.sum(quadrantsVotSelective[3])/np.sum(quadrantsSpeechResponsive[3]))*100,1)}% of speech responsive), n FT selective = {np.sum(quadrantsFtSelective[3])} ({np.round((np.sum(quadrantsFtSelective[3])/np.sum(quadrantsSpeechResponsive[3]))*100,1)}% of speech responsive), n mixed selective = {np.sum(quadrantsMixedSelective[3])} ({np.round((np.sum(quadrantsMixedSelective[3])/(np.sum(quadrantsMixedSelective[3]) + np.sum(quadrantsSingleSelective[3])))*100,1)}% of speech selective)')
+
+    if any(quadrantComparFracSoundResponsive < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac Sound Responsive: {quadComparLabels[quadrantComparFracSoundResponsive < quadAlpha]}')
+    if any(quadrantComparFracSpeechResponsive_allcells < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac Speech Responsive out of total cells: {quadComparLabels[quadrantComparFracSpeechResponsive_allcells < quadAlpha]}')
+    if any(quadrantComparFracSpeechResponsive_soundResp < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac Speech Responsive out of sound responsive cells: {quadComparLabels[quadrantComparFracSpeechResponsive_soundResp < quadAlpha]}')
+    if any(quadrantComparFracVotSelective < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac VOT Selective: {quadComparLabels[quadrantComparFracVotSelective < quadAlpha]}')
+    if any(quadrantComparFracFtSelective < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac FT Selective: {quadComparLabels[quadrantComparFracFtSelective < quadAlpha]}')
+    if any(quadrantComparFracMixedSelective < quadAlpha):
+        print(f'Significant Quadrant comparisons Frac Mixed Selective: {quadComparLabels[quadrantComparFracMixedSelective < quadAlpha]}')
 
 
+    '''
     # -- BINS
     binAlpha = 0.05/nCompar
     if nBins == 10:
@@ -415,7 +518,7 @@ if STATSUMMARY:
         print(f'Significant Bin comparisons Frac Mixed selective AP: {binByBinLabels[binByBinComparFracMixedSelectiveAP < binAlpha]}')
     if any(binByBinComparFracMixedSelectiveDV < binAlpha):
         print(f'Significant Bin comparisons Frac Mixed selective DV: {binByBinLabels[binByBinComparFracMixedSelectiveDV < binAlpha]}')
-
+    '''
     '''
     pvalFtvsVot_AP = np.ones(len(quantilesFT_AP))
     pvalFtvsVot_DV = np.ones(len(quantilesFT_DV))
@@ -456,7 +559,7 @@ chanceAPposition = [binsAP[-1] + 2.25*binSizeAP]
 chanceDVposition = [binsDV[0] - 2*binSizeDV]
 
 
-
+'''
 plt.sca(axVotDV)
 plt.scatter(bestSelectivityIndexVot[speechResponsive], y_coords[speechResponsive], c = colorPts, alpha = 0.7, s = 5)
 plt.boxplot(quantilesVOT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
@@ -485,6 +588,7 @@ plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
 plt.ylabel('VOT Selectivity Index', fontsize = fontSizeLabels)
 axVotAP.spines["right"].set_visible(False)
 axVotAP.spines["top"].set_visible(False)
+'''
 
 
 plt.sca(axVotAudP)
@@ -544,7 +648,7 @@ plt.title('FT selectivity', fontsize = fontSizeTitles)
 axColorMapFT.spines["right"].set_visible(False)
 axColorMapFT.spines["top"].set_visible(False)
 
-
+'''
 plt.sca(axFtDV)
 plt.scatter(bestSelectivityIndexFt[speechResponsive], y_coords[speechResponsive], c = colorPts,  alpha = 0.5, s = 5)
 plt.boxplot(quantilesFT_DV, positions = binsDV, vert = False, widths = binSizeDV/1.75, boxprops = dict(linewidth = 1.5), medianprops = dict(linewidth = 1.5, color = 'k'), whiskerprops = dict(linewidth = 1.5, color = 'k'), capprops = dict(linewidth = 1.5, color = 'k'), showfliers = False)
@@ -570,7 +674,7 @@ plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
 plt.ylabel('FT Selectivity Index', fontsize = fontSizeLabels)
 axFtAP.spines["right"].set_visible(False)
 axFtAP.spines["top"].set_visible(False)
-
+'''
 
 plt.sca(axFtAudP)
 circle5 = plt.Circle((0,0), 0.7, color = 'white')

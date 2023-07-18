@@ -212,6 +212,7 @@ x_coords_jittered = x_coords + np.random.randn(len(x_coords))
 
 bestFtSIbyArea = []
 bestVotSIbyArea = []
+soundResponsiveByArea = []
 speechResponsiveByArea = []
 VOTselectivebyArea = []
 FTselectivebyArea = []
@@ -228,6 +229,7 @@ z_coordsbyArea = []
 for indArea, thisArea in enumerate(audCtxAreas):
     bestFtSIbyArea.append(bestSelectivityIndexFt[recordingAreaName == thisArea])
     bestVotSIbyArea.append(bestSelectivityIndexVot[recordingAreaName == thisArea])
+    soundResponsiveByArea.append(soundResponsive[recordingAreaName == thisArea])
     speechResponsiveByArea.append(speechResponsive[recordingAreaName == thisArea])
     amSelectivebyArea.append(amSelective[recordingAreaName == thisArea])
     toneSelectivebyArea.append(toneSelective[recordingAreaName == thisArea])
@@ -245,6 +247,7 @@ for indArea, thisArea in enumerate(audCtxAreas):
 for indArea, thisArea in enumerate(audCtxAreas):
     bestFtSIbyArea[indArea] = bestFtSIbyArea[indArea][~excludeSpeechbyArea[indArea]]
     bestVotSIbyArea[indArea] = bestVotSIbyArea[indArea][~excludeSpeechbyArea[indArea]]
+    soundResponsiveByArea[indArea] = soundResponsiveByArea[indArea][~excludeSpeechbyArea[indArea]]
     speechResponsiveByArea[indArea] = speechResponsiveByArea[indArea][~excludeSpeechbyArea[indArea]]
     amSelectivebyArea[indArea] = amSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
     toneSelectivebyArea[indArea] = toneSelectivebyArea[indArea][~excludeSpeechbyArea[indArea]]
@@ -380,6 +383,25 @@ oddsratio, pvalFracVotSelective_AudVvsTea_allcells = stats.fisher_exact(np.array
 
 
 
+## -- test if difference in proportion of selective cells among sound responsive cells (not just speech responsive)
+oddsratio, pvalFracFtSelective_AudPvsAudD_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(FTselectivebyArea[1][soundResponsiveByArea[1]])],[np.sum(~FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~FTselectivebyArea[1][soundResponsiveByArea[1]])]]))
+oddsratio, pvalFracFtSelective_AudPvsAudV_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(FTselectivebyArea[2][soundResponsiveByArea[2]])],[np.sum(~FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~FTselectivebyArea[2][soundResponsiveByArea[2]])]]))
+oddsratio, pvalFracFtSelective_AudDvsAudV_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(FTselectivebyArea[2][soundResponsiveByArea[2]])],[np.sum(~FTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(~FTselectivebyArea[2][soundResponsiveByArea[2]])]]))
+oddsratio, pvalFracFtSelective_AudPvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(FTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~FTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~FTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+oddsratio, pvalFracFtSelective_AudDvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(FTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~FTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(~FTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+oddsratio, pvalFracFtSelective_AudVvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(FTselectivebyArea[2][soundResponsiveByArea[2]]), np.sum(FTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~FTselectivebyArea[2][soundResponsiveByArea[2]]), np.sum(~FTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+
+
+oddsratio, pvalFracVotSelective_AudPvsAudD_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(VOTselectivebyArea[1][soundResponsiveByArea[1]])],[np.sum(~VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~VOTselectivebyArea[1][soundResponsiveByArea[1]])]]))
+oddsratio, pvalFracVotSelective_AudPvsAudV_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(VOTselectivebyArea[2][soundResponsiveByArea[2]])],[np.sum(~VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~VOTselectivebyArea[2][soundResponsiveByArea[2]])]]))
+oddsratio, pvalFracVotSelective_AudDvsAudV_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(VOTselectivebyArea[2][soundResponsiveByArea[2]])],[np.sum(~VOTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(~VOTselectivebyArea[2][soundResponsiveByArea[2]])]]))
+oddsratio, pvalFracVotSelective_AudPvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(VOTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~VOTselectivebyArea[0][soundResponsiveByArea[0]]), np.sum(~VOTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+oddsratio, pvalFracVotSelective_AudDvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(VOTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~VOTselectivebyArea[1][soundResponsiveByArea[1]]), np.sum(~VOTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+oddsratio, pvalFracVotSelective_AudVvsTea_soundResponsive = stats.fisher_exact(np.array([[np.sum(VOTselectivebyArea[2][soundResponsiveByArea[2]]), np.sum(VOTselectivebyArea[3][soundResponsiveByArea[3]])],[np.sum(~VOTselectivebyArea[2][soundResponsiveByArea[2]]), np.sum(~VOTselectivebyArea[3][soundResponsiveByArea[3]])]]))
+
+
+
+
 
 if STATSUMMARY:
     print('--Stats Summary--')
@@ -413,11 +435,6 @@ if STATSUMMARY:
     print(f'Frac FT selective AudP vs Tea p = {np.round(pvalFracFtSelective_AudPvsTea,3)}')
     print(f'Frac FT selective AudD vs Tea p = {np.round(pvalFracFtSelective_AudDvsTea,3)}')
     print(f'Frac FT selective AudV vs Tea p = {np.round(pvalFracFtSelective_AudVvsTea,3)}')
-    #print(f'exclusion criterion = firing rate < {exclusionCriterion} sp/s')
-    #print(f'n Excluded {audCtxAreas[0]}: {np.sum(excludeSpeechbyArea[0])}')
-    #print(f'n Excluded {audCtxAreas[1]}: {np.sum(excludeSpeechbyArea[1])}')
-    #print(f'n Excluded {audCtxAreas[2]}: {np.sum(excludeSpeechbyArea[2])}')
-    #print(f'n Excluded {audCtxAreas[3]}: {np.sum(excludeSpeechbyArea[3])}')
     print(f'Frac mixed selective AudP vs AudD:  p = {np.round(pvalFracMixed_AudPvsAudD,3)}')
     print(f'Frac mixed selective AudP vs AudV:  p = {np.round(pvalFracMixed_AudPvsAudV,3)}')
     print(f'Frac mixed selective AudD vs AudV:  p = {np.round(pvalFracMixed_AudDvsAudV,3)}')
@@ -430,6 +447,7 @@ if STATSUMMARY:
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
 
 
-
+'''
 np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical)
 print('saved to ' f'{figDataFullPath}')
+'''
