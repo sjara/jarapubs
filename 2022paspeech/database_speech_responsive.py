@@ -107,8 +107,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
             possibleFTParams, VOTParamsEachTrial, possibleVOTParams)
 
 
-        (spikeTimesFromEventOnset,trialIndexForEachSpike,indexLimitsEachTrial) =
-            spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
+        (spikeTimesFromEventOnset,trialIndexForEachSpike,indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
 
         meanFiringEachPeriod = np.empty(len(allPeriods))
         spikesEachTrialEachPeriod = []
