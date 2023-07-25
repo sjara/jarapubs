@@ -31,9 +31,9 @@ FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
-figFilename = 'figure_mixed_selectivity_8bins' # Do not include extension
+figFilename = 'figure_mixed_selectivity' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 5.25] # In inches
 
@@ -43,7 +43,7 @@ fontSizeTitles = figparams.fontSizeTitles
 fontSizePanel = figparams.fontSizePanel
 colorMap = cm.get_cmap('Greens')
 newMap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n='BuGn', a = 0.1, b = 1), colorMap(np.linspace(0.2,1,50)))
-colorMixedSelective = cp.TangoPalette['ScarletRed2']
+colorMixedSelective = cp.TangoPalette['Orange2']
 colorSingleSelective = cp.TangoPalette['SkyBlue2']
 colorNotSelective = cp.TangoPalette['Aluminium3']
 
@@ -150,7 +150,7 @@ plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 plt.legend(handles = [singSel, mixSel], labels = ['Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
 #plt.title('Mixed selectivity', fontsize = fontSizeTitles)
 axMixeSelMap.spines["right"].set_visible(False)
@@ -213,7 +213,7 @@ singleBarsAP = plt.bar(binsAP, binCountsSingle_AP, width = binSizeAP/1.75, botto
 #nonSelBarsAP = plt.bar(binsAP, binCountsNonSel_AP, width = binSizeAP/1.75, bottom = (binCountsMixed_AP + binCountsSingle_AP), color = colorNotSelective)
 plt.xlim(165,225)
 plt.xticks(APtickLocs, APtickLabels)
-plt.xlabel('Posterior from Bregma (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 plt.ylabel('Fraction of Selective Cells', fontsize = fontSizeLabels)
 axMixAP.spines["right"].set_visible(False)
 axMixAP.spines["top"].set_visible(False)

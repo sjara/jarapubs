@@ -260,6 +260,76 @@ for indArea, thisArea in enumerate(audCtxAreas):
     z_coordsbyArea[indArea] = z_coordsbyArea[indArea][~excludeSpeechbyArea[indArea]]
 
 
+# -- QUADRANTS
+audCtxAPbounds = np.array([-3.95,-1.9])
+spreadAP = audCtxAPbounds[1]-audCtxAPbounds[0]
+quadrantAPThreshold = audCtxAPbounds[0] + (spreadAP/2)
+quadrantBoundsAP = np.array([audCtxAPbounds[0], quadrantAPThreshold, audCtxAPbounds[1]])
+quadrantBoundsAP_AAtransform = 280 + (quadrantBoundsAP + 0.94)/0.025
+
+audCtxDVbounds = np.array([1.65, 4.65])
+spreadDV = audCtxDVbounds[1] - audCtxDVbounds[0]
+quadrantDVThreshold = audCtxDVbounds[0] + (spreadDV/2)
+quadrantBoundsDV = np.array([audCtxDVbounds[0], quadrantDVThreshold, audCtxDVbounds[1]])
+quadrantBoundsDV_AAtransform = (quadrantBoundsDV/0.025)+10
+
+
+quantilesDV = np.zeros([2, len(soundResponsive)], dtype = bool)
+quantilesAP = np.zeros([2, len(soundResponsive)], dtype = bool)
+for indBin, thisBin in enumerate(quantilesDV):
+    thisQuantileDV = (y_coords >= quadrantBoundsDV_AAtransform[indBin]) & (y_coords < quadrantBoundsDV_AAtransform[indBin+1])
+    thisQuantileAP = (z_coords >= quadrantBoundsAP_AAtransform[indBin]) & (z_coords < quadrantBoundsAP_AAtransform[indBin+1])
+    quantilesAP[indBin] = thisQuantileAP
+    quantilesDV[indBin] = thisQuantileDV
+
+quadrantLabelsAP = ['posterior', 'anterior']
+quadrantLabelsDV = ['dorsal', 'ventral']
+quadrantLabels = ['dorsal posterior', 'dorsal anterior', 'ventral posterior', 'ventral anterior']
+
+quadrantTotals = np.array(np.zeros(len(quadrantLabels), dtype=int))
+quadrantsVOT = []
+quadrantsFT = []
+quadrantsVotSelective = []
+quadrantsFtSelective = []
+quadrantsSingleSelective = []
+quadrantsMixedSelective = []
+quadrantsSpeechResponsive = []
+quadrantsSoundResponsive = []
+
+a = -1
+for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+    for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+        a = a+1
+        quadrantTotals[a] = np.sum(thisQuantileDV & thisQuantileAP)
+        quadrantsVOT.append(bestSelectivityIndexVot[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsFT.append(bestSelectivityIndexFt[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsVotSelective.append(VOTselective[thisQuantileAP & thisQuantileDV & speechResponsive])
+        quadrantsFtSelective.append(FTselective[thisQuantileAP & thisQuantileDV & speechResponsive])
+        quadrantsSingleSelective.append(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsMixedSelective.append(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive])
+        quadrantsSpeechResponsive.append(speechResponsive[thisQuantileDV & thisQuantileAP])
+        quadrantsSoundResponsive.append(soundResponsive[thisQuantileDV & thisQuantileAP])
+
+
+
+# -- TEST EACH ANIMAL
+CHECKBYANIMAL = 0
+if CHECKBYANIMAL:
+    for indMouse, thisMouse in enumerate(np.unique(celldb.subject)):
+        print(thisMouse)
+        for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+            for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+                print(f'Quadrant: {quadrantLabelsDV[indBinDV]} {quadrantLabelsAP[indBinAP]}')
+                print(f'n Total {np.sum(thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse))}')
+                print(f'n SoundResponsive {np.sum(soundResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
+                print(f'n SpeechResponsive {np.sum(speechResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
+                print(f'n Speech Selective {np.sum(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)]) + np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n Vot Selective {np.sum(votSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n Ft Selective {np.sum(ftSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                print(f'n MixedSelective {np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+
+
+
 
 ## -- run stats
 ## -- all cells
@@ -447,7 +517,7 @@ if STATSUMMARY:
     print(f'Tea n: {len(speechResponsiveByArea[3])}, n speechResponsive: {np.sum(speechResponsiveByArea[3])}, n selective: VOT = {np.sum(VOTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(VOTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), FT = {np.sum(FTselectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(FTselectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%), Mixed = {np.sum(mixedSelectivebyArea[3][speechResponsiveByArea[3]])} ({np.round(np.mean(mixedSelectivebyArea[3][speechResponsiveByArea[3]])*100,1)}%)')
 
 
-'''
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical)
+
+
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AAtransform = quadrantBoundsDV_AAtransform, quadrantBoundsAP_AAtransform = quadrantBoundsAP_AAtransform, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive)
 print('saved to ' f'{figDataFullPath}')
-'''

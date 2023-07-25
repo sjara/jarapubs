@@ -18,9 +18,11 @@ from scipy.io import wavfile
 import scipy.optimize
 import figparams
 import studyparams
-from matplotlib.font_manager import findfont, FontProperties
 from importlib import reload
-font = findfont(FontProperties(family = ['Helvetica']))
+import matplotlib.font_manager
+matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
+#from matplotlib.font_manager import findfont, FontProperties
+#font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 FIGNAME = 'figure_behavior'
