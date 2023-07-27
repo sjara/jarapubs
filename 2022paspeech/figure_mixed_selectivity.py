@@ -34,7 +34,7 @@ figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FI
 SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_mixed_selectivity' # Do not include extension
-figFormat = 'svg' # 'pdf' or 'svg'
+figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [7.5, 5.25] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
@@ -68,14 +68,37 @@ recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
 avgShuffledSIVot = np.mean(shuffledVotBest[~excludeSpeech & speechResponsive],1)
 avgShuffledSIFt = np.mean(shuffledFtBest[~excludeSpeech & speechResponsive], 1)
+quantilesDV = figData['quantilesDV']
+quantilesAP = figData['quantilesAP']
+quadrantBoundsDV = figData['quadrantBoundsDV']
+quadrantBoundsAP = figData['quadrantBoundsAP']
+quadrantBoundsDV_AAtransform = figData['quadrantBoundsDV_AAtransform']
+quadrantBoundsAP_AAtransform = figData['quadrantBoundsAP_AAtransform']
+quadrantLabels = figData['quadrantLabels']
+quadrantTotals = figData['quadrantTotals']
+quadrantsVOT = figData['quadrantsVOT']
+quadrantsFT = figData['quadrantsFT']
+quadrantsVotSelective = figData['quadrantsVotSelective']
+quadrantsFtSelective = figData['quadrantsFtSelective']
+quadrantsMixedSelective = figData['quadrantsMixedSelective']
+quadrantsSingleSelective = figData['quadrantsSingleSelective']
+quadrantsSpeechResponsive = figData['quadrantsSpeechResponsive']
+quadrantsSoundResponsive = figData['quadrantsSoundResponsive']
+quadrantTotalsByAnimal = figData['quadrantTotalsByAnimal']
+quadrantsSoundResponsiveByAnimal = figData['quadrantsSoundResponsiveByAnimal']
+quadrantsSpeechResponsiveByAnimal = figData['quadrantsSpeechResponsiveByAnimal']
+quadrantsVotSelectiveByAnimal = figData['quadrantsVotSelectiveByAnimal']
+quadrantsFtSelectiveByAnimal = figData['quadrantsFtSelectiveByAnimal']
+quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
+quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
 
 plt.figure()
 gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.4, 0.25, 0.35])
 axMixeSelMap = plt.subplot(gsMain[:,0])
-axMixedBins = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45])
-axMixDV = plt.subplot(axMixedBins[0,0])
-axMixAP = plt.subplot(axMixedBins[1,0])
+axQuadSummary = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45])
+axQuadPcts = plt.subplot(axQuadSummary[0,0])
+axByAnimal = plt.subplot(axQuadSummary[1,0])
 axMixDonuts = gsMain[0:,1].subgridspec(4, 1, hspace = 0.4)
 axMixAudP = plt.subplot(axMixDonuts[1,0])
 axMixAudD = plt.subplot(axMixDonuts[0,0])
@@ -85,55 +108,12 @@ axMixTeA = plt.subplot(axMixDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.1, wspace=0.25, hspace=0.4)
 plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
-nBins = 2
-
-binSizeDV = (np.max(y_coords[speechResponsive]) - np.min(y_coords[speechResponsive]))/nBins
-binsDV = np.arange(np.min(y_coords[speechResponsive]), np.max(y_coords[speechResponsive]), binSizeDV)
-
-binSizeAP = (np.max(z_coords[speechResponsive]) - np.min(z_coords[speechResponsive]))/nBins
-binsAP = np.arange(np.min(z_coords[speechResponsive]), np.max(z_coords[speechResponsive]), binSizeAP)
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
-quantilesVOT_DV = []
-quantilesFT_DV = []
-quantilesVOT_AP = []
-quantilesFT_AP = []
-quantilesVotSelective_DV = []
-quantilesVotSelective_AP = []
-quantilesFtSelective_DV = []
-quantilesFtSelective_AP = []
-quantilesSingleSelective_AP = []
-quantilesSingleSelective_DV = []
-quantilesMixedSelective_AP = []
-quantilesMixedSelective_DV = []
-quantilesResponsive_AP = []
-quantilesResponsive_DV = []
-
-for indBin, thisBin in enumerate(binsDV):
-    if indBin < len(binsDV) - 1:
-        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords < binsDV[indBin+1])
-        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords < binsAP[indBin+1])
-    elif indBin == len(binsDV) - 1:
-        thisQuantileDV = (y_coords >= binsDV[indBin]) & (y_coords <= np.max(y_coords[speechResponsive]))
-        thisQuantileAP = (z_coords >= binsAP[indBin]) & (z_coords <= np.max(z_coords[speechResponsive]))
-    quantilesVOT_DV.append(bestSelectivityIndexVot[thisQuantileDV & speechResponsive])
-    quantilesFT_DV.append(bestSelectivityIndexFt[thisQuantileDV & speechResponsive])
-    quantilesVOT_AP.append(bestSelectivityIndexVot[thisQuantileAP & speechResponsive])
-    quantilesFT_AP.append(bestSelectivityIndexFt[thisQuantileAP & speechResponsive])
-    quantilesVotSelective_AP.append(votSelective[thisQuantileAP])
-    quantilesFtSelective_AP.append(ftSelective[thisQuantileAP])
-    quantilesVotSelective_DV.append(votSelective[thisQuantileDV])
-    quantilesFtSelective_DV.append(ftSelective[thisQuantileDV])
-    quantilesSingleSelective_AP.append(singleSelective[thisQuantileAP])
-    quantilesSingleSelective_DV.append(singleSelective[thisQuantileDV])
-    quantilesMixedSelective_AP.append(mixedSelective[thisQuantileAP])
-    quantilesMixedSelective_DV.append(mixedSelective[thisQuantileDV])
-    quantilesResponsive_AP.append(speechResponsive[thisQuantileAP])
-    quantilesResponsive_DV.append(speechResponsive[thisQuantileDV])
 
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
@@ -156,67 +136,69 @@ plt.legend(handles = [singSel, mixSel], labels = ['Single-selective', 'Mixed-sel
 axMixeSelMap.spines["right"].set_visible(False)
 axMixeSelMap.spines["top"].set_visible(False)
 
-binCountsMixed_AP = np.zeros(nBins)
-binCountsMixed_DV = np.zeros(nBins)
-binCountsSingle_AP = np.zeros(nBins)
-binCountsSingle_DV = np.zeros(nBins)
-#binCountsNonSel_AP = np.zeros(nBins)
-#binCountsNonSel_DV = np.zeros(nBins)
 
 
-# Not showing non-responsive
-for indBin, thisBin in enumerate(quantilesMixedSelective_AP):
-    nSelectiveAP = np.sum(quantilesMixedSelective_AP[indBin]) + np.sum(quantilesSingleSelective_AP[indBin])
-    nSelectiveDV = np.sum(quantilesSingleSelective_DV[indBin]) + np.sum(quantilesMixedSelective_DV[indBin])
-    binCountsMixed_AP[indBin] = np.sum(quantilesMixedSelective_AP[indBin])/nSelectiveAP
-    binCountsMixed_DV[indBin] = np.sum(quantilesMixedSelective_DV[indBin])/nSelectiveDV
-    binCountsSingle_AP[indBin] = np.sum(quantilesSingleSelective_AP[indBin])/nSelectiveAP
-    binCountsSingle_DV[indBin] = np.sum(quantilesSingleSelective_DV[indBin])/nSelectiveDV
+plt.sca(axQuadPcts)
+nMixedSelectiveDP = np.sum(quadrantsMixedSelective[0])
+nSpeechSelectiveDP = np.sum(quadrantsMixedSelective[0]) + np.sum(quadrantsSingleSelective[0])
+nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0])
+nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0])
+nTotalDP = quadrantTotals[0]
+fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechSelectiveDP
+DPalphaMix = 1
 
-binCounts_AP = {"Mixed": binCountsMixed_AP, "Single": binCountsSingle_AP}
-binCounts_DV = {"Mixed": binCountsMixed_DV, "Single": binCountsSingle_DV}
+nMixedSelectiveDA = np.sum(quadrantsMixedSelective[1])
+nSpeechSelectiveDA = np.sum(quadrantsMixedSelective[1]) + np.sum(quadrantsSingleSelective[1])
+nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1])
+nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1])
+nTotalDA = quadrantTotals[1]
+fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechSelectiveDA
+DAalphaMix = fracMixedSelectiveDA/fracMixedSelectiveDP
 
-'''
+nMixedSelectiveVP = np.sum(quadrantsMixedSelective[2])
+nSpeechSelectiveVP = np.sum(quadrantsMixedSelective[2]) + np.sum(quadrantsSingleSelective[2])
+nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2])
+nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2])
+nTotalVP = quadrantTotals[2]
+fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechSelectiveVP
+VPalphaMix = fracMixedSelectiveVP/fracMixedSelectiveDP
 
-# Showing non-responsive
-for indBin, thisBin in enumerate(quantilesMixedSelective_AP):
-    nSelectiveAP = np.sum(quantilesMixedSelective_AP[indBin]) + np.sum(quantilesSingleSelective_AP[indBin])
-    nSelectiveDV = np.sum(quantilesSingleSelective_DV[indBin]) + np.sum(quantilesMixedSelective_DV[indBin])
-    nResponsiveAP = np.sum(quantilesResponsive_AP[indBin])
-    nResponsiveDV = np.sum(quantilesResponsive_DV[indBin])
-    binCountsMixed_AP[indBin] = np.sum(quantilesMixedSelective_AP[indBin])/nResponsiveAP
-    binCountsMixed_DV[indBin] = np.sum(quantilesMixedSelective_DV[indBin])/nResponsiveDV
-    binCountsSingle_AP[indBin] = np.sum(quantilesSingleSelective_AP[indBin])/nResponsiveAP
-    binCountsSingle_DV[indBin] = np.sum(quantilesSingleSelective_DV[indBin])/nResponsiveDV
-    binCountsNonSel_AP[indBin] =  (nResponsiveAP-nSelectiveAP)/nResponsiveAP
-    binCountsNonSel_DV[indBin] =  (nResponsiveDV-nSelectiveDV)/nResponsiveDV
-
-binCounts_AP = {"Mixed": binCountsMixed_AP, "Single": binCountsSingle_AP, "Non-selective": binCountsNonSel_AP}
-binCounts_DV = {"Mixed": binCountsMixed_DV, "Single": binCountsSingle_DV, "Non-selective": binCountsNonSel_DV}
-'''
-
-plt.sca(axMixDV)
-mixedBarsDV = plt.barh(binsDV, binCountsMixed_DV, height = binSizeDV/1.75, color = colorMixedSelective) #, color = [colorMixedSelective, colorSingleSelective]
-singleBarsDV = plt.barh(binsDV, binCountsSingle_DV, height = binSizeDV/1.75, left = binCountsMixed_DV, color = colorSingleSelective)
-#nonSelBarsDV = plt.barh(binsDV, binCountsNonSel_DV, height = binSizeDV/1.75, left = (binCountsMixed_DV+binCountsSingle_DV), color = colorNotSelective)
-plt.ylim(190, 40)
-plt.yticks(DVtickLocs, DVtickLabels)
-plt.xlabel('Fraction of Selective Cells', fontsize = fontSizeLabels)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-axMixDV.spines["right"].set_visible(False)
-axMixDV.spines["top"].set_visible(False)
+nMixedSelectiveVA = np.sum(quadrantsMixedSelective[3])
+nSpeechSelectiveVA = np.sum(quadrantsMixedSelective[3]) + np.sum(quadrantsSingleSelective[3])
+nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3])
+nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3])
+nTotalVA = quadrantTotals[3]
+fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechSelectiveVA
+VAalphaMix = fracMixedSelectiveVA/fracMixedSelectiveDP
 
 
-plt.sca(axMixAP)
-mixedBarsAP = plt.bar(binsAP, binCountsMixed_AP, width = binSizeAP/1.75, color = colorMixedSelective)
-singleBarsAP = plt.bar(binsAP, binCountsSingle_AP, width = binSizeAP/1.75, bottom = binCountsMixed_AP, color = colorSingleSelective)
-#nonSelBarsAP = plt.bar(binsAP, binCountsNonSel_AP, width = binSizeAP/1.75, bottom = (binCountsMixed_AP + binCountsSingle_AP), color = colorNotSelective)
-plt.xlim(165,225)
-plt.xticks(APtickLocs, APtickLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.ylabel('Fraction of Selective Cells', fontsize = fontSizeLabels)
-axMixAP.spines["right"].set_visible(False)
-axMixAP.spines["top"].set_visible(False)
+
+pltMixDP = plt.Rectangle((0,0.5), 0.5, 0.5, facecolor = colorMixedSelective, alpha = DPalphaMix)
+pltMixDA = plt.Rectangle((0.5,0.5), 0.5, 0.5, facecolor = colorMixedSelective, alpha = DAalphaMix)
+pltMixVP = plt.Rectangle((0,0), 0.5, 0.5, facecolor = colorMixedSelective, alpha = VPalphaMix)
+pltMixVA = plt.Rectangle((0.5,0), 0.5, 0.5, facecolor = colorMixedSelective, alpha = VAalphaMix)
+axQuadPcts.add_artist(pltMixDP)
+axQuadPcts.add_artist(pltMixDA)
+axQuadPcts.add_artist(pltMixVP)
+axQuadPcts.add_artist(pltMixVA)
+plt.annotate(f'{np.round(fracMixedSelectiveDP*100,1)}% DP\n n = {nSpeechSelectiveDP}', (0.1, 0.65), fontsize = fontSizeTicks, color = 'w')
+plt.annotate(f'{np.round(fracMixedSelectiveDA*100,1)}% DA\n n = {nSpeechSelectiveDA}', (0.6, 0.65), fontsize = fontSizeTicks, color = 'k')
+plt.annotate(f'{np.round(fracMixedSelectiveVP*100,1)}% VP\n n = {nSpeechSelectiveVP}', (0.1, 0.15), fontsize = fontSizeTicks, color = 'k')
+plt.annotate(f'{np.round(fracMixedSelectiveVA*100,1)}% VA\n n = {nSpeechSelectiveVA}', (0.6, 0.15), fontsize = fontSizeTicks, color = 'k')
+plt.axis('off')
+
+
+
+plt.sca(axByAnimal)
+plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
+plt.xticks([1,2,3,4], ['DP', 'DA', 'VA', 'VP'])
+plt.ylabel('Fraction Mixed selective')
+fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
+plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,3], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+axByAnimal.spines["right"].set_visible(False)
+axByAnimal.spines["top"].set_visible(False)
 
 
 plt.sca(axMixAudP)
@@ -273,8 +255,8 @@ labelPosY = [0.94, 0.46]    # Vert position for panel labels
 
 axMixeSelMap.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axMixAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axMixDV.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axMixAP.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axQuadPcts.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axByAnimal.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 
 
 plt.show()

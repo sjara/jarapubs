@@ -313,20 +313,38 @@ for indBinDV, thisQuantileDV in enumerate(quantilesDV):
 
 
 # -- TEST EACH ANIMAL
-CHECKBYANIMAL = 0
+CHECKBYANIMAL = 1
+nAnimals = len(np.unique(celldb.subject))
+quadrantTotalsByAnimal = np.empty([nAnimals, 4], dtype=int)
+quadrantsSoundResponsiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+quadrantsSpeechResponsiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+quadrantsVotSelectiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+quadrantsFtSelectiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+quadrantsSingleSelectiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+quadrantsMixedSelectiveByAnimal = np.empty([nAnimals, 4], dtype = int)
+
+
+
 if CHECKBYANIMAL:
     for indMouse, thisMouse in enumerate(np.unique(celldb.subject)):
         print(thisMouse)
+        a = -1
         for indBinDV, thisQuantileDV in enumerate(quantilesDV):
             for indBinAP, thisQuantileAP in enumerate(quantilesAP):
-                print(f'Quadrant: {quadrantLabelsDV[indBinDV]} {quadrantLabelsAP[indBinAP]}')
-                print(f'n Total {np.sum(thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse))}')
-                print(f'n SoundResponsive {np.sum(soundResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
-                print(f'n SpeechResponsive {np.sum(speechResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])}')
-                print(f'n Speech Selective {np.sum(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)]) + np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
-                print(f'n Vot Selective {np.sum(votSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
-                print(f'n Ft Selective {np.sum(ftSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
-                print(f'n MixedSelective {np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+                a = a+1
+                quadrantTotalsByAnimal[indMouse, a] = np.sum(thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse))
+                quadrantsSoundResponsiveByAnimal[indMouse, a] = np.sum(soundResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])
+                quadrantsSpeechResponsiveByAnimal[indMouse, a] = np.sum(speechResponsive[thisQuantileDV & thisQuantileAP & (celldb.subject == thisMouse)])
+                quadrantsVotSelectiveByAnimal[indMouse, a] = np.sum(VOTselective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])
+                quadrantsFtSelectiveByAnimal[indMouse, a] = np.sum(FTselective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])
+                quadrantsMixedSelectiveByAnimal[indMouse, a] = np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])
+                quadrantsSingleSelectiveByAnimal[indMouse, a] = np.sum(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])
+
+
+                #print(f'n Speech Selective {np.sum(singleSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)]) + np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
+                #print(f'n Vot Selective {np.sum(votSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                #print(f'n Ft Selective {np.sum(ftSelective[thisQuantileAP & thisQuantileDV & speechResponsive & (celldb.subject == thisMouse)])}')
+                #print(f'n MixedSelective {np.sum(mixedSelective[thisQuantileDV & thisQuantileAP & speechResponsive & (celldb.subject == thisMouse)])}')
 
 
 
@@ -519,5 +537,5 @@ if STATSUMMARY:
 
 
 
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AAtransform = quadrantBoundsDV_AAtransform, quadrantBoundsAP_AAtransform = quadrantBoundsAP_AAtransform, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive)
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AAtransform = quadrantBoundsDV_AAtransform, quadrantBoundsAP_AAtransform = quadrantBoundsAP_AAtransform, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive, quadrantTotalsByAnimal = quadrantTotalsByAnimal, quadrantsSoundResponsiveByAnimal = quadrantsSoundResponsiveByAnimal, quadrantsSpeechResponsiveByAnimal = quadrantsSpeechResponsiveByAnimal, quadrantsVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal, quadrantsFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal, quadrantsSingleSelectiveByAnimal = quadrantsSingleSelectiveByAnimal, quadrantsMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal )
 print('saved to ' f'{figDataFullPath}')

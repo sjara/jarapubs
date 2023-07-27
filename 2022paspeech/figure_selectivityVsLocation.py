@@ -22,15 +22,17 @@ import studyparams
 import figparams
 from importlib import reload
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from matplotlib.font_manager import findfont, FontProperties
-font = findfont(FontProperties(family = ['Helvetica']))
+#from matplotlib.font_manager import findfont, FontProperties
+#font = findfont(FontProperties(family = ['Helvetica']))
+import matplotlib.font_manager
+matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_selectivityIndices' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -92,6 +94,13 @@ quadrantsMixedSelective = figData['quadrantsMixedSelective']
 quadrantsSingleSelective = figData['quadrantsSingleSelective']
 quadrantsSpeechResponsive = figData['quadrantsSpeechResponsive']
 quadrantsSoundResponsive = figData['quadrantsSoundResponsive']
+quadrantTotalsByAnimal = figData['quadrantTotalsByAnimal']
+quadrantsSoundResponsiveByAnimal = figData['quadrantsSoundResponsiveByAnimal']
+quadrantsSpeechResponsiveByAnimal = figData['quadrantsSpeechResponsiveByAnimal']
+quadrantsVotSelectiveByAnimal = figData['quadrantsVotSelectiveByAnimal']
+quadrantsFtSelectiveByAnimal = figData['quadrantsFtSelectiveByAnimal']
+quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
+quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
 
 
@@ -122,21 +131,6 @@ axFtTeA = plt.subplot(axFtDonuts[3,0])
 
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=0.3)
 plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
-
-nBins = 2
-nCompar = np.sum(np.arange(nBins-1,0,-1))
-
-spreadDV = np.max(y_coords[soundResponsive]) - np.min(y_coords[soundResponsive])
-binSizeDV = spreadDV/nBins
-binsDV = np.arange(np.min(y_coords[soundResponsive]), np.max(y_coords[soundResponsive]), binSizeDV)
-binsDV_AAtransform = np.round((binsDV-10)*0.025,1)
-
-
-spreadAP = np.max(z_coords[soundResponsive]) - np.min(z_coords[soundResponsive])
-binSizeAP = spreadAP/nBins
-binsAP = np.arange(np.min(z_coords[soundResponsive]), np.max(z_coords[soundResponsive]), binSizeAP)
-binsAP_AAtransform = np.round(-0.94 - (280-binsAP)*0.025,1)
-
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
@@ -342,7 +336,8 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 plt.sca(axColorMapVOT)
 #plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexVot[speechResponsive], cmap = newMap, s = 3)
-plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexVot[speechResponsive], cmap = newMapVOT, s = 3)
+#plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexVot[speechResponsive], cmap = newMapVOT, s = 3)
+plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexVot, cmap = newMapVOT, s = 3)
 #plt.ylim(215,60)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
@@ -449,12 +444,17 @@ plt.sca(axByAnimalVot)
 plt.bar([1, 2, 3, 4], [fracVOTselectiveDP, fracVOTselectiveDA, fracVOTselectiveVA, fracVOTselectiveVP], facecolor = colorVotSelective)
 plt.xticks([1,2,3,4], ['DP', 'DA', 'VA', 'VP'])
 plt.ylabel('Fraction VOT selective')
-
-
+fracVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal/quadrantTotalsByAnimal
+plt.plot([1,2], [fracVotSelectiveByAnimal[:,0], fracVotSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,3], [fracVotSelectiveByAnimal[:,0], fracVotSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,4], [fracVotSelectiveByAnimal[:,0], fracVotSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+axByAnimalVot.spines["right"].set_visible(False)
+axByAnimalVot.spines["top"].set_visible(False)
 
 
 plt.sca(axColorMapFT)
-plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexFt[speechResponsive], cmap = newMapFT, s = 3)
+#plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexFt[speechResponsive], cmap = newMapFT, s = 3)
+plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexFt, cmap = newMapFT, s = 3)
 #plt.ylim(215,60)
 #plt.xlim(165,225)
 plt.ylim(220,40)
@@ -552,6 +552,14 @@ plt.sca(axByAnimalFt)
 plt.bar([1, 2, 3, 4], [fracFTselectiveDP, fracFTselectiveDA, fracFTselectiveVA, fracFTselectiveVP], facecolor = colorFtSelective)
 plt.xticks([1,2,3,4], ['DP', 'DA', 'VA', 'VP'])
 plt.ylabel('Fraction FT selective')
+fracFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal/quadrantTotalsByAnimal
+plt.plot([1,2], [fracFtSelectiveByAnimal[:,0], fracFtSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,3], [fracFtSelectiveByAnimal[:,0], fracFtSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,4], [fracFtSelectiveByAnimal[:,0], fracFtSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+axByAnimalFt.spines["right"].set_visible(False)
+axByAnimalFt.spines["top"].set_visible(False)
+
+
 
 
 
