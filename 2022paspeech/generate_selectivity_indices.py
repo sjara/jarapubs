@@ -277,8 +277,8 @@ quadrantBoundsDV_AAtransform = (quadrantBoundsDV/0.025)+10
 quantilesDV = np.zeros([2, len(soundResponsive)], dtype = bool)
 quantilesAP = np.zeros([2, len(soundResponsive)], dtype = bool)
 for indBin, thisBin in enumerate(quantilesDV):
-    thisQuantileDV = (y_coords >= quadrantBoundsDV_AAtransform[indBin]) & (y_coords < quadrantBoundsDV_AAtransform[indBin+1])
-    thisQuantileAP = (z_coords >= quadrantBoundsAP_AAtransform[indBin]) & (z_coords < quadrantBoundsAP_AAtransform[indBin+1])
+    thisQuantileDV = (y_coords >= quadrantBoundsDV_AAtransform[indBin]) & (y_coords < quadrantBoundsDV_AAtransform[indBin+1]) & isCortical & ~excludeSpeech
+    thisQuantileAP = (z_coords >= quadrantBoundsAP_AAtransform[indBin]) & (z_coords < quadrantBoundsAP_AAtransform[indBin+1]) & isCortical & ~excludeSpeech
     quantilesAP[indBin] = thisQuantileAP
     quantilesDV[indBin] = thisQuantileDV
 
@@ -327,7 +327,6 @@ quadrantsMixedSelectiveByAnimal = np.empty([nAnimals, 4], dtype = int)
 
 if CHECKBYANIMAL:
     for indMouse, thisMouse in enumerate(np.unique(celldb.subject)):
-        print(thisMouse)
         a = -1
         for indBinDV, thisQuantileDV in enumerate(quantilesDV):
             for indBinAP, thisQuantileAP in enumerate(quantilesAP):
@@ -396,7 +395,7 @@ if pValKruskalBestFT < 0.05:
     ustat, pValmannU_ftAudDvsTea = stats.mannwhitneyu(bestFtSIbyArea[1][speechResponsiveByArea[1]], bestFtSIbyArea[3][speechResponsiveByArea[3]])
     ustat, pValmannU_ftAudVvsTea = stats.mannwhitneyu(bestFtSIbyArea[2][speechResponsiveByArea[2]], bestFtSIbyArea[3][speechResponsiveByArea[3]])
 
-## -- test proportion of speech responsiv eacross cortical areas
+## -- test proportion of speech responsive across cortical areas
 oddsratio, pvalFracResponsive_AudPvsAudD = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[0]), np.sum(speechResponsiveByArea[1])],[np.sum(~speechResponsiveByArea[0]), np.sum(~speechResponsiveByArea[1])]]))
 oddsratio, pvalFracResponsive_AudPvsAudV = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[0]), np.sum(speechResponsiveByArea[2])],[np.sum(~speechResponsiveByArea[0]), np.sum(~speechResponsiveByArea[2])]]))
 oddsratio, pvalFracResponsive_AudDvsAudV = stats.fisher_exact(np.array([[np.sum(speechResponsiveByArea[2]), np.sum(speechResponsiveByArea[1])],[np.sum(~speechResponsiveByArea[2]), np.sum(~speechResponsiveByArea[1])]]))

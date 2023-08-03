@@ -23,7 +23,7 @@ reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 SAVE_FIGURE = 0
-STATSUMMARY = 0
+STATSUMMARY = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_neuropix_methods' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -95,6 +95,16 @@ soundResponsive = figData['soundResponsive']
 isCortical = figData['isCortical']
 recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
+quantilesDV = figData['quantilesDV']
+quantilesAP = figData['quantilesAP']
+quadrantBoundsDV = figData['quadrantBoundsDV']
+quadrantBoundsAP = figData['quadrantBoundsAP']
+quadrantBoundsDV_AAtransform = figData['quadrantBoundsDV_AAtransform']
+quadrantBoundsAP_AAtransform = figData['quadrantBoundsAP_AAtransform']
+quadrantLabels = figData['quadrantLabels']
+quadrantTotals = figData['quadrantTotals']
+quadrantsSpeechResponsive = figData['quadrantsSpeechResponsive']
+quadrantsSoundResponsive = figData['quadrantsSoundResponsive']
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
 APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
@@ -228,8 +238,44 @@ if STATSUMMARY:
     oddsratio, pvalFracResponsive_AudDvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nCellsAudD - nSpeechResponsiveAudD, nCellsTeA - nSpeechResponsiveTeA]]))
     oddsratio, pvalFracResponsive_AudVvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nCellsAudV - nSpeechResponsiveAudV, nCellsTeA - nSpeechResponsiveTeA]]))
 
+    nQuadCompar = 6
+    quadAlpha = 0.05/6
+    quadComparLabels = np.array(['DP vs DA', 'DP vs. VP', 'DP vs. VA', 'DA vs. VP', 'DA vs. VA', 'VP vs. VA'])
+
+    ##--Test frac sound responsive
+    quadrantComparFracSoundResponsive = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSoundResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSoundResponsive = stats.fisher_exact(np.array([[np.sum(quadrantsSoundResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]==0), np.sum(quadrantsSoundResponsive[x + indBin + 1]==0)]]))
+            quadrantComparFracSoundResponsive[a] = pvalFracSoundResponsive
+
+    ##--Test frac speech responsive out of total
+    quadrantComparFracSpeechResponsive_allcells = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSpeechResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSpeechResponsive_allcells = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[len(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), len(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            quadrantComparFracSpeechResponsive_allcells[a] = pvalFracSpeechResponsive_allcells
+
+    ##--Test frac speech responsive out of soundResponsive
+    quadrantComparFracSpeechResponsive_soundResp = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsSpeechResponsive):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracSpeechResponsive_soundResp = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            quadrantComparFracSpeechResponsive_soundResp[a] = pvalFracSpeechResponsive_soundResp
+
+
 
     print('--Stats Summary--')
+    print('--atlas-defined areas')
     print(f'AudP n: {nCellsAudP}, n any sound responsive: {nSoundResponsiveAudP} ({np.round((nSoundResponsiveAudP/nCellsAudP)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudP}, ({np.round((nSpeechResponsiveAudP/nCellsAudP)*100, 1)}% total, {np.round((nSpeechResponsiveAudP/nSoundResponsiveAudP)*100, 1)}% soundResponsive)')
     print(f'AudD n: {nCellsAudD}, n any sound responsive: {nSoundResponsiveAudD} ({np.round((nSoundResponsiveAudD/nCellsAudD)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudD}, ({np.round((nSpeechResponsiveAudD/nCellsAudD)*100, 1)}% total, {np.round((nSpeechResponsiveAudD/nSoundResponsiveAudD)*100, 1)}% soundResponsive)')
     print(f'AudV n: {nCellsAudV}, n any sound responsive: {nSoundResponsiveAudV} ({np.round((nSoundResponsiveAudV/nCellsAudV)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudV}, ({np.round((nSpeechResponsiveAudV/nCellsAudV)*100, 1)}% total, {np.round((nSpeechResponsiveAudV/nSoundResponsiveAudV)*100, 1)}% soundResponsive)')
@@ -249,3 +295,22 @@ if STATSUMMARY:
     print(f'AudP vs Tea p = {np.round(pvalFracResponsive_AudPvsTea_allcells,3)}')
     print(f'AudD vs Tea p = {np.round(pvalFracResponsive_AudDvsTea_allcells,3)}')
     print(f'AudV vs Tea p = {np.round(pvalFracResponsive_AudVvsTea_allcells,3)}')
+    print('--quadrant-defined areas')
+    print(f'DP Quadrant: total n = {len(quadrantsSoundResponsive[0])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[0])} ({np.round((np.sum(quadrantsSoundResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[0])} ({np.round((np.sum(quadrantsSpeechResponsive[0])/np.sum(quadrantsSoundResponsive[0]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}% of total)')
+    print(f'DA Quadrant: total n = {len(quadrantsSoundResponsive[1])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[1])} ({np.round((np.sum(quadrantsSoundResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[1])} ({np.round((np.sum(quadrantsSpeechResponsive[1])/np.sum(quadrantsSoundResponsive[1]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}% of total)')
+    print(f'VP Quadrant: total n = {len(quadrantsSoundResponsive[2])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[2])} ({np.round((np.sum(quadrantsSoundResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[2])} ({np.round((np.sum(quadrantsSpeechResponsive[2])/np.sum(quadrantsSoundResponsive[2]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}% of total)')
+    print(f'VA Quadrant: total n = {len(quadrantsSoundResponsive[3])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[3])} ({np.round((np.sum(quadrantsSoundResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[3])} ({np.round((np.sum(quadrantsSpeechResponsive[3])/np.sum(quadrantsSoundResponsive[3]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}% of total)')
+    print('--Frac speech responsive of sound responsive --')
+    print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[0],3)}')
+    print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[1],3)}')
+    print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[2],3)}')
+    print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[3],3)}')
+    print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[4],3)}')
+    print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[5],3)}')
+    print('--Frac speech responsive of total cells --')
+    print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_allcells[0],3)}')
+    print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[1],3)}')
+    print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[2],3)}')
+    print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[3],3)}')
+    print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[4],3)}')
+    print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[5],3)}')

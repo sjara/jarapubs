@@ -32,6 +32,7 @@ figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 1
+STATSUMMARY = 1
 outputDir = 'C:/Users/jenny/tmp/'
 figFilename = 'figure_mixed_selectivity' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
@@ -108,12 +109,10 @@ axMixTeA = plt.subplot(axMixDonuts[3,0])
 gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.1, wspace=0.25, hspace=0.4)
 plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
-
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
-
 
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
@@ -181,22 +180,31 @@ axQuadPcts.add_artist(pltMixDP)
 axQuadPcts.add_artist(pltMixDA)
 axQuadPcts.add_artist(pltMixVP)
 axQuadPcts.add_artist(pltMixVA)
-plt.annotate(f'{np.round(fracMixedSelectiveDP*100,1)}% DP\n n = {nSpeechSelectiveDP}', (0.1, 0.65), fontsize = fontSizeTicks, color = 'w')
-plt.annotate(f'{np.round(fracMixedSelectiveDA*100,1)}% DA\n n = {nSpeechSelectiveDA}', (0.6, 0.65), fontsize = fontSizeTicks, color = 'k')
-plt.annotate(f'{np.round(fracMixedSelectiveVP*100,1)}% VP\n n = {nSpeechSelectiveVP}', (0.1, 0.15), fontsize = fontSizeTicks, color = 'k')
-plt.annotate(f'{np.round(fracMixedSelectiveVA*100,1)}% VA\n n = {nSpeechSelectiveVA}', (0.6, 0.15), fontsize = fontSizeTicks, color = 'k')
-plt.axis('off')
-
+plt.annotate(f'DP\n{np.round(fracMixedSelectiveDP*100,1)}%\n n = {nSpeechSelectiveDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
+plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\n n = {nSpeechSelectiveDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\n n = {nSpeechSelectiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\n n = {nSpeechSelectiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+axQuadPcts.spines["right"].set_visible(False)
+axQuadPcts.spines["top"].set_visible(False)
+plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
+plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
+plt.xlim([-0.1,1.1])
+plt.ylim([-0.1,1.1])
+plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 
 
 plt.sca(axByAnimal)
-plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
+fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
+meanMixedSelectiveByAnimal = np.nanmean(fracMixedSelectiveByAnimal, axis = 0)
+plt.bar([1, 2, 3, 4], [meanMixedSelectiveByAnimal[0], meanMixedSelectiveByAnimal[1], meanMixedSelectiveByAnimal[3], meanMixedSelectiveByAnimal[2]], facecolor = colorMixedSelective)
+#plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
 plt.xticks([1,2,3,4], ['DP', 'DA', 'VA', 'VP'])
 plt.ylabel('Fraction Mixed selective')
-fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
-plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
-plt.plot([1,3], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
-plt.plot([1,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+plt.plot([1,2,3,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1], fracMixedSelectiveByAnimal[:,3], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+#plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
+#plt.plot([1,3], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
+#plt.plot([1,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
 axByAnimal.spines["right"].set_visible(False)
 axByAnimal.spines["top"].set_visible(False)
 
@@ -259,6 +267,106 @@ axQuadPcts.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fracti
 axByAnimal.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 
 
+if STATSUMMARY:
+    # --ATLAS AREAS
+    atlasAreasMixedSelective = np.array([nMixselectiveAudP, nMixselectiveAudD, nMixselectiveAudV, nMixselectiveTeA])
+    atlasAreasSingleSeletive = np.array([nSingleselectiveAudP, nSingleselectiveAudD, nSingleselectiveAudV, nSingleselectiveTeA])
+    atlasAreasSpeechResponsive = np.array([nSpeechResponsiveAudP, nSpeechResponsiveAudD, nSpeechResponsiveAudV, nSpeechResponsiveTeA])
+
+    nCompar = 6
+    ##--Test frac mixed selective
+    atlasAreaComparFracMixedSelective = np.ones(nCompar)
+    a = -1
+    for indBin, thisBin in enumerate(atlasAreasMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(atlasAreasSingleSeletive[indBin]), np.sum(atlasAreasSingleSeletive[x + indBin + 1])],[np.sum(atlasAreasMixedSelective[indBin]), np.sum(atlasAreasMixedSelective[x + indBin + 1])]]))
+            atlasAreaComparFracMixedSelective[a] = pvalFracMixedSelective
+
+    atlasAreaComparFracMixedSelective_speechResponsive = np.ones(nCompar)
+    a = -1
+    for indBin, thisBin in enumerate(atlasAreasMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(atlasAreasSpeechResponsive[indBin])-np.sum(atlasAreasMixedSelective[indBin]), np.sum(atlasAreasSpeechResponsive[x + indBin + 1]) - np.sum(atlasAreasMixedSelective[x + indBin + 1])],[np.sum(atlasAreasMixedSelective[indBin]), np.sum(atlasAreasMixedSelective[x + indBin + 1])]]))
+            atlasAreaComparFracMixedSelective_speechResponsive[a] = pvalFracMixedSelective
+
+    atlasComparLabels = np.array(['AudP vs AudD', 'AudP vs. AudV', 'AudP vs. TeA', 'AudD vs. AudV', 'AudD vs. TeA', 'AudV vs. TeA'])
+
+    # --QUADRANTS
+    nQuadCompar = 6
+    quadAlpha = 0.05/6
+    quadComparLabels = np.array(['DP vs DA', 'DP vs. VP', 'DP vs. VA', 'DA vs. VP', 'DA vs. VA', 'VP vs. VA'])
+    ##--Test frac mixed selective
+    quadrantComparFracMixedSelective = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSingleSelective[indBin]), np.sum(quadrantsSingleSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
+            quadrantComparFracMixedSelective[a] = pvalFracMixedSelective
+
+    quadrantComparFracMixedSelective_speechResponsive = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin])-np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1]) - np.sum(quadrantsMixedSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
+            quadrantComparFracMixedSelective_speechResponsive[a] = pvalFracMixedSelective
+
+    quadrantComparFracMixedSelective_soundResponsive = np.ones(nQuadCompar)
+    a = -1
+    for indBin, thisBin in enumerate(quadrantsMixedSelective):
+        nBinCompar = 4 - indBin -1
+        for x in range(nBinCompar):
+            a = a+1
+            oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSoundResponsive[indBin])-np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsMixedSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
+            quadrantComparFracMixedSelective_soundResponsive[a] = pvalFracMixedSelective
+
+    print('--Stat Summary --')
+    print('--atlas-defined areas--')
+    print(f'AudP: n mixed selective = {nMixselectiveAudP} ({np.round(nMixselectiveAudP/(nMixselectiveAudP+nSingleselectiveAudP)*100, 1)}% of speech selective, {np.round(nMixselectiveAudP/(nSpeechResponsiveAudP)*100, 1)}% of speech responsive)')
+    print(f'AudD: n mixed selective = {nMixselectiveAudD} ({np.round(nMixselectiveAudD/(nMixselectiveAudD+nSingleselectiveAudD)*100, 1)}% of speech selective, {np.round(nMixselectiveAudD/(nSpeechResponsiveAudD)*100, 1)}% of speech responsive)')
+    print(f'AudV: n mixed selective = {nMixselectiveAudV} ({np.round(nMixselectiveAudV/(nMixselectiveAudV+nSingleselectiveAudV)*100, 1)}% of speech selective, {np.round(nMixselectiveAudV/(nSpeechResponsiveAudV)*100, 1)}% of speech responsive)')
+    print(f'TeA: n mixed selective = {nMixselectiveTeA} ({np.round(nMixselectiveTeA/(nMixselectiveTeA+nSingleselectiveTeA)*100, 1)}% of speech selective, {np.round(nMixselectiveTeA/(nSpeechResponsiveTeA)*100, 1)}% of speech responsive)')
+    print('--Frac mixed selective of speech selective cells --')
+    print(f'AudP vs AudD p = {np.round(atlasAreaComparFracMixedSelective[0],3)}')
+    print(f'AudP vs AudV p = {np.round(atlasAreaComparFracMixedSelective[1],3)}')
+    print(f'AudP vs TeA p = {np.round(atlasAreaComparFracMixedSelective[2],3)}')
+    print(f'AudD vs AudV p = {np.round(atlasAreaComparFracMixedSelective[3],3)}')
+    print(f'AudD vs TeA p = {np.round(atlasAreaComparFracMixedSelective[4],3)}')
+    print(f'AudV vs TeA p = {np.round(atlasAreaComparFracMixedSelective[5],3)}')
+    print('--Frac mixed selective of speech responsive --')
+    print(f'AudP vs AudD p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[0],3)}')
+    print(f'AudP vs AudV p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[1],3)}')
+    print(f'AudP vs TeA p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[2],3)}')
+    print(f'AudD vs AudV p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[3],3)}')
+    print(f'AudD vs TeA p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[4],3)}')
+    print(f'AudV vs TeA p = {np.round(atlasAreaComparFracMixedSelective_speechResponsive[5],3)}')
+
+    print('--quadrant-defined areas--')
+    print(f'DP Quadrant: n mixed selective = {np.sum(quadrantsMixedSelective[0])} ({np.round((np.sum(quadrantsMixedSelective[0])/(np.sum(quadrantsMixedSelective[0]) + np.sum(quadrantsSingleSelective[0])))*100,1)}% of speech selective, {np.round((np.sum(quadrantsMixedSelective[0])/np.sum(quadrantsSpeechResponsive[0]))*100,1)}% of speech responsive)')
+    print(f'DA Quadrant: n mixed selective = {np.sum(quadrantsMixedSelective[1])} ({np.round((np.sum(quadrantsMixedSelective[1])/(np.sum(quadrantsMixedSelective[1]) + np.sum(quadrantsSingleSelective[1])))*100,1)}% of speech selective, {np.round((np.sum(quadrantsMixedSelective[1])/np.sum(quadrantsSpeechResponsive[1]))*100,1)}% of speech responsive)')
+    print(f'VP Quadrant:  n mixed selective = {np.sum(quadrantsMixedSelective[2])} ({np.round((np.sum(quadrantsMixedSelective[2])/(np.sum(quadrantsMixedSelective[2]) + np.sum(quadrantsSingleSelective[2])))*100,1)}% of speech selective, {np.round((np.sum(quadrantsMixedSelective[3])/np.sum(quadrantsSpeechResponsive[2]))*100,1)}% of speech responsive)')
+    print(f'VA Quadrant: n mixed selective = {np.sum(quadrantsMixedSelective[3])} ({np.round((np.sum(quadrantsMixedSelective[2])/(np.sum(quadrantsMixedSelective[3]) + np.sum(quadrantsSingleSelective[3])))*100,1)}% of speech selective, {np.round((np.sum(quadrantsMixedSelective[3])/np.sum(quadrantsSpeechResponsive[3]))*100,1)}% of speech responsive)')
+    print('--Frac mixed selective of speech selective cells --')
+    print(f'DP vs DA p = {np.round(quadrantComparFracMixedSelective[0],3)}')
+    print(f'DP vs VP p = {np.round(quadrantComparFracMixedSelective[1],3)}')
+    print(f'DP vs VA p = {np.round(quadrantComparFracMixedSelective[2],3)}')
+    print(f'DA vs VP p = {np.round(quadrantComparFracMixedSelective[3],3)}')
+    print(f'DA vs VA p = {np.round(quadrantComparFracMixedSelective[4],3)}')
+    print(f'VP vs VA p = {np.round(quadrantComparFracMixedSelective[5],3)}')
+    print('--Frac mixed selective of speech responsive --')
+    print(f'DP vs DA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[0],3)}')
+    print(f'DP vs VP p = {np.round(quadrantComparFracMixedSelective_speechResponsive[1],3)}')
+    print(f'DP vs VA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[2],3)}')
+    print(f'DA vs VP p = {np.round(quadrantComparFracMixedSelective_speechResponsive[3],3)}')
+    print(f'DA vs VA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[4],3)}')
+    print(f'VP vs VA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[5],3)}')
 plt.show()
 
 if SAVE_FIGURE:
