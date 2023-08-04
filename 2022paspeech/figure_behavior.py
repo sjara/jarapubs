@@ -1,9 +1,10 @@
-'''
+"""
 This creates figure 1 for 2022paspeech:
  A. plots 3 spectrograms: /ba/, /pa/, and /da/ at 8x human freq range
  B. 2AFC cartoon
  C - F. Psycurves: 1 example mouse and cohort averages for both the FT and the VOT cohorts.
-'''
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,8 +27,9 @@ FIGNAME = 'figure_behavior'
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_behavior' # Do not include extension
-figFormat = 'svg' # 'pdf' or 'svg'
-figSize = [7.5, 5.5] # In inches
+figFormat = 'pdf' # 'pdf' or 'svg'
+#figSize = [7.5, 5.5] # In inches
+figSize = [7.5, 5.0] # In inches
 
 PANELS = [3,1] # Plot panel i if PANELS[i]==1
 
@@ -36,21 +38,24 @@ fontSizeTicks = figparams.fontSizeTicks
 fontSizePanel = figparams.fontSizePanel
 colorAllFits = cp.TangoPalette['Aluminium3']
 
-labelPosX = [0.04, 0.42, 0.72] # Horiz position for panel labels
-labelPosY = [0.95, 0.67, 0.47]    # Vert position for panel labels
+labelPosX = [0.04, 0.43, 0.715] # Horiz position for panel labels
+#labelPosY = [0.95, 0.67, 0.47]    # Vert position for panel labels
+labelPosY = [0.95, 0.64, 0.455]    # Vert position for panel labels
 
-plt.figure()
+#plt.figure()
+plt.clf()
 #gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.3, 0.7])
 gsMain = gridspec.GridSpec(1, 2, width_ratios = [0.35, 0.65])
-gsMain.update(left=0.1, right=0.95, top=0.89, bottom=0.12, wspace=0.45, hspace=0.4)
+#gsMain.update(left=0.1, right=0.95, top=0.89, bottom=0.12, wspace=0.45, hspace=0.4)
+gsMain.update(left=0.1, right=0.95, top=0.92, bottom=0.11, wspace=0.45, hspace=0.4)
 
-gsLeft = gsMain[0].subgridspec(3, 2, height_ratios = [0.3, 0.3, 0.3], hspace = 0.6, wspace = 0.3)
+gsLeft = gsMain[0].subgridspec(3, 2, height_ratios = [0.34, 0.28, 0.28], hspace = 0.5, wspace = 0.3)
 axTask = plt.subplot(gsLeft[0,0])
 axDa = plt.subplot(gsLeft[2, 0])
 axBa = plt.subplot(gsLeft[1, 0])
 axPa = plt.subplot(gsLeft[1, 1])
 axCbar = plt.subplot(gsLeft[2,1])
-plt.subplots_adjust(top = 0.95, bottom = 0.1, hspace = 0.4, left = 0.05)
+#plt.subplots_adjust(top = 0.95, bottom = 0.1, hspace = 0.4, left = 0.05)
 
 
 gsPsy = gsMain[1].subgridspec(2,2, wspace = 0.3, hspace = 0.6)
@@ -70,10 +75,9 @@ axPopFt.annotate('F', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction'
 
 
 
-
-
 # -- Panel A: spectrograms /ba/, /da/, /pa/ --
-soundsDir = 'H:\\jarasounds\\ft_vot_8x_20220115' #HARDCODED
+#soundsDir = 'H:\\jarasounds\\ft_vot_8x_20220115' #HARDCODED
+soundsDir = os.path.join(settings.SOUNDS_PATH, 'ft_vot_8x_20220115')
 
 # -- /da/ --
 #ax1 = plt.subplot(gsMain[0,0])
@@ -106,9 +110,18 @@ plt.xticks(np.arange(0, .11, 0.05),['0', '50', '100'], fontsize=fontSizeTicks)
 plt.xlabel('Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
 plt.title('/da/', fontsize=fontSizeLabels, fontweight='bold')
 
-cbar = plt.colorbar(ax = axCbar, orientation = 'vertical', location = 'left', ticks = [], pad = 0.4) #shrink = 0.8,
-axCbar.annotate('Intensity', xy = (0.26, 0.16), xycoords='subfigure fraction', fontsize= fontSizeLabels, rotation = 270)
-axCbar.set_axis_off()
+cbar = plt.colorbar(cax = axCbar, ticks = [])
+cbar.set_label('Intensity', rotation=270, labelpad=12)
+cbarPos = axCbar.get_position()
+axCbar.set_position([cbarPos.x0, cbarPos.y0, 0.01, cbarPos.height])
+
+#cbar = plt.colorbar(ax = axCbar, orientation = 'vertical', location = 'left', ticks = [], pad = 0.4) #shrink = 0.8,
+#cbar = plt.colorbar(ax = axCbar, orientation = 'vertical', ticks = [], pad = 0.04) #shrink = 0.8,
+#cbar.ax.set_ylabel('Intensity', rotation=270)
+#axCbar.annotate('Intensity', xy = (0.26, 0.16), xycoords='subfigure fraction', fontsize= fontSizeLabels, rotation = 270)
+#axCbar.set_axis_off()
+#cbarPos = np.array(axCbar.get_position()).flatten()
+#axCbar.set_position(cbarPos)
 
 # -- /ba/ --
 #ax2 = plt.subplot(gsMain[0,1])
@@ -206,7 +219,7 @@ cohortData = np.load(figDataFullPathCohort)
 #ax5 = plt.subplot(gsMain[1, 0:3])
 plt.sca(axExFt)
 #ax5.annotate('C', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axExFt.annotate('n = 1 mouse \n 8 sessions', xy = (0,75), xycoords = 'data', fontsize=fontSizeLabels)
+axExFt.annotate('N = 1 mouse \n(8 sessions)', xy=(0,90), xycoords='data', va='top', fontsize=fontSizeLabels)
 xPadFt = 0.2 * (figData['possibleValuesFt'][-1] - figData['possibleValuesFt'][0])
 fitxvalFt = np.linspace(figData['possibleValuesFt'][0] - xPadFt, figData['possibleValuesFt'][-1] + xPadFt, 40)
 fityvalFt = extrastats.psychfun(fitxvalFt, *figData['curveParamsFt'])
@@ -227,7 +240,7 @@ axExFt.spines["top"].set_visible(False)
 #ax6 = plt.subplot(gsMain[2,0:3])
 plt.sca(axExVot)
 #ax6.annotate('E', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axExVot.annotate('n = 1 mouse \n 8 sessions', xy = (0,75), xycoords = 'data')
+axExVot.annotate('N = 1 mouse \n(8 sessions)', xy = (0,90), xycoords = 'data', va='top')
 #ax2.annotate('/ba/', xy = (0, 103), xycoords = 'data', annotation_clip = 0)
 #ax2.annotate('/pa/', xy = (100, 103), xycoords = 'data', annotation_clip = 0)
 #ax2.annotate(xy = (50, 103), xycoords = 'data', annotation_clip = 0, arrowprops = {arrowstyle: ``'<|-|>'``},)
@@ -252,7 +265,7 @@ axExVot.spines["top"].set_visible(False)
 #ax7 = plt.subplot(gsMain[1, 3:])
 plt.sca(axPopFt)
 #ax7.annotate('D', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axPopFt.annotate('n = 3 mice \n 8 sessions', xy = (0,75), xycoords = 'data')
+axPopFt.annotate('N = 3 mice', xy = (0,90), xycoords = 'data', va='top')
 
 xPadFt = 0.2 * (cohortData['possibleValuesFt'][-1] - cohortData['possibleValuesFt'][0])
 fitxvalFt = np.linspace(cohortData['possibleValuesFt'][0]-xPadFt, cohortData['possibleValuesFt'][-1]+xPadFt, 40)
@@ -304,7 +317,7 @@ plt.xlabel('Voice Onset Time (ms)', fontsize=fontSizeLabels, labelpad = 0.3)
 #plt.title('Cohort average: VOT', fontsize=fontSizeLabels, pad=5)
 #plt.grid(True, axis='y', color='0.9')
 
-axPopVot.annotate('n = 9 mice \n 8 sessions', xy = (0,75), xycoords = 'data')
+axPopVot.annotate('N = 9 mice', xy = (0,90), xycoords = 'data', va='top')
 xPadVot = 0.2 * (cohortData['possibleValuesVot'][-1] - cohortData['possibleValuesVot'][0])
 fitxvalVot = np.linspace(cohortData['possibleValuesVot'][0]-xPadVot, cohortData['possibleValuesVot'][-1]+xPadVot, 40)
 fityvalVot = extrastats.psychfun(fitxvalVot, *cohortData['curveParamsVot'])
