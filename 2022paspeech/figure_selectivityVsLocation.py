@@ -21,19 +21,14 @@ from scipy import stats
 import studyparams
 import figparams
 from importlib import reload
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-#from matplotlib.font_manager import findfont, FontProperties
-#font = findfont(FontProperties(family = ['Helvetica']))
-import matplotlib.font_manager
-matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
-reload(figparams)
+
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 0
-outputDir = 'C:/Users/jenny/tmp/'
+outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_selectivityIndices' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 10.5] # In inches

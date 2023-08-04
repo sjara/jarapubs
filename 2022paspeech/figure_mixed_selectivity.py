@@ -21,10 +21,6 @@ from scipy import stats
 import studyparams
 import figparams
 from importlib import reload
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from matplotlib.font_manager import findfont, FontProperties
-font = findfont(FontProperties(family = ['Helvetica']))
-
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
@@ -33,7 +29,7 @@ shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 1
 STATSUMMARY = 1
-outputDir = 'C:/Users/jenny/tmp/'
+outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_mixed_selectivity' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [7.5, 5.25] # In inches

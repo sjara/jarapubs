@@ -16,15 +16,13 @@ import figparams
 import studyparams
 from scipy import stats
 from importlib import reload
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import matplotlib.font_manager
-matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
+
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 SAVE_FIGURE = 0
 STATSUMMARY = 1
-outputDir = 'C:/Users/jenny/tmp/'
+outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_neuropix_methods' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [5.25, 6.75] # In inches

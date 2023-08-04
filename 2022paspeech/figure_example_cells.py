@@ -16,14 +16,10 @@ from jaratoolbox import extraplots
 import studyparams
 import figparams
 from importlib import reload
-import matplotlib.font_manager
-matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
-#from matplotlib.font_manager import findfont, FontProperties
-#font = findfont(FontProperties(family = ['Helvetica']))
 reload(figparams)
 
 SAVE_FIGURE = 1
-outputDir = 'C:/Users/jenny/tmp/'
+outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_example_cells'
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [10, 12]

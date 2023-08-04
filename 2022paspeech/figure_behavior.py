@@ -19,15 +19,12 @@ import scipy.optimize
 import figparams
 import studyparams
 from importlib import reload
-import matplotlib.font_manager
-matplotlib.font_manager.fontManager.addfont('C:\\Users\\jenny\\anaconda3\\Lib\\site-packages\\matplotlib\\mpl-data\\fonts\\ttf\\Helvetica.ttf')
-#from matplotlib.font_manager import findfont, FontProperties
-#font = findfont(FontProperties(family = ['Helvetica']))
+
 reload(figparams)
 
 FIGNAME = 'figure_behavior'
 SAVE_FIGURE = 1
-outputDir = 'C:/Users/jenny/tmp/'
+outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_behavior' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 5.5] # In inches
