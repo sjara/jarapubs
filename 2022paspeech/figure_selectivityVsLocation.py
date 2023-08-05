@@ -27,7 +27,7 @@ FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
-SAVE_FIGURE = 0
+SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_selectivityIndices' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -159,6 +159,7 @@ plt.colorbar(label = 'VOT Selectivity Index', shrink = 0.8, ticks = [0.2, 0.4, 0
 plt.title('VOT selectivity', fontsize = fontSizeTitles)
 axColorMapVOT.spines["right"].set_visible(False)
 axColorMapVOT.spines["top"].set_visible(False)
+axColorMapVOT.set_aspect('equal')
 
 plt.sca(axVotAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
@@ -246,6 +247,7 @@ plt.annotate(f'VP\n{np.round(fracVOTselectiveVP*100,1)}%\n n = {nTotalVP}', (0.2
 plt.annotate(f'VA\n{np.round(fracVOTselectiveVA*100,1)}%\n n = {nTotalVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 axQuadsVot.spines["right"].set_visible(False)
 axQuadsVot.spines["top"].set_visible(False)
+axQuadsVot.set_aspect('equal')
 plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
 plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
 plt.xlim([-0.1,1.1])
@@ -284,6 +286,7 @@ plt.xticks(APtickLocs, APtickLabels)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.colorbar(label = 'FT Selectivity Index', shrink = 0.8, ticks = [0.2, 0.4, 0.6, 0.8, 1.0], extend = 'max', extendrect = True, extendfrac = 0.22)
 plt.title('FT selectivity', fontsize = fontSizeTitles)
+axColorMapFT.set_aspect('equal')
 axColorMapFT.spines["right"].set_visible(False)
 axColorMapFT.spines["top"].set_visible(False)
 
@@ -365,6 +368,7 @@ plt.annotate(f'VP\n{np.round(fracFTselectiveVP*100,1)}%\n n = {nTotalVP}', (0.25
 plt.annotate(f'VA\n{np.round(fracFTselectiveVA*100,1)}%\n n = {nTotalVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 axQuadsFt.spines["right"].set_visible(False)
 axQuadsFt.spines["top"].set_visible(False)
+axQuadsFt.set_aspect('equal')
 plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
 plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
 plt.xlim([-0.1,1.1])

@@ -20,8 +20,8 @@ from importlib import reload
 reload(figparams)
 
 FIGNAME = 'selectivityIndices'
-SAVE_FIGURE = 0
-STATSUMMARY = 1
+SAVE_FIGURE = 1
+STATSUMMARY = 0
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_neuropix_methods' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -42,7 +42,7 @@ labelPosX = [0.07, 0.28, 0.58] # Horiz position for panel labels
 labelPosY = [0.93, 0.75, 0.375]    # Vert position for panel labels
 
 gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.15, 0.85])
-gsMain.update(left=0.1, right=0.97, top=0.9, bottom=0.08, wspace=0.3, hspace=0.3)
+gsMain.update(left=0.1, right=0.97, top=0.9, bottom=0.06, wspace=0.3, hspace=0.15)
 gsTop = gsMain[0].subgridspec(1,3, width_ratios = [0.2, 0.35, 0.45])
 
 axCartoon = plt.subplot(gsTop[0,0])
@@ -58,8 +58,8 @@ gsBottom = gsMain[1].subgridspec(4,3, width_ratios = [0.6, 0.2, 0.2])
 
 axCellLocs = plt.subplot(gsBottom[:,0])
 
-axDonutAudP = plt.subplot(gsBottom[0,1])
-axDonutAudD = plt.subplot(gsBottom[0,2])
+axDonutAudP = plt.subplot(gsBottom[0,2])
+axDonutAudD = plt.subplot(gsBottom[0,1])
 axDonutAudV = plt.subplot(gsBottom[1,1])
 axDonutTeA = plt.subplot(gsBottom[1,2])
 
@@ -123,6 +123,7 @@ plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
+axCellLocs.set_aspect('equal')
 
 ##-- Donut Plots Atlas-defined Areas--
 nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]))
@@ -145,71 +146,71 @@ plt.sca(axDonutAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudP, nSoundResponsiveAudP - nSpeechResponsiveAudP, nCellsAudP - nSoundResponsiveAudP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudP.add_artist(circle1)
-plt.title(f'AudP,\n n = {nCellsAudP}', pad = -0.3 , fontsize = fontSizeTicks)
+plt.title(f'AudP,\n n = {nCellsAudP}', pad = -0.8 , fontsize = fontSizeTicks)
 
 
 plt.sca(axDonutAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudD, nSoundResponsiveAudD - nSpeechResponsiveAudD, nCellsAudD - nSoundResponsiveAudD], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudD.add_artist(circle2)
-plt.title(f'AudD,\n n = {nCellsAudD}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'AudD,\n n = {nCellsAudD}', pad = -0.8, fontsize = fontSizeTicks)
 
 
 plt.sca(axDonutAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudV, nSoundResponsiveAudV - nSpeechResponsiveAudV, nCellsAudV - nSoundResponsiveAudV], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudV.add_artist(circle3)
-plt.title(f'AudV,\n n = {nCellsAudV}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'AudV,\n n = {nCellsAudV}', pad = -0.8, fontsize = fontSizeTicks)
 
 plt.sca(axDonutTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveTeA, nSoundResponsiveTeA - nSpeechResponsiveTeA, nCellsTeA - nSoundResponsiveTeA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutTeA.add_artist(circle4)
-plt.title(f'TeA,\n n = {nCellsTeA}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'TeA,\n n = {nCellsTeA}', pad = -0.8, fontsize = fontSizeTicks)
 
 
 ##-- Donut Plots Quartiles--
-nSpeechResponsiveDP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]))
-nSpeechResponsiveDA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1]))
-nSpeechResponsiveVP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2]) )
-nSpeechResponsiveVA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3]))
+nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0])
+nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1])
+nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2])
+nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3])
 
-nSoundResponsiveDP = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[0]))
-nSoundResponsiveDA = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[1]))
-nSoundResponsiveVP = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[2]))
-nSoundResponsiveVA = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[3]))
+nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0])
+nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1])
+nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2])
+nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3])
 
-nCellsDP = np.sum((recordingAreaName == audCtxAreas[0]))
-nCellsDA = np.sum((recordingAreaName == audCtxAreas[1]))
-nCellsVP = np.sum((recordingAreaName == audCtxAreas[2]))
-nCellsVA = np.sum((recordingAreaName == audCtxAreas[3]))
+nCellsDP = quadrantTotals[0]
+nCellsDA = quadrantTotals[1]
+nCellsVP = quadrantTotals[2]
+nCellsVA = quadrantTotals[3]
 
 
 plt.sca(axDonutDP)
 circle5 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveDP, nSoundResponsiveDP - nSpeechResponsiveDP, nCellsDP - nSoundResponsiveDP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutDP.add_artist(circle5)
-plt.title(f'DP,\n n = {nCellsDP}', pad = -0.3 , fontsize = fontSizeTicks)
+plt.title(f'DP,\n n = {nCellsDP}', pad = -0.8 , fontsize = fontSizeTicks)
 
 
 plt.sca(axDonutDA)
 circle6 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveDA, nSoundResponsiveDA - nSpeechResponsiveDA, nCellsDA - nSoundResponsiveDA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutDA.add_artist(circle6)
-plt.title(f'DA,\n n = {nCellsDA}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'DA,\n n = {nCellsDA}', pad = -0.8, fontsize = fontSizeTicks)
 
 
 plt.sca(axDonutVP)
 circle7 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveVP, nSoundResponsiveVP - nSpeechResponsiveVP, nCellsVP - nSoundResponsiveVP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutVP.add_artist(circle7)
-plt.title(f'VP,\n n = {nCellsVP}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'VP,\n n = {nCellsVP}', pad = -0.8, fontsize = fontSizeTicks)
 
 plt.sca(axDonutVA)
 circle8 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveVA, nSoundResponsiveVA - nSpeechResponsiveVA, nCellsVA - nSoundResponsiveVA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutVA.add_artist(circle8)
-plt.title(f'VA,\n n = {nCellsVA}', pad = -0.3, fontsize = fontSizeTicks)
+plt.title(f'VA,\n n = {nCellsVA}', pad = -0.8, fontsize = fontSizeTicks)
 
 
 
