@@ -21,11 +21,15 @@ reload(figparams)
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_example_cells'
-figFormat = 'pdf' # 'pdf' or 'svg'
+figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 6]
 fontSizeTitles = figparams.fontSizeTitles
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
+fontSizePanel = figparams.fontSizePanel
+
+labelPosX = [0.01, 0.53] # Horiz position for panel labels
+labelPosY = [0.975, 0.46]    # Vert position for panel labels
 
 ## load database
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
@@ -58,8 +62,9 @@ colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue1'],
 
 
 #timeRange = [-0.3, 0.45]  # In seconds
-timeRange = [-0.15, 0.4]  # In seconds
-xLims = timeRange
+#timeRange = [-0.15, 0.4]  # In seconds
+timeRange = [-0.2, 0.5]  # In seconds
+xLims = [-0.15, 0.45]
 #xTicks = [0,0.25]
 #xTicks = [0, 0.2, 0.4]
 xTicks = [0, 0.3]
@@ -77,9 +82,11 @@ def plot_stim(yPos, stimDuration, stimLineWidth=4, stimColor='#edd400'):
 
 
 plt.clf()
+
 gsMain = gs.GridSpec(2, 2)
-gsMain.update(left=0.075, right=0.95, top=0.95, bottom=0.0725, wspace=0.3, hspace=0.3)
+gsMain.update(left=0.075, right=0.99, top=0.98, bottom=0.0725, wspace=0.3, hspace=0.3)
 #plt.gcf().set_size_inches([14, 12])
+
 
 for indCell, thisCell in enumerate(exampleCells):
     gsCell = gsMain[indCell].subgridspec(2,2, height_ratios = [0.6, 0.4])
@@ -88,7 +95,6 @@ for indCell, thisCell in enumerate(exampleCells):
     axPsthVot = plt.subplot(gsCell[1,0], sharex = axRasterVot)
     axPsthFt = plt.subplot(gsCell[1,1], sharex = axRasterFt)
     plt.subplots_adjust(wspace = 0.45)
-
 
     dbRow = celldb.loc[thisCell]
     oneCell = ephyscore.Cell(dbRow)
@@ -127,20 +133,21 @@ for indCell, thisCell in enumerate(exampleCells):
     nVOT = len(possibleVOTParams)
     nFT = len(possibleFTParams)
     pointSize = 2
-
+    fillWidth = 0.09
+    
     # Raster -- VOT
     plt.sca(axRasterVot)
     if whichVOT[thisCell] == 1: #VOT used for SI == FTmax
         pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                        timeRange, trialsEachVOT_FTmax, colorsEachVOT,
-                                                       labels=VOTlabels)
+                                                       labels=VOTlabels, fillWidth=fillWidth)
         ymax = np.sum(trialsEachVOT_FTmax)
         #plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='bold')
     else:
         pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                        timeRange, trialsEachVOT_FTmin, colorsEachVOT,
-                                                       labels=VOTlabels)
+                                                       labels=VOTlabels, fillWidth=fillWidth)
         #plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}',
         #           fontsize=fontSizeTitles, fontweight='bold')
         ymax = np.sum(trialsEachVOT_FTmin)
@@ -152,20 +159,18 @@ for indCell, thisCell in enumerate(exampleCells):
     #axRasterVot.add_patch(rect)
     #axRasterVot.text(0, ymax, '', bbox=dict(boxstyle="square", facecolor = colorSounds))
 
-
-
     # Raster -- FT
     plt.sca(axRasterFt)
     if whichFT[thisCell] == 1:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                       timeRange, trialsEachFT_VOTmax, colorsEachFT,
-                                                      labels = FTlabels)
+                                                      labels = FTlabels, fillWidth=fillWidth)
         #plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='normal')
     else:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                       timeRange, trialsEachFT_VOTmin, colorsEachFT,
-                                                      labels = FTlabels)
+                                                      labels = FTlabels, fillWidth=fillWidth)
         #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='normal')
     plt.setp(pRaster, ms=pointSize)
@@ -195,9 +200,12 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.xticks(xTicks)
     extraplots.boxoff(axPsthVot)
     plt.xlim(xLims)
-    PSTHyLims = plt.ylim()
+    #PSTHyLims = plt.ylim()
+    PSTHyLims = np.ceil(plt.ylim()) * [0,1]
+    plt.yticks(PSTHyLims)
     plot_stim(1.1*PSTHyLims[-1], stimDuration)
     plt.ylim(PSTHyLims)
+    
     
     # PSTH -- FT
     plt.sca(axPsthFt)
@@ -211,9 +219,23 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.xticks(xTicks)
     extraplots.boxoff(axPsthFt)
     plt.xlim(xLims)
-    PSTHyLims = plt.ylim()
+    #PSTHyLims = np.ceil(plt.ylim()) * [0,1]
+    plt.yticks(PSTHyLims)
     plot_stim(1.1*PSTHyLims[-1], stimDuration)
     plt.ylim(PSTHyLims)
+
+    # ***NOTE*** The code above assumes the PSTH for FT is smaller than for VOT (to set ylim).
+    #            This may need to change if we use a different set of cells.
+
+
+plt.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction',
+             fontsize=fontSizePanel, fontweight='bold')
+plt.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction',
+             fontsize=fontSizePanel, fontweight='bold')
+plt.annotate('C', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction',
+             fontsize=fontSizePanel, fontweight='bold')
+plt.annotate('D', xy=(labelPosX[1],labelPosY[1]), xycoords='figure fraction',
+             fontsize=fontSizePanel, fontweight='bold')
 
 
 plt.show()
