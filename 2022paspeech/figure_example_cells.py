@@ -21,8 +21,8 @@ reload(figparams)
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_example_cells'
-figFormat = 'svg' # 'pdf' or 'svg'
-figSize = [10, 12]
+figFormat = 'pdf' # 'pdf' or 'svg'
+figSize = [7.5, 6]
 fontSizeTitles = figparams.fontSizeTitles
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -51,11 +51,34 @@ exampleCells = [12, 14, 15, 18]
 VOTlabels = ['0', '20', '40', '60']
 FTlabels = ['9', '3', '-3', '-9']
 colorSounds = cp.TangoPalette['Butter2']
-colorsEachVOT = [cp.TangoPalette['Orange1'], cp.TangoPalette['Orange2'], cp.TangoPalette['ScarletRed2'], cp.TangoPalette['ScarletRed3']]
-colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue1'], cp.TangoPalette['Plum1'], cp.TangoPalette['Plum3']]
-plt.figure()
+colorsEachVOT = [cp.TangoPalette['Orange1'], cp.TangoPalette['Orange2'],
+                 cp.TangoPalette['ScarletRed2'], cp.TangoPalette['ScarletRed3']]
+colorsEachFT = [cp.TangoPalette['SkyBlue3'], cp.TangoPalette['SkyBlue1'],
+                cp.TangoPalette['Plum1'], cp.TangoPalette['Plum3']]
+
+
+#timeRange = [-0.3, 0.45]  # In seconds
+timeRange = [-0.15, 0.4]  # In seconds
+xLims = timeRange
+#xTicks = [0,0.25]
+#xTicks = [0, 0.2, 0.4]
+xTicks = [0, 0.3]
+
+stimDuration = 0.240 ### THIS SHOULD NOT BE HARDCODED!
+colorStim = cp.TangoPalette['Butter3']
+
+
+def plot_stim(yPos, stimDuration, stimLineWidth=4, stimColor='#edd400'):
+    # -- Plot the stimulus --
+    #yPos = 1.0*yLims[-1] + 0.075*(yLims[-1]-yLims[0])
+    pstim = plt.plot([0, stimDuration], 2*[yPos], lw=stimLineWidth, color=stimColor,
+                     clip_on=False, solid_capstyle='butt')
+    return pstim[0]
+
+
+plt.clf()
 gsMain = gs.GridSpec(2, 2)
-gsMain.update(left=0.075, right=0.925, top=0.925, bottom=0.0725, wspace=0.3, hspace=0.3)
+gsMain.update(left=0.075, right=0.95, top=0.95, bottom=0.0725, wspace=0.3, hspace=0.3)
 #plt.gcf().set_size_inches([14, 12])
 
 for indCell, thisCell in enumerate(exampleCells):
@@ -86,87 +109,111 @@ for indCell, thisCell in enumerate(exampleCells):
     if len(FTParamsEachTrial) == len(eventOnsetTimes)-1:
         eventOnsetTimes = eventOnsetTimes[:len(FTParamsEachTrial)]
 
-    timeRange = [-0.3, 0.45]  # In seconds
-    (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
+    (spikeTimesFromEventOnset, trialIndexForEachSpike, indexLimitsEachTrial) = \
+        spikesanalysis.eventlocked_spiketimes(spikeTimes, eventOnsetTimes, timeRange)
 
     # Type-sorted rasters -- FTVOTBorders
-    #timeRange = [-0.075, 0.15]
     VOTParamsEachTrial = bdata['targetVOTpercent']
     possibleVOTParams = np.unique(VOTParamsEachTrial)
     possibleFTParams = np.unique(FTParamsEachTrial)
 
 
-    trialsEachCond = behavioranalysis.find_trials_each_combination(VOTParamsEachTrial, possibleVOTParams, FTParamsEachTrial, possibleFTParams)
+    trialsEachCond = behavioranalysis.find_trials_each_combination(VOTParamsEachTrial, possibleVOTParams,
+                                                                   FTParamsEachTrial, possibleFTParams)
     trialsEachVOT_FTmin = trialsEachCond[:, :, 0]
     trialsEachVOT_FTmax = trialsEachCond[:, :, -1]
     trialsEachFT_VOTmin = trialsEachCond[:, 0, :]
     trialsEachFT_VOTmax = trialsEachCond[:, -1, :]
     nVOT = len(possibleVOTParams)
     nFT = len(possibleFTParams)
-    pointSize = 4
+    pointSize = 2
 
     # Raster -- VOT
     plt.sca(axRasterVot)
     if whichVOT[thisCell] == 1: #VOT used for SI == FTmax
-        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachVOT_FTmax, colorsEachVOT, labels = VOTlabels)
+        pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
+                                                       timeRange, trialsEachVOT_FTmax, colorsEachVOT,
+                                                       labels=VOTlabels)
         ymax = np.sum(trialsEachVOT_FTmax)
-        #plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        #plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}',
+        #          fontsize=fontSizeTitles, fontweight='bold')
     else:
-        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachVOT_FTmin, colorsEachVOT, labels = VOTlabels)
-        #plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
+                                                       timeRange, trialsEachVOT_FTmin, colorsEachVOT,
+                                                       labels=VOTlabels)
+        #plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}',
+        #           fontsize=fontSizeTitles, fontweight='bold')
         ymax = np.sum(trialsEachVOT_FTmin)
     plt.setp(pRaster, ms=pointSize)
-    plt.xticks([])
-    plt.xlim(-0.1,0.35)
-    plt.ylabel('VOT (ms)', fontsize=fontSizeLabels, fontweight='bold')
+    plt.setp(axRasterVot.get_xticklabels(), visible=False)
+    #axRasterVot.set_xticklabels([])  # This would remove them on both shared axes
+    plt.ylabel('VOT (ms)', fontsize=fontSizeLabels, fontweight='normal')
     #rect = patches.Rectangle((0, ymax), 0.24, 10, edgecolor='none', facecolor=colorSounds)
     #axRasterVot.add_patch(rect)
-    axRasterVot.text(0, ymax, '', bbox=dict(boxstyle="square", facecolor = colorSounds))
+    #axRasterVot.text(0, ymax, '', bbox=dict(boxstyle="square", facecolor = colorSounds))
 
 
 
     # Raster -- FT
     plt.sca(axRasterFt)
     if whichFT[thisCell] == 1:
-        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachFT_VOTmax, colorsEachFT, labels = FTlabels)
-        #plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
+                                                      timeRange, trialsEachFT_VOTmax, colorsEachFT,
+                                                      labels = FTlabels)
+        #plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}',
+        #          fontsize=fontSizeTitles, fontweight='normal')
     else:
-        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial, timeRange, trialsEachFT_VOTmin, colorsEachFT, labels = FTlabels)
-        #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}', fontsize=fontSizeTitles, fontweight='bold')
+        pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
+                                                      timeRange, trialsEachFT_VOTmin, colorsEachFT,
+                                                      labels = FTlabels)
+        #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}',
+        #          fontsize=fontSizeTitles, fontweight='normal')
     plt.setp(pRaster, ms=pointSize)
-    plt.xticks([])
-    plt.xlim(-0.1,0.35)
-    plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='bold')
+    plt.setp(axRasterFt.get_xticklabels(), visible=False)
+    plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='normal')
 
 
     #-- PSTHs
+    lineWidth = 2
     binWidth = 0.010
-    timeRange = [-0.3, 0.45]
     timeVec = np.arange(timeRange[0], timeRange[-1], binWidth)
     smoothWinSizePsth = 6
     downsampleFactorPsth = 3
-    spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset, indexLimitsEachTrial, timeVec)
-    xTicks = [0,0.25]
+    spikeCountMat = spikesanalysis.spiketimes_to_spikecounts(spikeTimesFromEventOnset, indexLimitsEachTrial,
+                                                             timeVec)
 
     # PSTH -- VOT
     plt.sca(axPsthVot)
     if whichVOT[thisCell] == 1:
-        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmax, colorsEachVOT, linestyle=None)
+        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmax,
+                             colorsEachVOT, linestyle=None, linewidth=lineWidth)
     else:
-        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmin, colorsEachVOT, linestyle=None)
-    plt.ylabel('Firing rate (spk/s)', fontsize=fontSizeLabels, fontweight='bold')
-    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
+        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachVOT_FTmin,
+                             colorsEachVOT, linestyle=None, linewidth=lineWidth)
+    plt.ylabel('Firing rate (spk/s)', fontsize=fontSizeLabels, fontweight='normal')
+    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='normal')
     plt.xticks(xTicks)
-
+    extraplots.boxoff(axPsthVot)
+    plt.xlim(xLims)
+    PSTHyLims = plt.ylim()
+    plot_stim(1.1*PSTHyLims[-1], stimDuration)
+    plt.ylim(PSTHyLims)
+    
     # PSTH -- FT
     plt.sca(axPsthFt)
     if whichFT[thisCell] == 1:
-        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmax, colorsEachFT, linestyle=None)
+        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmax,
+                             colorsEachFT, linestyle=None, linewidth=lineWidth)
     else:
-        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmin, colorsEachFT, linestyle=None)
-    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='bold')
+        extraplots.plot_psth(spikeCountMat/binWidth, smoothWinSizePsth, timeVec, trialsEachFT_VOTmin,
+                             colorsEachFT, linestyle=None, linewidth=lineWidth)
+    plt.xlabel('Time (s)', fontsize=fontSizeLabels, fontweight='normal')
     plt.xticks(xTicks)
-
+    extraplots.boxoff(axPsthFt)
+    plt.xlim(xLims)
+    PSTHyLims = plt.ylim()
+    plot_stim(1.1*PSTHyLims[-1], stimDuration)
+    plt.ylim(PSTHyLims)
 
 
 plt.show()
