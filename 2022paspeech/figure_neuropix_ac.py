@@ -39,13 +39,13 @@ colorNotAud = cp.TangoPalette['Aluminium3']
 colorSoundResp = cp.TangoPalette['SkyBlue2']
 
 
-labelPosX = [0.04, 0.28, 0.61] # Horiz position for panel labels
+labelPosX = [0.04, 0.28, 0.67] # Horiz position for panel labels
 labelPosY = [0.97, 0.77, 0.365]    # Vert position for panel labels
 
 plt.clf()
 gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.15, 0.85])
-gsMain.update(left=0.1, right=0.97, top=0.98, bottom=0.07, wspace=0.3, hspace=0.25)
-gsTop = gsMain[0].subgridspec(1,3, width_ratios = [0.2, 0.35, 0.45])
+gsMain.update(left=0.07, right=0.99, top=0.98, bottom=0.07, wspace=0.35, hspace=0.25)
+gsTop = gsMain[0].subgridspec(1,3, width_ratios = [0.35, 0.3, 0.35])
 
 axCartoon = plt.subplot(gsTop[0,0])
 axCartoon.set_axis_off()
@@ -56,7 +56,7 @@ axHist.set_axis_off()
 axSoundMatrix = plt.subplot(gsTop[0,2])
 #axSoundMatrix.set_axis_off()
 
-gsBottom = gsMain[1].subgridspec(2, 2, width_ratios = [0.6, 0.4], wspace=0.05, hspace=0.25)
+gsBottom = gsMain[1].subgridspec(2, 2, width_ratios = [0.65, 0.35], wspace=0.1, hspace=0.25)
 gsDonutsAreas = gsBottom[0,1].subgridspec(2, 2)
 gsDonutsRegions = gsBottom[1,1].subgridspec(2, 2)
 
