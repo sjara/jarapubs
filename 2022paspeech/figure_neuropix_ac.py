@@ -1,10 +1,11 @@
-'''
+"""
 This creates figure 2 for 2022paspeech:
  A. Cartoon of headfixed, awake mouse ephys
  B. Diagram of sound matrix
  C. Histology image of recording track
  D. Scatter plot of recording location of each cell. Add AC areas image in inkscape.
-'''
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +22,7 @@ reload(figparams)
 
 FIGNAME = 'selectivityIndices'
 SAVE_FIGURE = 1
-STATSUMMARY = 0
+STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_neuropix_methods' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
@@ -38,11 +39,12 @@ colorNotAud = cp.TangoPalette['Aluminium3']
 colorSoundResp = cp.TangoPalette['SkyBlue2']
 
 
-labelPosX = [0.07, 0.28, 0.58] # Horiz position for panel labels
-labelPosY = [0.93, 0.75, 0.375]    # Vert position for panel labels
+labelPosX = [0.04, 0.28, 0.61] # Horiz position for panel labels
+labelPosY = [0.97, 0.77, 0.365]    # Vert position for panel labels
 
+plt.clf()
 gsMain = gridspec.GridSpec(2, 1, height_ratios=[0.15, 0.85])
-gsMain.update(left=0.1, right=0.97, top=0.9, bottom=0.06, wspace=0.3, hspace=0.15)
+gsMain.update(left=0.1, right=0.97, top=0.98, bottom=0.07, wspace=0.3, hspace=0.25)
 gsTop = gsMain[0].subgridspec(1,3, width_ratios = [0.2, 0.35, 0.45])
 
 axCartoon = plt.subplot(gsTop[0,0])
@@ -52,8 +54,35 @@ axHist = plt.subplot(gsTop[0,1])
 axHist.set_axis_off()
 
 axSoundMatrix = plt.subplot(gsTop[0,2])
-axSoundMatrix.set_axis_off()
+#axSoundMatrix.set_axis_off()
 
+gsBottom = gsMain[1].subgridspec(2, 2, width_ratios = [0.6, 0.4], wspace=0.05, hspace=0.25)
+gsDonutsAreas = gsBottom[0,1].subgridspec(2, 2)
+gsDonutsRegions = gsBottom[1,1].subgridspec(2, 2)
+
+axCellLocs = plt.subplot(gsBottom[:,0])
+
+axDonutAudD = plt.subplot(gsDonutsAreas[0,0])
+axDonutAudP = plt.subplot(gsDonutsAreas[0,1])
+axDonutAudV = plt.subplot(gsDonutsAreas[1,0])
+axDonutTeA = plt.subplot(gsDonutsAreas[1,1])
+
+axDonutDP = plt.subplot(gsDonutsRegions[0,0])
+axDonutDA = plt.subplot(gsDonutsRegions[0,1])
+axDonutVP = plt.subplot(gsDonutsRegions[1,0])
+axDonutVA = plt.subplot(gsDonutsRegions[1,1])
+
+# -- Move Donuts a little lower --
+yoffset = -0.02
+for oneax in [axDonutAudD, axDonutAudP, axDonutAudV, axDonutTeA]:
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
+yoffset = -0.03
+for oneax in [axDonutDP, axDonutDA, axDonutVP, axDonutVA]:
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
+    
+'''
 gsBottom = gsMain[1].subgridspec(4,3, width_ratios = [0.6, 0.2, 0.2])
 
 axCellLocs = plt.subplot(gsBottom[:,0])
@@ -63,12 +92,11 @@ axDonutAudD = plt.subplot(gsBottom[0,1])
 axDonutAudV = plt.subplot(gsBottom[1,1])
 axDonutTeA = plt.subplot(gsBottom[1,2])
 
-
 axDonutDP = plt.subplot(gsBottom[2,1])
 axDonutDA = plt.subplot(gsBottom[2,2])
 axDonutVP = plt.subplot(gsBottom[3,1])
 axDonutVA = plt.subplot(gsBottom[3,2])
-
+'''
 
 axCartoon.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axSoundMatrix.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
@@ -76,6 +104,39 @@ axHist.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction',
 axCellLocs.annotate('D', xy=(labelPosX[0],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axDonutAudP.annotate('E', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axDonutDP.annotate('F', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+
+
+if 1:
+    # Plot a grid with cell borders and labels
+    plt.sca(axSoundMatrix)
+    corner_labels = [ ['/da/', '/ta/'], ['/ba/', '/pa/'] ]
+    VOTstep = 20
+    VOTvals = np.arange(0, 60+VOTstep, VOTstep)
+    FTstep = 6
+    FTvals = np.arange(-9, 9+FTstep, FTstep)
+    for indFT, thisFT in enumerate(FTvals):
+        for indVOT, thisVOT in enumerate(VOTvals):
+            if indFT in [0, 3] or indVOT in [0, 3]:
+                facecolor = '#fce94f'  # Butter2
+            else:
+                facecolor = 'none'
+            onePatch = axSoundMatrix.add_patch(plt.Rectangle((thisVOT-VOTstep/2, thisFT-FTstep/2),
+                                                             VOTstep, FTstep, lw=0.75, ec='black', fc=facecolor))
+            onePatch.set_clip_on(False)
+            if indFT in [0, 3] and indVOT in [0, 3]:
+                axSoundMatrix.text(thisVOT, thisFT, corner_labels[indFT // 3][indVOT // 3],
+                                   ha='center', va='center', fontsize=fontSizeTicks-2)
+    axSoundMatrix.set_xlim(-10, 70)
+    axSoundMatrix.set_ylim(-12, 12)
+    axSoundMatrix.set_xlabel('VOT (ms)', fontsize=fontSizeLabels-2)
+    axSoundMatrix.set_ylabel('FT (oct/s)', fontsize=fontSizeLabels-2)
+    axSoundMatrix.set_xticks(VOTvals)
+    axSoundMatrix.set_yticks(FTvals)
+    axSoundMatrix.set_aspect(20/6)
+    extraplots.set_ticks_fontsize(axSoundMatrix, fontSizeTicks-2)
+    axSoundMatrix.invert_yaxis()
+
+
 
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
@@ -118,9 +179,10 @@ plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+#plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
+plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Sound responsive','Speech responsive'], loc = 'upper center', markerscale=2, handletextpad=0.25, bbox_to_anchor = (0.5, 1.07))
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
 axCellLocs.set_aspect('equal')
@@ -142,31 +204,33 @@ nCellsAudV = np.sum((recordingAreaName == audCtxAreas[2]))
 nCellsTeA = np.sum((recordingAreaName == audCtxAreas[3]))
 
 
+titleY = 0.95
+titlePad = -0
+
 plt.sca(axDonutAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudP, nSoundResponsiveAudP - nSpeechResponsiveAudP, nCellsAudP - nSoundResponsiveAudP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudP.add_artist(circle1)
-plt.title(f'AudP,\n n = {nCellsAudP}', pad = -0.8 , fontsize = fontSizeTicks)
-
+plt.title(f'AudP\n n = {nCellsAudP}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 plt.sca(axDonutAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudD, nSoundResponsiveAudD - nSpeechResponsiveAudD, nCellsAudD - nSoundResponsiveAudD], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudD.add_artist(circle2)
-plt.title(f'AudD,\n n = {nCellsAudD}', pad = -0.8, fontsize = fontSizeTicks)
+plt.title(f'AudD\n n = {nCellsAudD}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 
 plt.sca(axDonutAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveAudV, nSoundResponsiveAudV - nSpeechResponsiveAudV, nCellsAudV - nSoundResponsiveAudV], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutAudV.add_artist(circle3)
-plt.title(f'AudV,\n n = {nCellsAudV}', pad = -0.8, fontsize = fontSizeTicks)
+plt.title(f'AudV\n n = {nCellsAudV}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 plt.sca(axDonutTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveTeA, nSoundResponsiveTeA - nSpeechResponsiveTeA, nCellsTeA - nSoundResponsiveTeA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutTeA.add_artist(circle4)
-plt.title(f'TeA,\n n = {nCellsTeA}', pad = -0.8, fontsize = fontSizeTicks)
+plt.title(f'TeA\n n = {nCellsTeA}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 
 ##-- Donut Plots Quartiles--
@@ -185,33 +249,29 @@ nCellsDA = quadrantTotals[1]
 nCellsVP = quadrantTotals[2]
 nCellsVA = quadrantTotals[3]
 
-
 plt.sca(axDonutDP)
 circle5 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveDP, nSoundResponsiveDP - nSpeechResponsiveDP, nCellsDP - nSoundResponsiveDP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutDP.add_artist(circle5)
-plt.title(f'DP,\n n = {nCellsDP}', pad = -0.8 , fontsize = fontSizeTicks)
-
+plt.title(f'DP\n n = {nCellsDP}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 plt.sca(axDonutDA)
 circle6 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveDA, nSoundResponsiveDA - nSpeechResponsiveDA, nCellsDA - nSoundResponsiveDA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutDA.add_artist(circle6)
-plt.title(f'DA,\n n = {nCellsDA}', pad = -0.8, fontsize = fontSizeTicks)
-
+plt.title(f'DA\n n = {nCellsDA}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 plt.sca(axDonutVP)
 circle7 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveVP, nSoundResponsiveVP - nSpeechResponsiveVP, nCellsVP - nSoundResponsiveVP], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutVP.add_artist(circle7)
-plt.title(f'VP,\n n = {nCellsVP}', pad = -0.8, fontsize = fontSizeTicks)
+plt.title(f'VP\n n = {nCellsVP}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 plt.sca(axDonutVA)
 circle8 = plt.Circle((0,0), 0.7, color = 'white')
 plt.pie([nSpeechResponsiveVA, nSoundResponsiveVA - nSpeechResponsiveVA, nCellsVA - nSoundResponsiveVA], colors = [colorSpeechResp, colorSoundResp, colorNotAud])
 axDonutVA.add_artist(circle8)
-plt.title(f'VA,\n n = {nCellsVA}', pad = -0.8, fontsize = fontSizeTicks)
-
+plt.title(f'VA\n n = {nCellsVA}', y=titleY, pad=titlePad, fontsize = fontSizeTicks)
 
 
 plt.show()
