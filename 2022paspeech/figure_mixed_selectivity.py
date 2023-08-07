@@ -53,6 +53,7 @@ y_coords = figData['y_coord']
 z_coords = figData['z_coord']
 z_coords_jittered = figData['z_coords_jittered']
 x_coords_jittered = figData['x_coords_jittered']
+subjects = np.unique(figData['subject'])
 speechResponsive = figData['speechResponsive']
 excludeSpeech = figData['excludeSpeech']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
@@ -117,16 +118,16 @@ DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 plt.sca(axMixeSelMap)
-#nonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
 singSel = plt.scatter(z_coords_jittered[speechResponsive & singleSelective], y_coords[speechResponsive & singleSelective], c = colorSingleSelective, s = 6)
 mixSel = plt.scatter(z_coords_jittered[speechResponsive & mixedSelective], y_coords[speechResponsive & mixedSelective], c = colorMixedSelective, s = 6)
+respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.legend(handles = [singSel, mixSel], labels = ['Single-selective', 'Mixed-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
+plt.legend(handles = [singSel, mixSel, respNonSel], labels = ['Single-selective', 'Mixed-selective', 'Speech-responsive, non-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
 #plt.title('Mixed selectivity', fontsize = fontSizeTitles)
 axMixeSelMap.set_aspect('equal')
 axMixeSelMap.spines["right"].set_visible(False)
@@ -140,7 +141,8 @@ nSpeechSelectiveDP = np.sum(quadrantsMixedSelective[0]) + np.sum(quadrantsSingle
 nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0])
 nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0])
 nTotalDP = quadrantTotals[0]
-fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechSelectiveDP
+#fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechSelectiveDP
+fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechResponsiveDP
 DPalphaMix = 1
 
 nMixedSelectiveDA = np.sum(quadrantsMixedSelective[1])
@@ -148,7 +150,8 @@ nSpeechSelectiveDA = np.sum(quadrantsMixedSelective[1]) + np.sum(quadrantsSingle
 nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1])
 nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1])
 nTotalDA = quadrantTotals[1]
-fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechSelectiveDA
+#fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechSelectiveDA
+fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechResponsiveDA
 DAalphaMix = fracMixedSelectiveDA/fracMixedSelectiveDP
 
 nMixedSelectiveVP = np.sum(quadrantsMixedSelective[2])
@@ -156,7 +159,8 @@ nSpeechSelectiveVP = np.sum(quadrantsMixedSelective[2]) + np.sum(quadrantsSingle
 nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2])
 nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2])
 nTotalVP = quadrantTotals[2]
-fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechSelectiveVP
+#fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechSelectiveVP
+fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechResponsiveVP
 VPalphaMix = fracMixedSelectiveVP/fracMixedSelectiveDP
 
 nMixedSelectiveVA = np.sum(quadrantsMixedSelective[3])
@@ -164,7 +168,8 @@ nSpeechSelectiveVA = np.sum(quadrantsMixedSelective[3]) + np.sum(quadrantsSingle
 nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3])
 nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3])
 nTotalVA = quadrantTotals[3]
-fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechSelectiveVA
+#fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechSelectiveVA
+fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechResponsiveVA
 VAalphaMix = fracMixedSelectiveVA/fracMixedSelectiveDP
 
 
@@ -177,10 +182,16 @@ axQuadPcts.add_artist(pltMixDP)
 axQuadPcts.add_artist(pltMixDA)
 axQuadPcts.add_artist(pltMixVP)
 axQuadPcts.add_artist(pltMixVA)
+'''
 plt.annotate(f'DP\n{np.round(fracMixedSelectiveDP*100,1)}%\n n = {nSpeechSelectiveDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
 plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\n n = {nSpeechSelectiveDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\n n = {nSpeechSelectiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\n n = {nSpeechSelectiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+'''
+plt.annotate(f'DP\n{np.round(fracMixedSelectiveDP*100,1)}%\n n = {nSpeechResponsiveDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
+plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\n n = {nSpeechResponsiveDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\n n = {nSpeechResponsiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\n n = {nSpeechResponsiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 axQuadPcts.spines["right"].set_visible(False)
 axQuadPcts.spines["top"].set_visible(False)
 axQuadPcts.set_aspect('equal')
@@ -193,13 +204,20 @@ plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 
 
 plt.sca(axByAnimal)
-fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
-meanMixedSelectiveByAnimal = np.nanmean(fracMixedSelectiveByAnimal, axis = 0)
-plt.bar([1, 2, 3, 4], [meanMixedSelectiveByAnimal[0], meanMixedSelectiveByAnimal[1], meanMixedSelectiveByAnimal[3], meanMixedSelectiveByAnimal[2]], facecolor = colorMixedSelective)
+#fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
+fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsSpeechResponsiveByAnimal)
+medianMixedSelectiveByAnimal = np.nanmedian(fracMixedSelectiveByAnimal, axis = 0)
+quadXcoords = np.array([1,2,3,4])
+plt.bar(quadXcoords, [medianMixedSelectiveByAnimal[0], medianMixedSelectiveByAnimal[1], medianMixedSelectiveByAnimal[2], medianMixedSelectiveByAnimal[3]], facecolor = colorMixedSelective)
 #plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
-plt.xticks([1,2,3,4], ['DP', 'DA', 'VA', 'VP'])
+plt.xticks(quadXcoords, ['DP', 'DA', 'VP', 'VA'])
 plt.ylabel('Fraction Mixed selective')
-plt.plot([1,2,3,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1], fracMixedSelectiveByAnimal[:,3], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+#plt.scatter([1,2,3,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1], fracMixedSelectiveByAnimal[:,2], fracMixedSelectiveByAnimal[:,3]], s = 6, c = colorNotSelective)
+
+for indAnimal, thisAnimal in enumerate(subjects):
+    plt.plot(quadXcoords[~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])], fracMixedSelectiveByAnimal[indAnimal,~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])], c = colorNotSelective, marker = 'o', alpha = 0.5)
+
+
 #plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
 #plt.plot([1,3], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
 #plt.plot([1,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
@@ -212,12 +230,12 @@ circle1 = plt.Circle((0,0), 0.7, color = 'white')
 nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0] ))
 nMixselectiveAudP = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveAudP = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
-#plt.pie([nSpeechResponsiveAudP - (nMixselectiveAudP + nSingleselectiveAudP),  nMixselectiveAudP, nSingleselectiveAudP], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
-plt.pie([nMixselectiveAudP, nSingleselectiveAudP], colors = [colorMixedSelective, colorSingleSelective])
+plt.pie([nMixselectiveAudP, nSingleselectiveAudP, nSpeechResponsiveAudP - (nMixselectiveAudP + nSingleselectiveAudP)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
+#plt.pie([nMixselectiveAudP, nSingleselectiveAudP], colors = [colorMixedSelective, colorSingleSelective])
 
 axMixAudP.add_artist(circle1)
-#plt.title(f'AudP,\n n = {int(nSpeechResponsiveAudP)}')
-plt.title(f'AudP,\n n = {int(nMixselectiveAudP+nSingleselectiveAudP)}', pad = 0 )
+plt.title(f'AudP,\n n = {int(nSpeechResponsiveAudP)}', pad = 0)
+#plt.title(f'AudP,\n n = {int(nMixselectiveAudP+nSingleselectiveAudP)}', pad = 0 )
 
 
 plt.sca(axMixAudD)
@@ -225,11 +243,11 @@ circle2 = plt.Circle((0,0), 0.7, color = 'white')
 nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1] ))
 nMixselectiveAudD = np.sum(mixedSelective[recordingAreaName == audCtxAreas[1]])
 nSingleselectiveAudD = np.sum(singleSelective[recordingAreaName == audCtxAreas[1]])
-#plt.pie([nSpeechResponsiveAudD - (nMixselectiveAudD + nSingleselectiveAudD),  nMixselectiveAudD, nSingleselectiveAudD], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
-plt.pie([nMixselectiveAudD, nSingleselectiveAudD], colors = [colorMixedSelective, colorSingleSelective])
+plt.pie([nMixselectiveAudD, nSingleselectiveAudD, nSpeechResponsiveAudD - (nMixselectiveAudD + nSingleselectiveAudD)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
+#plt.pie([nMixselectiveAudD, nSingleselectiveAudD], colors = [colorMixedSelective, colorSingleSelective])
 axMixAudD.add_artist(circle2)
-#plt.title(f'AudD,\n n = {int(nSpeechResponsiveAudD)}')
-plt.title(f'AudD,\n n = {int(nMixselectiveAudD+nSingleselectiveAudD)}', pad = 0)
+plt.title(f'AudD,\n n = {int(nSpeechResponsiveAudD)}', pad = 0)
+#plt.title(f'AudD,\n n = {int(nMixselectiveAudD+nSingleselectiveAudD)}', pad = 0)
 
 
 plt.sca(axMixAudV)
@@ -237,22 +255,22 @@ circle3 = plt.Circle((0,0), 0.7, color = 'white')
 nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2] ))
 nMixselectiveAudV = np.sum(mixedSelective[recordingAreaName == audCtxAreas[2]])
 nSingleselectiveAudV = np.sum(singleSelective[recordingAreaName == audCtxAreas[2]])
-#plt.pie([nSpeechResponsiveAudV - (nMixselectiveAudV + nSingleselectiveAudV),  nMixselectiveAudV, nSingleselectiveAudV], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
-plt.pie([nMixselectiveAudV, nSingleselectiveAudV], colors = [colorMixedSelective, colorSingleSelective])
+plt.pie([nMixselectiveAudV, nSingleselectiveAudV, nSpeechResponsiveAudV - (nMixselectiveAudV + nSingleselectiveAudV)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
+#plt.pie([nMixselectiveAudV, nSingleselectiveAudV], colors = [colorMixedSelective, colorSingleSelective])
 axMixAudV.add_artist(circle3)
-#plt.title(f'AudV,\n n = {int(nSpeechResponsiveAudV)}')
-plt.title(f'AudV,\n n = {int(nMixselectiveAudV+nSingleselectiveAudV)}', pad = 0)
+plt.title(f'AudV,\n n = {int(nSpeechResponsiveAudV)}', pad = 0)
+#plt.title(f'AudV,\n n = {int(nMixselectiveAudV+nSingleselectiveAudV)}', pad = 0)
 
 plt.sca(axMixTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
 nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3] ))
 nMixselectiveTeA = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveTeA = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
-#plt.pie([nSpeechResponsiveTeA - (nMixselectiveTeA + nSingleselectiveTeA),  nMixselectiveTeA, nSingleselectiveTeA], colors = [colorNotSelective, colorMixedSelective, colorSingleSelective])
-plt.pie([nMixselectiveTeA, nSingleselectiveTeA], colors = [colorMixedSelective, colorSingleSelective])
+plt.pie([nMixselectiveTeA, nSingleselectiveTeA, nSpeechResponsiveTeA - (nMixselectiveTeA + nSingleselectiveTeA)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
+#plt.pie([nMixselectiveTeA, nSingleselectiveTeA], colors = [colorMixedSelective, colorSingleSelective])
 axMixTeA.add_artist(circle4)
-plt.title(f'TeA,\n n = {int(nMixselectiveTeA+nSingleselectiveTeA)}', pad = 0)
-#plt.title(f'TeA,\n n = {int(nSpeechResponsiveTeA)}')
+plt.title(f'TeA,\n n = {int(nSpeechResponsiveTeA)}', pad = 0)
+#plt.title(f'TeA,\n n = {int(nMixselectiveTeA+nSingleselectiveTeA)}', pad = 0)
 #plt.legend(labels = ['Non-selective', 'Mixed-selective', 'Single-selective'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
 
 

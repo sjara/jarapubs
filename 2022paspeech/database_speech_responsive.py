@@ -149,7 +149,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
                 meanFiringRateBase[indFT, indVOT] = firingRateBase.mean()
 
 
-        indMinPvalOnset = np.unravel_index(np.argmin(pValEachCondOnset), pValEachCondOnset.shape)
+        indMinPvalOnset = np.unravel_index(np.nanargmin(pValEachCondOnset), pValEachCondOnset.shape)
         minPvalEachCellOnset[indCell] = pValEachCondOnset[indMinPvalOnset]
         minPvalIndexEachCellOnset[indCell,:] = indMinPvalOnset
         indBestOnset = np.unravel_index(np.nanargmax(np.abs(meanFiringRateOnset -
@@ -168,7 +168,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
         maxFiringRate_VOT_FTmax[indCell] = np.nanmax(meanFiringRateOnset[3,:])
 
 
-        indMinPvalSustain = np.unravel_index(np.argmin(pValEachCondSustain),
+        indMinPvalSustain = np.unravel_index(np.nanargmin(pValEachCondSustain),
             pValEachCondSustain.shape)
         minPvalEachCellSustain[indCell] = pValEachCondSustain[indMinPvalSustain]
         minPvalIndexEachCellSustain[indCell,:] = indMinPvalSustain
