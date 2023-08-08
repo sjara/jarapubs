@@ -31,7 +31,7 @@ SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_selectivityIndices' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
-figSize = [7.5, 10.5] # In inches
+figSize = [7.5, 9] # In inches
 STATSUMMARY = 1
 
 fontSizeLabels = figparams.fontSizeLabels
@@ -100,33 +100,45 @@ quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
 
 
-#plt.figure()
+plt.clf()
 gsMain = gridspec.GridSpec(2, 1)
+gsMain.update(left=0.08, right=0.98, top=0.99, bottom=0.04, wspace=0.25, hspace=0.2)
+#plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
-gsVOT = gsMain[0].subgridspec(4, 3, width_ratios = [0.4, 0.3, 0.3])
+gsVOT = gsMain[0].subgridspec(4, 3, width_ratios=[0.5, 0.15, 0.35], wspace=0.55)
 axColorMapVOT = plt.subplot(gsVOT[:,0])
-axDVAPmapVot = gsVOT[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45])
+axDVAPmapVot = gsVOT[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
 axQuadsVot = plt.subplot(axDVAPmapVot[0,0])
 axByAnimalVot = plt.subplot(axDVAPmapVot[1,0])
-axVotDonuts = gsVOT[0:,1].subgridspec(4, 1)
+axVotDonuts = gsVOT[0:,1].subgridspec(4, 1, hspace=0.2)
 axVotAudP = plt.subplot(axVotDonuts[1,0])
 axVotAudD = plt.subplot(axVotDonuts[0,0])
 axVotAudV = plt.subplot(axVotDonuts[2,0])
 axVotTeA = plt.subplot(axVotDonuts[3,0])
+# -- Move Donuts a little to the left and closer together --
+xoffset = -0.02
+yoffset = 0.01
+for indax, oneax in enumerate([axVotAudD, axVotAudP, axVotAudV, axVotTeA]):
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-1)*yoffset, axpos.width, axpos.height])
 
-gsFT = gsMain[1].subgridspec(4, 3, width_ratios = [0.4, 0.3, 0.3])
+gsFT = gsMain[1].subgridspec(4, 3, width_ratios=[0.5, 0.15, 0.35], wspace=0.55)
 axColorMapFT = plt.subplot(gsFT[:,0])
-axDVAPmapFt = gsFT[:,2].subgridspec(2,1, height_ratios = [0.55,0.45])
+axDVAPmapFt = gsFT[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
 axQuadsFt = plt.subplot(axDVAPmapFt[0,0])
 axByAnimalFt = plt.subplot(axDVAPmapFt[1,0])
-axFtDonuts = gsFT[0:,1].subgridspec(4, 1)
+axFtDonuts = gsFT[0:,1].subgridspec(4, 1, hspace=0.2)
 axFtAudP = plt.subplot(axFtDonuts[1,0])
 axFtAudD = plt.subplot(axFtDonuts[0,0])
 axFtAudV = plt.subplot(axFtDonuts[2,0])
 axFtTeA = plt.subplot(axFtDonuts[3,0])
+# -- Move Donuts a little to the left and closer together --
+xoffset = -0.02
+yoffset = 0.01
+for indax, oneax in enumerate([axFtAudD, axFtAudP, axFtAudV, axFtTeA]):
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-1)*yoffset, axpos.width, axpos.height])
 
-gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.25, hspace=0.3)
-plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
@@ -134,6 +146,7 @@ singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
 
+#plt.show();    sys.exit()
 
 
 
@@ -156,11 +169,14 @@ plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.colorbar(label = 'VOT Selectivity Index', shrink = 0.8, ticks = [0.2, 0.4, 0.6, 0.8, 1.0])
-plt.title('VOT selectivity', fontsize = fontSizeTitles)
+cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0])
+cbar.set_label('VOT Selectivity Index', rotation=270, labelpad=12)
+#plt.title('VOT selectivity', fontsize = fontSizeTitles)
 axColorMapVOT.spines["right"].set_visible(False)
 axColorMapVOT.spines["top"].set_visible(False)
 axColorMapVOT.set_aspect('equal')
+
+titleY = 0.9
 
 plt.sca(axVotAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
@@ -170,7 +186,8 @@ nTotalAudP = np.sum(recordingAreaName == audCtxAreas[0])
 nVOTselectiveAudP = np.sum(votSelective[recordingAreaName == audCtxAreas[0]])
 plt.pie([nVOTselectiveAudP, nTotalAudP - nVOTselectiveAudP], colors = [colorVotSelective, colorNotSelective])
 axVotAudP.add_artist(circle1)
-plt.title(f'AudP,\n n = {int(nTotalAudP)}')
+#plt.title(f'AudP,\n n = {int(nTotalAudP)}')
+plt.title(f'AudP (n={int(nTotalAudP)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axVotAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
@@ -180,8 +197,8 @@ nTotalAudD = np.sum(recordingAreaName == audCtxAreas[1])
 nVOTselectiveAudD = np.sum(votSelective[recordingAreaName == audCtxAreas[1]])
 plt.pie([ nVOTselectiveAudD, nTotalAudD - nVOTselectiveAudD], colors = [colorVotSelective, colorNotSelective])
 axVotAudD.add_artist(circle2)
-plt.title(f'AudD,\n n = {int(nTotalAudD)}')
-#plt.legend(labels = ['VOT non-selective', 'VOT selective'], loc = 'upper right', ncol = 2, bbox_to_anchor = (3, 2))
+#plt.title(f'AudD,\n n = {int(nTotalAudD)}')
+plt.title(f'AudD (n={int(nTotalAudD)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axVotAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
@@ -191,7 +208,8 @@ nTotalAudV = np.sum(recordingAreaName == audCtxAreas[2])
 nVOTselectiveAudV = np.sum(votSelective[recordingAreaName == audCtxAreas[2]])
 plt.pie([nVOTselectiveAudV, nTotalAudV - nVOTselectiveAudV], colors = [colorVotSelective, colorNotSelective])
 axVotAudV.add_artist(circle3)
-plt.title(f'AudV,\n n = {int(nTotalAudV)}')
+#plt.title(f'AudV,\n n = {int(nTotalAudV)}')
+plt.title(f'AudV (n={int(nTotalAudV)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axVotTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
@@ -201,8 +219,11 @@ nTotalTeA = np.sum(recordingAreaName == audCtxAreas[3])
 nVOTselectiveTeA = np.sum(votSelective[recordingAreaName == audCtxAreas[3]])
 plt.pie([nVOTselectiveTeA, nTotalTeA - nVOTselectiveTeA], colors = [colorVotSelective, colorNotSelective])
 axVotTeA.add_artist(circle4)
-plt.title(f'TeA,\n n = {int(nTotalTeA)}')
-plt.legend(labels = ['VOT non-selective', 'VOT selective'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
+#plt.title(f'TeA,\n n = {int(nTotalTeA)}')
+plt.title(f'TeA (n={int(nTotalTeA)})', y=titleY, fontsize=fontSizeLabels)
+#plt.legend(labels = ['VOT selective', 'VOT non-sel.'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
+plt.legend(labels = ['VOT selective', 'VOT non-sel.'], loc='lower center', handlelength=1.5,
+           bbox_to_anchor = (0.5, -0.75))
 
 plt.sca(axQuadsVot)
 nVOTselectiveDP = np.sum(quadrantsVotSelective[0])
@@ -242,15 +263,15 @@ axQuadsVot.add_artist(pltVotDP)
 axQuadsVot.add_artist(pltVotDA)
 axQuadsVot.add_artist(pltVotVP)
 axQuadsVot.add_artist(pltVotVA)
-plt.annotate(f'DP\n{np.round(fracVOTselectiveDP*100,1)}%\n n = {nTotalDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w', fontweight = 'heavy')
-plt.annotate(f'DA\n{np.round(fracVOTselectiveDA*100,1)}%\n n = {nTotalDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
-plt.annotate(f'VP\n{np.round(fracVOTselectiveVP*100,1)}%\n n = {nTotalVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
-plt.annotate(f'VA\n{np.round(fracVOTselectiveVA*100,1)}%\n n = {nTotalVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'DP\n{np.round(fracVOTselectiveDP*100,1)}%\n n = {nTotalDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w', fontweight = 'normal')
+plt.annotate(f'DA\n{np.round(fracVOTselectiveDA*100,1)}%\n n = {nTotalDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w', fontweight = 'normal')
+plt.annotate(f'VP\n{np.round(fracVOTselectiveVP*100,1)}%\n n = {nTotalVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k', fontweight = 'normal')
+plt.annotate(f'VA\n{np.round(fracVOTselectiveVA*100,1)}%\n n = {nTotalVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k', fontweight = 'normal')
 axQuadsVot.spines["right"].set_visible(False)
 axQuadsVot.spines["top"].set_visible(False)
 axQuadsVot.set_aspect('equal')
 plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
-plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
+plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1,1.1])
 plt.ylim([-0.1,1.1])
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
@@ -286,8 +307,9 @@ plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 plt.xticks(APtickLocs, APtickLabels)
 plt.yticks(DVtickLocs, DVtickLabels)
-plt.colorbar(label = 'FT Selectivity Index', shrink = 0.8, ticks = [0.2, 0.4, 0.6, 0.8, 1.0], extend = 'max', extendrect = True, extendfrac = 0.22)
-plt.title('FT selectivity', fontsize = fontSizeTitles)
+cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0], extend='max', extendrect=True, extendfrac=0.22)
+cbar.set_label('FT Selectivity Index', rotation=270, labelpad=12)
+#plt.title('FT selectivity', fontsize = fontSizeTitles)
 axColorMapFT.set_aspect('equal')
 axColorMapFT.spines["right"].set_visible(False)
 axColorMapFT.spines["top"].set_visible(False)
@@ -299,31 +321,30 @@ circle5 = plt.Circle((0,0), 0.7, color = 'white')
 nFTselectiveAudP = np.sum(ftSelective[recordingAreaName == audCtxAreas[0]])
 plt.pie([nFTselectiveAudP, nTotalAudP - nFTselectiveAudP], colors = [colorFtSelective, colorNotSelective])
 axFtAudP.add_artist(circle5)
-plt.title(f'AudP,\n n = {int(nTotalAudP)}')
+plt.title(f'AudP (n={int(nTotalAudP)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axFtAudD)
 circle6 = plt.Circle((0,0), 0.7, color = 'white')
 nFTselectiveAudD = np.sum(ftSelective[recordingAreaName == audCtxAreas[1]])
 plt.pie([nFTselectiveAudD, nTotalAudD - nFTselectiveAudD], colors = [colorFtSelective, colorNotSelective])
 axFtAudD.add_artist(circle6)
-plt.title(f'AudD,\n n = {int(nTotalAudD)}')
-#plt.legend(labels = ['FT non-selective', 'FT selective'], loc = 'upper right', ncol = 2, bbox_to_anchor = (3, 2))
-
+plt.title(f'AudD (n={int(nTotalAudD)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axFtAudV)
 circle7 = plt.Circle((0,0), 0.7, color = 'white')
 nFTselectiveAudV = np.sum(ftSelective[recordingAreaName == audCtxAreas[2]])
 plt.pie([nFTselectiveAudV, nTotalAudV - nFTselectiveAudV], colors = [colorFtSelective, colorNotSelective])
 axFtAudV.add_artist(circle7)
-plt.title(f'AudV,\n n = {int(nTotalAudV)}')
+plt.title(f'AudV (n={int(nTotalAudV)})', y=titleY, fontsize=fontSizeLabels)
 
 plt.sca(axFtTeA)
 circle8 = plt.Circle((0,0), 0.7, color = 'white')
 nFTselectiveTeA = np.sum(ftSelective[recordingAreaName == audCtxAreas[3]])
 plt.pie([nFTselectiveTeA, nTotalTeA - nFTselectiveTeA], colors = [colorFtSelective, colorNotSelective])
 axFtTeA.add_artist(circle8)
-plt.title(f'TeA,\n n = {int(nTotalTeA)}')
-plt.legend(labels = ['FT non-selective', 'FT selective'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
+plt.title(f'TeA (n={int(nTotalTeA)})', y=titleY, fontsize=fontSizeLabels)
+plt.legend(labels=['FT selective', 'FT non-sel.'], loc='lower center', handlelength=1.5,
+           bbox_to_anchor=(0.5, -0.75))
 
 
 plt.sca(axQuadsFt)
@@ -372,7 +393,7 @@ axQuadsFt.spines["right"].set_visible(False)
 axQuadsFt.spines["top"].set_visible(False)
 axQuadsFt.set_aspect('equal')
 plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
-plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
+plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1,1.1])
 plt.ylim([-0.1,1.1])
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
@@ -395,19 +416,25 @@ axByAnimalFt.spines["top"].set_visible(False)
 
 
 
+labelPosX = [0.02, 0.47, 0.68] # Horiz position for panel labels
+labelPosY = [0.98, 0.74,  0.47, 0.22]    # Vert position for panel labels
 
-
-labelPosX = [0.05, 0.43, 0.63] # Horiz position for panel labels
-labelPosY = [0.94, 0.72,  0.46, 0.24]    # Vert position for panel labels
-
-axColorMapVOT.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axVotAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axQuadsVot.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axByAnimalVot.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axColorMapFT.annotate('E', xy=(labelPosX[0],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axFtAudD.annotate('F', xy=(labelPosX[1],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axQuadsFt.annotate('G', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
-axByAnimalFt.annotate('H', xy=(labelPosX[2],labelPosY[3]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
+axColorMapVOT.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction',
+                       fontsize=fontSizePanel, fontweight='bold')
+axVotAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction',
+                   fontsize=fontSizePanel, fontweight='bold')
+axQuadsVot.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction',
+                    fontsize=fontSizePanel, fontweight='bold')
+axByAnimalVot.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction',
+                       fontsize=fontSizePanel, fontweight='bold')
+axColorMapFT.annotate('E', xy=(labelPosX[0],labelPosY[2]), xycoords='figure fraction',
+                      fontsize=fontSizePanel, fontweight='bold')
+axFtAudD.annotate('F', xy=(labelPosX[1],labelPosY[2]), xycoords='figure fraction',
+                  fontsize=fontSizePanel, fontweight='bold')
+axQuadsFt.annotate('G', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction',
+                   fontsize=fontSizePanel, fontweight='bold')
+axByAnimalFt.annotate('H', xy=(labelPosX[2],labelPosY[3]), xycoords='figure fraction',
+                      fontsize=fontSizePanel, fontweight='bold')
 
 
 plt.show()
