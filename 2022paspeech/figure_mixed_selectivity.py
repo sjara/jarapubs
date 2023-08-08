@@ -1,5 +1,5 @@
 """
-This creates figure 1 for 2022paspeech:
+This creates figure 5 (about mixed selectivity) for 2022paspeech.
  A. plot of VOT selectivity indices in A-P/D-V space. Add AC areas image in inkscape
  B. Donut plots of fraction of VOT selective cells among speech responsive cells for each Aud Area
  C. VOT selectivity indices binned in D-V space
@@ -31,8 +31,8 @@ SAVE_FIGURE = 1
 STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_mixed_selectivity' # Do not include extension
-figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [7.5, 5.25] # In inches
+figFormat = 'svg' # 'pdf' or 'svg'
+figSize = [7.5, 5.0] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -42,7 +42,7 @@ colorMap = cm.get_cmap('Greens')
 newMap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n='BuGn', a = 0.1, b = 1), colorMap(np.linspace(0.2,1,50)))
 colorMixedSelective = cp.TangoPalette['Orange2']
 colorSingleSelective = cp.TangoPalette['SkyBlue2']
-colorNotSelective = cp.TangoPalette['Aluminium3']
+colorNotSelective = cp.TangoPalette['Aluminium3']  # 'Aluminium2'
 
 
 figDataFullPath = os.path.join(figDataDir,figDataFile)
@@ -91,10 +91,11 @@ quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
 quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
 
-plt.figure()
-gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.4, 0.25, 0.35])
+plt.clf()
+gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.4, 0.2, 0.4])
+gsMain.update(left=0.07, right=0.98, top=0.97, bottom=0.05, wspace=0.3, hspace=0.4)
 axMixeSelMap = plt.subplot(gsMain[:,0])
-axQuadSummary = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45])
+axQuadSummary = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
 axQuadPcts = plt.subplot(axQuadSummary[0,0])
 axByAnimal = plt.subplot(axQuadSummary[1,0])
 axMixDonuts = gsMain[0:,1].subgridspec(4, 1, hspace = 0.4)
@@ -102,9 +103,14 @@ axMixAudP = plt.subplot(axMixDonuts[1,0])
 axMixAudD = plt.subplot(axMixDonuts[0,0])
 axMixAudV = plt.subplot(axMixDonuts[2,0])
 axMixTeA = plt.subplot(axMixDonuts[3,0])
+# -- Move Donuts a little to the left and closer together --
+xoffset = -0.03
+yoffset = 0.02
+for indax, oneax in enumerate([axMixAudD, axMixAudP, axMixAudV, axMixTeA]):
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-2)*yoffset, axpos.width, axpos.height])
 
-gsMain.update(left=0.08, right=0.96, top=0.92, bottom=0.1, wspace=0.25, hspace=0.4)
-plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
+#plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
@@ -127,7 +133,9 @@ plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.legend(handles = [singSel, mixSel, respNonSel], labels = ['Single-selective', 'Mixed-selective', 'Speech-responsive, non-selective'], loc = "upper right", markerscale = 3, bbox_to_anchor = (1.2, 1.1))
+plt.legend(handles = [singSel, mixSel, respNonSel], loc="upper left",
+           labels=['Single-selective', 'Mixed-selective', 'Speech-responsive, non-selective'],
+           markerscale=3, handletextpad=0.25, fontsize=fontSizeTicks, bbox_to_anchor=(0.01, 1.07))
 #plt.title('Mixed selectivity', fontsize = fontSizeTitles)
 axMixeSelMap.set_aspect('equal')
 axMixeSelMap.spines["right"].set_visible(False)
@@ -188,15 +196,15 @@ plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\n n = {nSpeechSelecti
 plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\n n = {nSpeechSelectiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\n n = {nSpeechSelectiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 '''
-plt.annotate(f'DP\n{np.round(fracMixedSelectiveDP*100,1)}%\n n = {nSpeechResponsiveDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
-plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\n n = {nSpeechResponsiveDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'k')
-plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\n n = {nSpeechResponsiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
-plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\n n = {nSpeechResponsiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'DP\n{np.round(fracMixedSelectiveDP*100,1)}%\nn = {nSpeechResponsiveDP}', (0.25, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'w')
+plt.annotate(f'DA\n{np.round(fracMixedSelectiveDA*100,1)}%\nn = {nSpeechResponsiveDA}', (0.75, 0.6), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VP\n{np.round(fracMixedSelectiveVP*100,1)}%\nn = {nSpeechResponsiveVP}', (0.25, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
+plt.annotate(f'VA\n{np.round(fracMixedSelectiveVA*100,1)}%\nn = {nSpeechResponsiveVA}', (0.75, 0.1), fontsize = fontSizeLabels, ha = 'center', color = 'k')
 axQuadPcts.spines["right"].set_visible(False)
 axQuadPcts.spines["top"].set_visible(False)
 axQuadPcts.set_aspect('equal')
 plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
-plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV, 2))
+plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1,1.1])
 plt.ylim([-0.1,1.1])
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
@@ -211,11 +219,13 @@ quadXcoords = np.array([1,2,3,4])
 plt.bar(quadXcoords, [medianMixedSelectiveByAnimal[0], medianMixedSelectiveByAnimal[1], medianMixedSelectiveByAnimal[2], medianMixedSelectiveByAnimal[3]], facecolor = colorMixedSelective)
 #plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
 plt.xticks(quadXcoords, ['DP', 'DA', 'VP', 'VA'])
-plt.ylabel('Fraction Mixed selective')
+plt.ylabel('Fraction mixed-selective')
 #plt.scatter([1,2,3,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1], fracMixedSelectiveByAnimal[:,2], fracMixedSelectiveByAnimal[:,3]], s = 6, c = colorNotSelective)
 
 for indAnimal, thisAnimal in enumerate(subjects):
-    plt.plot(quadXcoords[~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])], fracMixedSelectiveByAnimal[indAnimal,~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])], c = colorNotSelective, marker = 'o', alpha = 0.5)
+    plt.plot(quadXcoords[~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])],
+             fracMixedSelectiveByAnimal[indAnimal,~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])],
+             c=colorNotSelective, marker='o', alpha=0.5)
 
 
 #plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
@@ -224,6 +234,7 @@ for indAnimal, thisAnimal in enumerate(subjects):
 axByAnimal.spines["right"].set_visible(False)
 axByAnimal.spines["top"].set_visible(False)
 
+titleY = 0.9
 
 plt.sca(axMixAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
@@ -234,7 +245,7 @@ plt.pie([nMixselectiveAudP, nSingleselectiveAudP, nSpeechResponsiveAudP - (nMixs
 #plt.pie([nMixselectiveAudP, nSingleselectiveAudP], colors = [colorMixedSelective, colorSingleSelective])
 
 axMixAudP.add_artist(circle1)
-plt.title(f'AudP,\n n = {int(nSpeechResponsiveAudP)}', pad = 0)
+plt.title(f'AudP (n={int(nSpeechResponsiveAudP)})', y=titleY, fontsize=fontSizeLabels)
 #plt.title(f'AudP,\n n = {int(nMixselectiveAudP+nSingleselectiveAudP)}', pad = 0 )
 
 
@@ -246,7 +257,7 @@ nSingleselectiveAudD = np.sum(singleSelective[recordingAreaName == audCtxAreas[1
 plt.pie([nMixselectiveAudD, nSingleselectiveAudD, nSpeechResponsiveAudD - (nMixselectiveAudD + nSingleselectiveAudD)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
 #plt.pie([nMixselectiveAudD, nSingleselectiveAudD], colors = [colorMixedSelective, colorSingleSelective])
 axMixAudD.add_artist(circle2)
-plt.title(f'AudD,\n n = {int(nSpeechResponsiveAudD)}', pad = 0)
+plt.title(f'AudD (n={int(nSpeechResponsiveAudD)})', y=titleY, fontsize=fontSizeLabels)
 #plt.title(f'AudD,\n n = {int(nMixselectiveAudD+nSingleselectiveAudD)}', pad = 0)
 
 
@@ -258,7 +269,7 @@ nSingleselectiveAudV = np.sum(singleSelective[recordingAreaName == audCtxAreas[2
 plt.pie([nMixselectiveAudV, nSingleselectiveAudV, nSpeechResponsiveAudV - (nMixselectiveAudV + nSingleselectiveAudV)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
 #plt.pie([nMixselectiveAudV, nSingleselectiveAudV], colors = [colorMixedSelective, colorSingleSelective])
 axMixAudV.add_artist(circle3)
-plt.title(f'AudV,\n n = {int(nSpeechResponsiveAudV)}', pad = 0)
+plt.title(f'AudV (n={int(nSpeechResponsiveAudV)})', y=titleY, fontsize=fontSizeLabels)
 #plt.title(f'AudV,\n n = {int(nMixselectiveAudV+nSingleselectiveAudV)}', pad = 0)
 
 plt.sca(axMixTeA)
@@ -269,13 +280,13 @@ nSingleselectiveTeA = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]
 plt.pie([nMixselectiveTeA, nSingleselectiveTeA, nSpeechResponsiveTeA - (nMixselectiveTeA + nSingleselectiveTeA)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
 #plt.pie([nMixselectiveTeA, nSingleselectiveTeA], colors = [colorMixedSelective, colorSingleSelective])
 axMixTeA.add_artist(circle4)
-plt.title(f'TeA,\n n = {int(nSpeechResponsiveTeA)}', pad = 0)
+plt.title(f'TeA (n={int(nSpeechResponsiveTeA)})', y=titleY, fontsize=fontSizeLabels)
 #plt.title(f'TeA,\n n = {int(nMixselectiveTeA+nSingleselectiveTeA)}', pad = 0)
 #plt.legend(labels = ['Non-selective', 'Mixed-selective', 'Single-selective'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
 
 
-labelPosX = [0.05, 0.45, 0.63] # Horiz position for panel labels
-labelPosY = [0.94, 0.46]    # Vert position for panel labels
+labelPosX = [0.01, 0.42, 0.61] # Horiz position for panel labels
+labelPosY = [0.96, 0.42]    # Vert position for panel labels
 
 axMixeSelMap.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axMixAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
