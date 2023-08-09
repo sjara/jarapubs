@@ -26,7 +26,7 @@ reload(figparams)
 FIGNAME = 'figure_behavior'
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'figure_behavior' # Do not include extension
+figFilename = 'plots_behavior' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 #figSize = [7.5, 5.5] # In inches
 figSize = [7.5, 5.0] # In inches
