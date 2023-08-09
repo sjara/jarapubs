@@ -49,8 +49,8 @@ selectivityIndexFT_VOTmax = figData['selectivityIndexFT_VOTmax']
 selectivityIndexFT_VOTmin = figData['selectivityIndexFT_VOTmin']
 whichFT = figData['whichFT']
 whichVOT = figData['whichVOT']
-#exampleCells = [898, 1155, 1054, 687] #VOT selective, FT selective, Mixed, Responsive-nonselective
-exampleCells = [12, 14, 15, 18]
+exampleCells = [898, 1155, 162, 687] #VOT selective, FT selective, Mixed, Responsive-nonselective
+#exampleCells = [12, 14, 15, 18] #test cells
 
 VOTlabels = ['0', '20', '40', '60']
 FTlabels = ['9', '3', '-3', '-9']
@@ -134,7 +134,7 @@ for indCell, thisCell in enumerate(exampleCells):
     nFT = len(possibleFTParams)
     pointSize = 2
     fillWidth = 0.09
-    
+
     # Raster -- VOT
     plt.sca(axRasterVot)
     if whichVOT[thisCell] == 1: #VOT used for SI == FTmax
@@ -205,8 +205,8 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.yticks(PSTHyLims)
     plot_stim(1.1*PSTHyLims[-1], stimDuration)
     plt.ylim(PSTHyLims)
-    
-    
+
+
     # PSTH -- FT
     plt.sca(axPsthFt)
     if whichFT[thisCell] == 1:
