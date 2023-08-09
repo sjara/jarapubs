@@ -214,23 +214,17 @@ plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 plt.sca(axByAnimal)
 #fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsMixedSelectiveByAnimal + quadrantsSingleSelectiveByAnimal)
 fracMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal/(quadrantsSpeechResponsiveByAnimal)
+fracMixedSelectiveByAnimal[quadrantsSpeechResponsiveByAnimal<=2] = np.nan
 medianMixedSelectiveByAnimal = np.nanmedian(fracMixedSelectiveByAnimal, axis = 0)
 quadXcoords = np.array([1,2,3,4])
 plt.bar(quadXcoords, [medianMixedSelectiveByAnimal[0], medianMixedSelectiveByAnimal[1], medianMixedSelectiveByAnimal[2], medianMixedSelectiveByAnimal[3]], facecolor = colorMixedSelective)
-#plt.bar([1, 2, 3, 4], [fracMixedSelectiveDP, fracMixedSelectiveDA, fracMixedSelectiveVA, fracMixedSelectiveVP], facecolor = colorMixedSelective)
 plt.xticks(quadXcoords, ['DP', 'DA', 'VP', 'VA'])
 plt.ylabel('Fraction mixed-selective')
-#plt.scatter([1,2,3,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1], fracMixedSelectiveByAnimal[:,2], fracMixedSelectiveByAnimal[:,3]], s = 6, c = colorNotSelective)
-
+plt.xlabel('AC regions')
 for indAnimal, thisAnimal in enumerate(subjects):
-    plt.plot(quadXcoords[~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])],
-             fracMixedSelectiveByAnimal[indAnimal,~np.isnan(fracMixedSelectiveByAnimal[indAnimal,:])],
+    plt.plot(quadXcoords[quadrantsSpeechResponsiveByAnimal[indAnimal]>2],
+             fracMixedSelectiveByAnimal[indAnimal,quadrantsSpeechResponsiveByAnimal[indAnimal]>2],
              c=colorNotSelective, marker='o', alpha=0.5)
-
-
-#plt.plot([1,2], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,1]], c = colorNotSelective, alpha = 0.5)
-#plt.plot([1,3], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,3]], c = colorNotSelective, alpha = 0.5)
-#plt.plot([1,4], [fracMixedSelectiveByAnimal[:,0], fracMixedSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
 axByAnimal.spines["right"].set_visible(False)
 axByAnimal.spines["top"].set_visible(False)
 

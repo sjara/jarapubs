@@ -278,20 +278,17 @@ plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 
 
-
-
 plt.sca(axByAnimalVot)
 fracVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal/quadrantTotalsByAnimal
+fracVotSelectiveByAnimal[quadrantTotalsByAnimal<=2] = np.nan
 medianVotSelectiveByAnimal = np.nanmedian(fracVotSelectiveByAnimal, axis = 0)
 quadXcoords = np.array([1,2,3,4])
 plt.bar(quadXcoords, [medianVotSelectiveByAnimal[0], medianVotSelectiveByAnimal[1], medianVotSelectiveByAnimal[2], medianVotSelectiveByAnimal[3]], facecolor = colorVotSelective)
-#plt.bar([1, 2, 3, 4], [fracVOTselectiveDP, fracVOTselectiveDA, fracVOTselectiveVA, fracVOTselectiveVP], facecolor = colorVotSelective)
 plt.xticks(quadXcoords, ['DP', 'DA', 'VP', 'VA'])
 plt.ylabel('Fraction VOT selective')
+plt.xlabel('AC regions')
 for indAnimal, thisAnimal in enumerate(subjects):
-    plt.plot(quadXcoords[~np.isnan(fracVotSelectiveByAnimal[indAnimal,:])], fracVotSelectiveByAnimal[indAnimal,~np.isnan(fracVotSelectiveByAnimal[indAnimal,:])], c = colorNotSelective, marker = 'o', ms = 4, alpha = 0.5)
-
-#plt.plot([1,2,3,4], [fracVotSelectiveByAnimal[:,0], fracVotSelectiveByAnimal[:,1], fracVotSelectiveByAnimal[:,3], fracVotSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+    plt.plot(quadXcoords[quadrantTotalsByAnimal[indAnimal]>2], fracVotSelectiveByAnimal[indAnimal,quadrantTotalsByAnimal[indAnimal]>2], c = colorNotSelective, marker = 'o', ms = 4, alpha = 0.5)
 axByAnimalVot.spines["right"].set_visible(False)
 axByAnimalVot.spines["top"].set_visible(False)
 
@@ -403,14 +400,17 @@ plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 
 plt.sca(axByAnimalFt)
 fracFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal/quadrantTotalsByAnimal
+fracFtSelectiveByAnimal[quadrantTotalsByAnimal<=2] = np.nan
 medianFTselectiveByAnimal = np.nanmedian(fracFtSelectiveByAnimal, axis = 0)
 plt.bar(quadXcoords, [medianFTselectiveByAnimal[0], medianFTselectiveByAnimal[1], medianFTselectiveByAnimal[2], medianFTselectiveByAnimal[3]], facecolor = colorFtSelective)
 #plt.bar([1, 2, 3, 4], [fracFTselectiveDP, fracFTselectiveDA, fracFTselectiveVA, fracFTselectiveVP], facecolor = colorFtSelective)
 plt.xticks(quadXcoords, ['DP', 'DA', 'VP', 'VA'])
-plt.ylabel('Fraction FT selective')
+plt.ylabel('Fraction FT selective', fontsize = fontSizeLabels)
+plt.xlabel('AC regions', fontsize = fontSizeLabels)
 #plt.plot([1,2,3,4], [fracFtSelectiveByAnimal[:,0], fracFtSelectiveByAnimal[:,1], fracFtSelectiveByAnimal[:,3], fracFtSelectiveByAnimal[:,2]], c = colorNotSelective, alpha = 0.5)
+
 for indAnimal, thisAnimal in enumerate(subjects):
-    plt.plot(quadXcoords[~np.isnan(fracFtSelectiveByAnimal[indAnimal,:])], fracFtSelectiveByAnimal[indAnimal,~np.isnan(fracFtSelectiveByAnimal[indAnimal,:])], c = colorNotSelective, marker = 'o', ms = 4, alpha = 0.5)
+    plt.plot(quadXcoords[quadrantTotalsByAnimal[indAnimal]>2], fracFtSelectiveByAnimal[indAnimal,quadrantTotalsByAnimal[indAnimal]>2], c = colorNotSelective, marker = 'o', ms = 4, alpha = 0.5)
 axByAnimalFt.spines["right"].set_visible(False)
 axByAnimalFt.spines["top"].set_visible(False)
 
