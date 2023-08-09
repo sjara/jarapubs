@@ -64,6 +64,7 @@ x_coords_jittered = figData['x_coords_jittered']
 subjects = np.unique(figData['subject'])
 speechResponsive = figData['speechResponsive']
 soundResponsive = figData['soundResponsive']
+isCortical = figData['isCortical']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
 pvalPermutationtestFt = figData['pvalPermutationtestFt']
@@ -159,7 +160,7 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 #plt.suptitle('VOT selectivity by location', fontsize = fontSizeTitles)
 
 plt.sca(axColorMapVOT)
-plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexVot[speechResponsive], cmap = newMapVOT, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive & isCortical], c = bestSelectivityIndexVot[speechResponsive & isCortical], cmap = newMapVOT, s = 3)
 #plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexVot, cmap = newMapVOT, s = 3)
 #plt.ylim(215,60)
 plt.ylim(220,40)
@@ -294,7 +295,7 @@ axByAnimalVot.spines["top"].set_visible(False)
 
 
 plt.sca(axColorMapFT)
-plt.scatter(z_coords_jittered[speechResponsive], y_coords[speechResponsive], c = bestSelectivityIndexFt[speechResponsive], cmap = newMapFT, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive& isCortical], c = bestSelectivityIndexFt[speechResponsive& isCortical], cmap = newMapFT, s = 3)
 #plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexFt, cmap = newMapFT, s = 3)
 #plt.ylim(215,60)
 #plt.xlim(165,225)

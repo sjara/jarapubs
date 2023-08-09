@@ -55,6 +55,7 @@ z_coords_jittered = figData['z_coords_jittered']
 x_coords_jittered = figData['x_coords_jittered']
 subjects = np.unique(figData['subject'])
 speechResponsive = figData['speechResponsive']
+isCortical = figData['isCortical']
 excludeSpeech = figData['excludeSpeech']
 bestSelectivityIndexVot = figData['bestSelectivityIndexVot']
 bestSelectivityIndexFt = figData['bestSelectivityIndexFt']
@@ -124,9 +125,9 @@ DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
 plt.sca(axMixeSelMap)
-singSel = plt.scatter(z_coords_jittered[speechResponsive & singleSelective], y_coords[speechResponsive & singleSelective], c = colorSingleSelective, s = 6)
-mixSel = plt.scatter(z_coords_jittered[speechResponsive & mixedSelective], y_coords[speechResponsive & mixedSelective], c = colorMixedSelective, s = 6)
-respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective], y_coords[speechResponsive & ~mixedSelective & ~singleSelective], c = colorNotSelective, s = 6)
+singSel = plt.scatter(z_coords_jittered[speechResponsive & singleSelective & isCortical], y_coords[speechResponsive & singleSelective & isCortical], c = colorSingleSelective, s = 6)
+mixSel = plt.scatter(z_coords_jittered[speechResponsive & mixedSelective & isCortical], y_coords[speechResponsive & mixedSelective & isCortical], c = colorMixedSelective, s = 6)
+respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], y_coords[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], c = colorNotSelective, s = 6)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlim(146, 246)
