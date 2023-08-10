@@ -51,6 +51,7 @@ whichFT = figData['whichFT']
 whichVOT = figData['whichVOT']
 exampleCells = [898, 1155, 162, 687] #VOT selective, FT selective, Mixed, Responsive-nonselective
 #exampleCells = [12, 14, 15, 18] #test cells
+siYpos = [0.7, 0.8, 0.7, 0.8]  # Y position factor for selectivity index text
 
 VOTlabels = ['0', '20', '40', '60']
 FTlabels = ['9', '3', '-3', '-9']
@@ -144,6 +145,7 @@ for indCell, thisCell in enumerate(exampleCells):
         ymax = np.sum(trialsEachVOT_FTmax)
         #plt.title(rf'$\Delta$VOT, FTmax. SI={np.round(selectivityIndexVOT_FTmax[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='bold')
+        selectivityIndexVOT = figData['selectivityIndexVOT_FTmax'][thisCell]
     else:
         pRaster, hcond, zline = extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                        timeRange, trialsEachVOT_FTmin, colorsEachVOT,
@@ -151,6 +153,7 @@ for indCell, thisCell in enumerate(exampleCells):
         #plt.title(rf'$\Delta$VOT, FTmin. SI={np.round(selectivityIndexVOT_FTmin[thisCell], 2)}',
         #           fontsize=fontSizeTitles, fontweight='bold')
         ymax = np.sum(trialsEachVOT_FTmin)
+        selectivityIndexVOT = figData['selectivityIndexVOT_FTmin'][thisCell]
     plt.setp(pRaster, ms=pointSize)
     plt.setp(axRasterVot.get_xticklabels(), visible=False)
     #axRasterVot.set_xticklabels([])  # This would remove them on both shared axes
@@ -167,12 +170,14 @@ for indCell, thisCell in enumerate(exampleCells):
                                                       labels = FTlabels, fillWidth=fillWidth)
         #plt.title(rf'$\Delta$FT, VOTmax. SI={np.round(selectivityIndexFT_VOTmax[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='normal')
+        selectivityIndexFT = figData['selectivityIndexFT_VOTmax'][thisCell]
     else:
         pRaster, hcond, zline =extraplots.raster_plot(spikeTimesFromEventOnset, indexLimitsEachTrial,
                                                       timeRange, trialsEachFT_VOTmin, colorsEachFT,
                                                       labels = FTlabels, fillWidth=fillWidth)
         #plt.title(rf'$\Delta$FT, VOTmin. SI={np.round(selectivityIndexFT_VOTmin[thisCell], 2)}',
         #          fontsize=fontSizeTitles, fontweight='normal')
+        selectivityIndexFT = figData['selectivityIndexFT_VOTmin'][thisCell]
     plt.setp(pRaster, ms=pointSize)
     plt.setp(axRasterFt.get_xticklabels(), visible=False)
     plt.ylabel('FT slope (oct/s)', fontsize=fontSizeLabels, fontweight='normal')
@@ -205,7 +210,9 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.yticks(PSTHyLims)
     plot_stim(1.1*PSTHyLims[-1], stimDuration)
     plt.ylim(PSTHyLims)
-
+    siVOTtext = plt.text(0.17, siYpos[indCell]*PSTHyLims[1], rf'SI = {np.round(selectivityIndexVOT, 2)}', 
+                         ha='left', fontsize=fontSizeTicks)
+    # rf'SI$_{{VOT}}$={np.round(selectivityIndexVOT, 2)}'
 
     # PSTH -- FT
     plt.sca(axPsthFt)
@@ -223,7 +230,9 @@ for indCell, thisCell in enumerate(exampleCells):
     plt.yticks(PSTHyLims)
     plot_stim(1.1*PSTHyLims[-1], stimDuration)
     plt.ylim(PSTHyLims)
-
+    siFTtext = plt.text(0.17, siYpos[indCell]*PSTHyLims[1], rf'SI = {np.round(selectivityIndexFT, 2)}', 
+                        ha='left', fontsize=fontSizeTicks)
+    
     # ***NOTE*** The code above assumes the PSTH for FT is smaller than for VOT (to set ylim).
     #            This may need to change if we use a different set of cells.
 
