@@ -24,7 +24,7 @@ FIGNAME = 'selectivityIndices'
 SAVE_FIGURE = 1
 STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'figure_neuropix_methods' # Do not include extension
+figFilename = 'plots_speech_responsiveness' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [5.25, 6.75] # In inches
 
@@ -37,9 +37,10 @@ fontSizeTitles = figparams.fontSizeTitles
 colorSpeechResp = cp.TangoPalette['ScarletRed2']
 colorNotAud = cp.TangoPalette['Aluminium3']
 colorSoundResp = cp.TangoPalette['SkyBlue2']
+colorStimPresented = cp.TangoPalette['Butter2']
 
 
-labelPosX = [0.04, 0.28, 0.67] # Horiz position for panel labels
+labelPosX = [0.04, 0.32, 0.68] # Horiz position for panel labels
 labelPosY = [0.97, 0.77, 0.365]    # Vert position for panel labels
 
 plt.clf()
@@ -117,7 +118,7 @@ if 1:
     for indFT, thisFT in enumerate(FTvals):
         for indVOT, thisVOT in enumerate(VOTvals):
             if indFT in [0, 3] or indVOT in [0, 3]:
-                facecolor = '#fce94f'  # Butter2
+                facecolor = colorStimPresented
             else:
                 facecolor = 'none'
             onePatch = axSoundMatrix.add_patch(plt.Rectangle((thisVOT-VOTstep/2, thisFT-FTstep/2),
