@@ -7,6 +7,7 @@ This creates figure 1 for 2022paspeech:
  E-H: as in A-D, for FT
 """
 
+import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,7 +30,7 @@ shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'figure_selectivityIndices' # Do not include extension
+figFilename = 'plots_speech_selectivity' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 9] # In inches
 STATSUMMARY = 1
@@ -106,7 +107,7 @@ gsMain = gridspec.GridSpec(2, 1)
 gsMain.update(left=0.08, right=0.98, top=0.99, bottom=0.04, wspace=0.25, hspace=0.2)
 #plt.subplots_adjust(top = 0.9, bottom = 0.05, hspace = 0.45, left = 0.05)
 
-gsVOT = gsMain[0].subgridspec(4, 3, width_ratios=[0.5, 0.15, 0.35], wspace=0.55)
+gsVOT = gsMain[0].subgridspec(4, 3, width_ratios=[0.55, 0.15, 0.3], wspace=0.55)
 axColorMapVOT = plt.subplot(gsVOT[:,0])
 axDVAPmapVot = gsVOT[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
 axQuadsVot = plt.subplot(axDVAPmapVot[0,0])
@@ -123,7 +124,8 @@ for indax, oneax in enumerate([axVotAudD, axVotAudP, axVotAudV, axVotTeA]):
     axpos = oneax.get_position()
     oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-1)*yoffset, axpos.width, axpos.height])
 
-gsFT = gsMain[1].subgridspec(4, 3, width_ratios=[0.5, 0.15, 0.35], wspace=0.55)
+#gsFT = gsMain[1].subgridspec(4, 3, width_ratios=[0.5, 0.15, 0.35], wspace=0.55)
+gsFT = gsMain[1].subgridspec(4, 3, width_ratios=[0.55, 0.15, 0.3], wspace=0.55)
 axColorMapFT = plt.subplot(gsFT[:,0])
 axDVAPmapFt = gsFT[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
 axQuadsFt = plt.subplot(axDVAPmapFt[0,0])
@@ -139,6 +141,12 @@ yoffset = 0.01
 for indax, oneax in enumerate([axFtAudD, axFtAudP, axFtAudV, axFtTeA]):
     axpos = oneax.get_position()
     oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-1)*yoffset, axpos.width, axpos.height])
+
+# -- Move third column a little higher --
+yoffset = 0.01
+for indax, oneax in enumerate([axQuadsVot, axByAnimalVot, axQuadsFt, axByAnimalFt]):
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
 
 
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
@@ -160,7 +168,9 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 #plt.suptitle('VOT selectivity by location', fontsize = fontSizeTitles)
 
 plt.sca(axColorMapVOT)
-plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive & isCortical], c = bestSelectivityIndexVot[speechResponsive & isCortical], cmap = newMapVOT, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive & isCortical],
+            c=bestSelectivityIndexVot[speechResponsive & isCortical],
+            cmap=newMapVOT, s=3, vmin=0, vmax=1)
 #plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexVot, cmap = newMapVOT, s = 3)
 #plt.ylim(215,60)
 plt.ylim(220,40)
@@ -168,11 +178,13 @@ plt.yticks(DVtickLocs, DVtickLabels)
 #plt.xlim(165,225)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0])
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
+#cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0])
+cbar = plt.colorbar(ticks=[0.2, 0.4, 0.6, 0.8, 1.0], shrink=0.8, pad=0.1)
 cbar.set_label('VOT Selectivity Index', rotation=270, labelpad=12)
-#plt.title('VOT selectivity', fontsize = fontSizeTitles)
+htitle = plt.title('VOT selectivity', fontsize = fontSizeTitles, y=0.95)
+htitle.set_position(htitle.get_position()+np.array([0.08, 0]))
 axColorMapVOT.spines["right"].set_visible(False)
 axColorMapVOT.spines["top"].set_visible(False)
 axColorMapVOT.set_aspect('equal')
@@ -275,8 +287,8 @@ plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
 plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1,1.1])
 plt.ylim([-0.1,1.1])
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
 
 
 plt.sca(axByAnimalVot)
@@ -295,19 +307,24 @@ axByAnimalVot.spines["top"].set_visible(False)
 
 
 plt.sca(axColorMapFT)
-plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive& isCortical], c = bestSelectivityIndexFt[speechResponsive& isCortical], cmap = newMapFT, s = 3)
+#plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive& isCortical], c = bestSelectivityIndexFt[speechResponsive& isCortical], cmap = newMapFT, s = 3)
+plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive& isCortical],
+            c=bestSelectivityIndexFt[speechResponsive& isCortical],
+            cmap=newMapFT, s=3, vmin=0, vmax=1)
 #plt.scatter(z_coords_jittered, y_coords, c = bestSelectivityIndexFt, cmap = newMapFT, s = 3)
 #plt.ylim(215,60)
 #plt.xlim(165,225)
 plt.ylim(220,40)
 plt.xlim(146, 246)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
 plt.xticks(APtickLocs, APtickLabels)
 plt.yticks(DVtickLocs, DVtickLabels)
-cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0], extend='max', extendrect=True, extendfrac=0.22)
+#cbar = plt.colorbar(shrink=0.8, ticks=[0.2, 0.4, 0.6, 0.8, 1.0], extend='max', extendrect=True, extendfrac=0.22)
+cbar = plt.colorbar(ticks=[0.2, 0.4, 0.6, 0.8, 1.0], shrink=0.8, pad=0.1)
 cbar.set_label('FT Selectivity Index', rotation=270, labelpad=12)
-#plt.title('FT selectivity', fontsize = fontSizeTitles)
+htitle = plt.title('FT selectivity', fontsize = fontSizeTitles, y=0.95)
+htitle.set_position(htitle.get_position()+np.array([0.08, 0]))
 axColorMapFT.set_aspect('equal')
 axColorMapFT.spines["right"].set_visible(False)
 axColorMapFT.spines["top"].set_visible(False)
@@ -394,8 +411,8 @@ plt.xticks([0,0.5,1], labels = np.round(quadrantBoundsAP, 2))
 plt.yticks([0,0.5,1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1,1.1])
 plt.ylim([-0.1,1.1])
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
 #plt.axis('off')
 
 
@@ -417,7 +434,7 @@ axByAnimalFt.spines["top"].set_visible(False)
 
 
 
-labelPosX = [0.02, 0.47, 0.68] # Horiz position for panel labels
+labelPosX = [0.02, 0.50, 0.70] # Horiz position for panel labels
 labelPosY = [0.98, 0.74,  0.47, 0.22]    # Vert position for panel labels
 
 axColorMapVOT.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction',
@@ -436,7 +453,6 @@ axQuadsFt.annotate('G', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fractio
                    fontsize=fontSizePanel, fontweight='bold')
 axByAnimalFt.annotate('H', xy=(labelPosX[2],labelPosY[3]), xycoords='figure fraction',
                       fontsize=fontSizePanel, fontweight='bold')
-
 
 plt.show()
 
