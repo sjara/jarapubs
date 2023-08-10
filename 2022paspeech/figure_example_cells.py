@@ -21,7 +21,7 @@ reload(figparams)
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'figure_example_cells'
-figFormat = 'svg' # 'pdf' or 'svg'
+figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [7.5, 6]
 fontSizeTitles = figparams.fontSizeTitles
 fontSizeLabels = figparams.fontSizeLabels
