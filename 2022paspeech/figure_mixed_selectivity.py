@@ -30,7 +30,7 @@ figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FI
 SAVE_FIGURE = 1
 STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'figure_mixed_selectivity' # Do not include extension
+figFilename = 'plots_mixed_selectivity' # Do not include extension
 figFormat = 'svg' # 'pdf' or 'svg'
 figSize = [7.5, 5.0] # In inches
 
@@ -93,10 +93,10 @@ quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
 
 plt.clf()
-gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.4, 0.2, 0.4])
+gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.40, 0.3, 0.3])
 gsMain.update(left=0.07, right=0.98, top=0.97, bottom=0.05, wspace=0.3, hspace=0.4)
 axMixeSelMap = plt.subplot(gsMain[:,0])
-axQuadSummary = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.4)
+axQuadSummary = gsMain[:,2].subgridspec(2,1, height_ratios = [0.55, 0.45], hspace=0.3)
 axQuadPcts = plt.subplot(axQuadSummary[0,0])
 axByAnimal = plt.subplot(axQuadSummary[1,0])
 axMixDonuts = gsMain[0:,1].subgridspec(4, 1, hspace = 0.4)
@@ -110,6 +110,11 @@ yoffset = 0.02
 for indax, oneax in enumerate([axMixAudD, axMixAudP, axMixAudV, axMixTeA]):
     axpos = oneax.get_position()
     oneax.set_position([axpos.x0+xoffset, axpos.y0+(indax-2)*yoffset, axpos.width, axpos.height])
+# -- Move third column a little higher --
+yoffset = 0.04
+for indax, oneax in enumerate([axQuadPcts, axByAnimal]):
+    axpos = oneax.get_position()
+    oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
 
 #plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
@@ -132,8 +137,8 @@ plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
 plt.legend(handles = [singSel, mixSel, respNonSel], loc="upper left",
            labels=['Single-selective', 'Mixed-selective', 'Speech-responsive, non-selective'],
            markerscale=3, handletextpad=0.25, fontsize=fontSizeTicks, bbox_to_anchor=(0.01, 1.07))
@@ -141,7 +146,7 @@ plt.legend(handles = [singSel, mixSel, respNonSel], loc="upper left",
 axMixeSelMap.set_aspect('equal')
 axMixeSelMap.spines["right"].set_visible(False)
 axMixeSelMap.spines["top"].set_visible(False)
-
+axMixeSelMap.set_facecolor('none')
 
 
 plt.sca(axQuadPcts)
@@ -280,8 +285,8 @@ plt.title(f'TeA (n={int(nSpeechResponsiveTeA)})', y=titleY, fontsize=fontSizeLab
 #plt.legend(labels = ['Non-selective', 'Mixed-selective', 'Single-selective'], loc = 'lower center', bbox_to_anchor = (0.1, -0.9))
 
 
-labelPosX = [0.01, 0.42, 0.61] # Horiz position for panel labels
-labelPosY = [0.96, 0.42]    # Vert position for panel labels
+labelPosX = [0.01, 0.45, 0.67] # Horiz position for panel labels
+labelPosY = [0.96, 0.46]    # Vert position for panel labels
 
 axMixeSelMap.annotate('A', xy=(labelPosX[0],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axMixAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
