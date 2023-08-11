@@ -6,6 +6,17 @@ Based on database_generation_funcs.py (by Devin and Matt)
 
 import numpy as np
 
+# -- Methods to convert from pixels of Atlas to mm --
+def pix2mmAP(pixels):
+    return -0.94 - (280-pixels)*0.025
+def mm2pixAP(mm):
+    return ((mm+0.94) / 0.025) + 280
+def pix2mmDV(pixels):
+    return (pixels-10)*0.025
+def mm2pixDV(mm):
+    return (mm/0.025) + 10
+
+
 
 def select_cells(celldb, restrictND1=False):
     """
