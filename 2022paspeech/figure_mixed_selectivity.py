@@ -213,8 +213,8 @@ plt.xticks([0, 0.5, 1], labels = np.round(quadrantBoundsAP, 2))
 plt.yticks([0, 0.5, 1], labels = np.round(quadrantBoundsDV[::-1], 2))
 plt.xlim([-0.1, 1.1])
 plt.ylim([-0.1, 1.1])
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
 
 
 plt.sca(axByAnimal)
