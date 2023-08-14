@@ -17,6 +17,69 @@ def mm2pixDV(mm):
     return (mm/0.025) + 10
 
 
+LATEX_TABLE_RESPONSIVE_HEADER = """
+\\begin{tabular}{|c|c|c|}
+\\hline
+\\textbf{Area} & \\textbf{Percentage} & \\textbf{Responsive/Total} \\\\ \\hline \
+"""
+LATEX_TABLE_RESPONSIVE_DATAROW = """
+{area} & {percent:0.1f}\\% & {num}/{den} \\\\ \\hline \
+"""
+LATEX_TABLE_RESPONSIVE_FOOTER = """
+\\end{tabular}
+"""
+
+LATEX_TABLE_PVALS_HEADER = """
+\\begin{tabular}{|c|c|c|c|c|}
+\\hline \
+"""
+LATEX_TABLE_PVALS_DATAROW = """
+\\textbf{{{area}}} & {0} & {1} & {2} & {3} \\\\ \\hline \
+"""
+LATEX_TABLE_PVALS_FOOTER = """
+\\end{tabular}
+"""
+
+def latex_table_responsive(areas, numerators, denominators, parcellation='Area'):
+    """
+    Args:
+        parcellation (str): Name of parcellation, e.g., 'Area' or 'Region'.
+    """
+    tableStr = ''
+    tableStr += LATEX_TABLE_RESPONSIVE_HEADER
+    for inda, oneArea in enumerate(areas):
+        percent = 100 * numerators[inda] / denominators[inda]
+        tableStr += LATEX_TABLE_RESPONSIVE_DATAROW.format(area = oneArea,
+                                                          percent = percent,
+                                                          num = numerators[inda],
+                                                          den = denominators[inda])
+    tableStr += LATEX_TABLE_RESPONSIVE_FOOTER
+    tableStr.replace('Area', parcellation)
+    return tableStr
+
+def pval_to_str(pvalue):
+    if np.isnan(pvalue):
+        pvalStr = '---'
+    elif pvalue < 0.001:
+        pvalStr = '$<$0.001'
+    else:
+        pvalStr = f'{pvalue:0.3f}'.rstrip('0').rstrip('.')
+    return pvalStr
+    
+def latex_table_pvals(areas, pvalues):
+    """
+    """
+    tableStr = ''
+    tableStr += LATEX_TABLE_PVALS_HEADER
+    titleRow = ' & '.join([f'\\textbf{{{area}}}' for area in ['']+areas]) + ' \\\\ \\hline'
+    tableStr += titleRow
+    for inda, oneArea in enumerate(areas):
+        pvalsList = [pval_to_str(pval) for pval in pvalues[inda]]
+        tableStr += LATEX_TABLE_PVALS_DATAROW.format(area = oneArea, *pvalsList)
+    tableStr += LATEX_TABLE_PVALS_FOOTER
+    return tableStr
+
+
 
 def select_cells(celldb, restrictND1=False):
     """
