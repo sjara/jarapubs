@@ -55,18 +55,21 @@ These are additional columns calculated for all cells:
 ## Indices:
 These are additional columns calculated for a selected set of cells:
 
-- *VOT selectivity index*: A-B/A+B, where A is the average firing rate during the stimulus for the VOT stimulus that evokes the highest FR of the 4 VOT levels (and FT is constant at either max or min), and B is the average firing rate during the stimulus for the VOT stimulus that evokes the lowest FR of the 4 VOT levels (and FT is constant at either max or min)
-- *FT selectivity index*: Same as above, but for FT
+- *VOT selectivity index*: A-B/A+B, where A is the average firing rate during the stimulus for the VOT stimulus that evokes the highest FR of the 4 VOT levels (and FT is constant at either max or min), and B is the average firing rate during the stimulus for the VOT stimulus that evokes the lowest FR of the 4 VOT levels (and FT is constant at either max or min).
+- *FT selectivity index*: Same as above, but for FT.
 
 
 # Generate files
 - `generate_psycurve_cohortAverages.py` : This generates a population average psychometric stored in `data_cohort_average_psycurves.npz`
 - `generate_psycurve_exampleMouse.py` :  This generates a psychometric for a single example mouse, stored in `data_example_mice_psycurves.npz`
-- `generate_selectivity_indices.py`: This generates FT and VOT selectivity indices for each cell, stored in `data_selectivity_indices.npz`
 - `generate_shuffle_speech_trials.py`: This generates shuffled FT and VOT selectivity index distributions for each cell, also saves shuffled min/max firing rate for each cell, stored in `data_shuffledSIs.npz`
+- `generate_selectivity_indices.py`: This generates FT and VOT selectivity indices for each cell, calculates which FT/VOT condition to use for each cell,  loads `data_shuffledSIs.npz` and uses to calculate pvals for FT/VOIT selectivity, calculates AC quadrants, stored in `data_selectivity_indices.npz`.
 
 # Figures
-All figures require access to the databases, the clustered ephys data, and the behavior data.
+- Figure 1 requires access to `generate_psycurve_cohortAverages.py`, `generate_psycurve_exampleMouse.py` (created by `data_cohort_average_psycurves.npz` and `data_example_mice_psycurves.npz`, respectively) and sound files from `jarahub:/data/jarasounds/ft_vot_8x_20220115/`.
+- Figures 2-5 require access to the `data_selectivity_indices.npz` (file created by generate_selectivity_indices.py).
+- Figure 3 additionally requires access to the full database (`fulldb_speech_tuning.h5`) and to the spike-sorted ephys data (found in folders on jarastore `jarastore:/data/neuropixels/ANIMALNAME/multisession_DATE_DEPTH_processed/`), and un-concatenated using `jaratoolbox/scripts/neuropix_split_multisession.py`.
+- Cartoons are added to figures 1, 2, 4 and 5 using `add_cartoons.py`.   
 
 ## Figure 1 (Mice can discriminate speech sounds)
 Created by `figure_behavior.py`.
@@ -79,25 +82,35 @@ Created by `figure_behavior.py`.
 
 ## Figure 2 (Ephys methods and cell responsiveness)
 Created by `figure_speech_responsiveness.py`
-- Panel A: Cartoon of headfixed, awake mouse ephys
+- Panel A: Cartoon of head-fixed, awake mouse ephys presenting sounds contralateral to recording site
 - Panel B: Histology image of recording track
 - Panel C: Diagram of sound matrix
-- Panel D: Scatter plot of recording location of each cell (using data generated from `generate_selectivity_indices.py`). AC areas are added after from an SVG file.
-- Panel E: Donut plots of fraction of cells in AudP, AudD, AudV and TeA that were responsive to our speech sounds, responsive to AM/PT but not speech sounds, or not sound responsive (using data generated from `generate_selectivity_indices.py`)
-- Panel F:
+- Panel D: Scatter plot of recording location of each cell (using data generated from `generate_selectivity_indices.py`).
+- Panel E: Donut plots of fraction of cells in Aatlas-defined areas that were responsive to our speech sounds, responsive to AM/PT but not speech sounds, or not sound responsive (using data generated from `generate_selectivity_indices.py`)
+- Panel F: As in E, for regions defined by AP/DV quadrants
 
 ## Figure 3 (Example cells)
 Created by `figure_example_cells.py`
+- All: responses of example cells to sounds varying in VOT (left of each panel) and FT (right of each panel). Yellow bars below rasters denote when the stimulus was presented.
+- Panel A: A neuron that is significantly responsive to VOT, but not FT.
+- Panel B: A neuron that is significantly responsive to FT, but not VOT.
+- Panel C: A neuron that is mixed-selective (significantly selective to both VOT and FT).
+- Panel D: A neuron that is responsive to speech sounds, but not selective to either VOT or FT.
 
 ## Figure 4 (VOT/FT Selectivity summary figure)
-Created by `figure_speech_selectivity.py`
-- Panel A: Plot of VOT selectivity indices (color map) in A-P/D-V space (using data generated from `generate_selectivity_indices.py`). Add AC areas image in inkscape.
-- Panel B: Donut plots of fraction of VOT selective cells (among speech responsive cells) for each Aud Area (using data generated from `generate_selectivity_indices.py`).
-
-FINISH THIS
-
-- Panels E-H: As in Panels A-D, but for FT rather than VOT
+Created by `figure_speech_selectivity.py`, using data generated from `generate_selectivity_indices.py`
+- Panel A: Plot of VOT selectivity indices (color map) for speech responsive cells in A-P/D-V space.
+- Panel B: Donut plots of fraction of VOT selective cells (among total cells in each area) for each Aud Area.
+- Panel C: Proportion of VOT selective cells in (among total cells in each region) for each quadrant.
+- Panel D: Fraction of VOT selective cells in each region for individual animals. Bars are the median proportion for each region across animals. Dots and coordinating lines are values for individual animals. Instances in which an individual had fewer than 3 recorded cells in a region are excluded.
+- Panels E-H: As in Panels A-D, but for FT rather than VOT.
 
 ## Figure 5 (Mixed selectivity summary figure)
-Created by `figure_mixed_selectivity.py`
+Created by `figure_mixed_selectivity.py`, using data generated from `generate_selectivity_indices.py`
+- Panel A: Plot of speech responsive cells recorded, colored according to selectivity to speech features.
+- Panel B: Proportions of mixed- and single- selective cells in each auditory area out of speech responsive cells.
+- Panel C: Proportions of mixed- and single- selective cells in auditory regions out of speech responsive cells.
+- Panel D: Fraction of mixed-selective cells in each region for individual animals. Bars are the median proportion for each region across animals. Dots and coordinating lines are values for individual animals. Instances in which an individual had fewer than 3 recorded cells in a region are excluded.
 
+
+# Extras
