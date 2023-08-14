@@ -214,8 +214,8 @@ soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & 
 speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical] , y_coords[speechResponsive & isCortical], c = colorSpeechResp, s=6)
 plt.xlim(146, 246)
 plt.ylim(220,40)
-CHANGE_UNITS_TO_MM = 0
-if CHANGE_UNITS_TO_MM:
+SHOW_UNITS_IN_MM = 1
+if SHOW_UNITS_IN_MM:
     plt.xticks(APtickLocs, APtickLabels)
     plt.yticks(DVtickLocs, DVtickLabels)
     units = 'mm'
