@@ -80,8 +80,8 @@ quantilesDV = figData['quantilesDV']
 quantilesAP = figData['quantilesAP']
 quadrantBoundsDV = figData['quadrantBoundsDV']
 quadrantBoundsAP = figData['quadrantBoundsAP']
-quadrantBoundsDV_AAtransform = figData['quadrantBoundsDV_AAtransform']
-quadrantBoundsAP_AAtransform = figData['quadrantBoundsAP_AAtransform']
+quadrantBoundsDV_AApix = figData['quadrantBoundsDV_AApix']
+quadrantBoundsAP_AApix = figData['quadrantBoundsAP_AApix']
 quadrantLabels = figData['quadrantLabels']
 quadrantTotals = figData['quadrantTotals']
 quadrantsVOT = figData['quadrantsVOT']
@@ -512,7 +512,7 @@ if STATSUMMARY:
                 ustat, pvalMannU = stats.mannwhitneyu(quadrantsVOT[indBin], quadrantsVOT[x + indBin + 1])
                 quadrantComparVot[a] = pvalMannU
     if pvalQuadrantsFT < 0.05:
-        quadrantComparFt = np.ones(nBinCompar)
+        quadrantComparFt = np.ones(nQuadCompar)
         a = -1
         for indBin, thisBin in enumerate(quadrantsFT):
             nBinCompar = 4 - indBin -1

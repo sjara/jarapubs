@@ -86,7 +86,7 @@ yoffset = -0.03
 for oneax in [axDonutDP, axDonutDA, axDonutVP, axDonutVA]:
     axpos = oneax.get_position()
     oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
-    
+
 '''
 gsBottom = gsMain[1].subgridspec(4,3, width_ratios = [0.6, 0.2, 0.2])
 
@@ -163,8 +163,8 @@ quantilesAP = figData['quantilesAP']
 ### ARE THESE USED? ###
 quadrantBoundsDV = figData['quadrantBoundsDV']
 quadrantBoundsAP = figData['quadrantBoundsAP']
-quadrantBoundsDV_AAtransform = figData['quadrantBoundsDV_AAtransform']
-quadrantBoundsAP_AAtransform = figData['quadrantBoundsAP_AAtransform']
+quadrantBoundsDV_AApix = figData['quadrantBoundsDV_AApix']
+quadrantBoundsAP_AApix = figData['quadrantBoundsAP_AApix']
 
 quadrantLabels = figData['quadrantLabels']
 quadrantTotals = figData['quadrantTotals']
@@ -386,12 +386,12 @@ if STATSUMMARY:
         for inda2, area2 in enumerate(brainAreas):
             if inda2 > inda1:
                 pvalsFracResponsiveAllCellsEachComp[inda1,inda2] = eval('pvalFracResponsive_'+
-                                                                       area1+'vs'+area2+'_allcells') 
+                                                                       area1+'vs'+area2+'_allcells')
     pvalsFracResponsiveEachComp = np.full((len(brainAreas),len(brainAreas)), np.nan)
     for inda1, area1 in enumerate(brainAreas):
         for inda2, area2 in enumerate(brainAreas):
             if inda2 > inda1:
-                pvalsFracResponsiveEachComp[inda1,inda2] = eval('pvalFracResponsive_'+area1+'vs'+area2) 
+                pvalsFracResponsiveEachComp[inda1,inda2] = eval('pvalFracResponsive_'+area1+'vs'+area2)
 
     table1a = studyutils.latex_table_responsive(brainAreas, nSpeechResponsiveEachArea, nCellsEachArea)
     print(table1a)
@@ -401,7 +401,7 @@ if STATSUMMARY:
     print(table2a)
     table2b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveEachComp)
     print(table2b)
-    
+
     if 1:
         # -- Print all stats --
         print('--Stats Summary--')

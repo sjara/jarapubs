@@ -9,22 +9,27 @@ from jaratoolbox import settings
 from jaratoolbox import celldatabase
 from scipy import stats
 import studyparams
+import studyutils
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 STATSUMMARY = 1
 shuffledDataFile = 'data_shuffledSIs.npz'
-#figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundariesDataFile = 'brain_areas_boundaries.npz'
 
 
 if not os.path.exists(figDataDir):
     os.mkdir(figDataDir)
 
 figDataFullPath = os.path.join(figDataDir,figDataFile)
+
 shuffledDataFullPath = os.path.join(figDataDir,shuffledDataFile)
 shuffledData = np.load(shuffledDataFullPath, allow_pickle=True)
+boundariesDataFullPath = os.path.join(figDataDir, boundariesDataFile)
+boundariesData = np.load(boundariesDataFullPath)
 #scriptFullPath = os.path.realpath(__file__)
+
 
 
 databaseName = 'fulldb_speech_tuning.h5'
@@ -261,24 +266,32 @@ for indArea, thisArea in enumerate(audCtxAreas):
 
 
 # -- QUADRANTS
+'''
 audCtxAPbounds = np.array([-3.95,-1.9])
 spreadAP = audCtxAPbounds[1]-audCtxAPbounds[0]
 quadrantAPThreshold = audCtxAPbounds[0] + (spreadAP/2)
-quadrantBoundsAP = np.array([audCtxAPbounds[0], quadrantAPThreshold, audCtxAPbounds[1]])
-quadrantBoundsAP_AAtransform = 280 + (quadrantBoundsAP + 0.94)/0.025
+quadrantBoundsAP = np.array([audCtxAPbounds[0], quadrantAPThreshold, audCtxAPbounds[1]]) #in mm
+quadrantBoundsAP_AApix = 280 + (quadrantBoundsAP + 0.94)/0.025 #in pixels
+'''
+extentAP = boundariesData['extentAP']
+spreadAP = extentAP[1] - extentAP[0]
+quadrantAPThreshold =  extentAP[0] + (spreadAP/2)
+quadrantBoundsAP_AApix = np.array([extentAP[0], quadrantAPThreshold, extentAP[1]])
+quadrantBoundsAP = studyutils.pix2mmAP(quadrantBoundsAP_AApix)
 
-audCtxDVbounds = np.array([1.65, 4.65])
-spreadDV = audCtxDVbounds[1] - audCtxDVbounds[0]
-quadrantDVThreshold = audCtxDVbounds[0] + (spreadDV/2)
-quadrantBoundsDV = np.array([audCtxDVbounds[0], quadrantDVThreshold, audCtxDVbounds[1]])
-quadrantBoundsDV_AAtransform = (quadrantBoundsDV/0.025)+10
+extentDV = boundariesData['extentDV']
+spreadDV = extentDV[1] - extentDV[0]
+quadrantDVThreshold =  extentDV[0] + (spreadDV/2)
+quadrantBoundsDV_AApix = np.array([extentDV[0], quadrantDVThreshold, extentDV[1]])
+quadrantBoundsDV = studyutils.pix2mmDV(quadrantBoundsDV_AApix)
+
 
 
 quantilesDV = np.zeros([2, len(soundResponsive)], dtype = bool)
 quantilesAP = np.zeros([2, len(soundResponsive)], dtype = bool)
 for indBin, thisBin in enumerate(quantilesDV):
-    thisQuantileDV = (y_coords >= quadrantBoundsDV_AAtransform[indBin]) & (y_coords < quadrantBoundsDV_AAtransform[indBin+1]) & isCortical & ~excludeSpeech
-    thisQuantileAP = (z_coords >= quadrantBoundsAP_AAtransform[indBin]) & (z_coords < quadrantBoundsAP_AAtransform[indBin+1]) & isCortical & ~excludeSpeech
+    thisQuantileDV = (y_coords >= quadrantBoundsDV_AApix[indBin]) & (y_coords < quadrantBoundsDV_AApix[indBin+1]) & isCortical & ~excludeSpeech
+    thisQuantileAP = (z_coords >= quadrantBoundsAP_AApix[indBin]) & (z_coords < quadrantBoundsAP_AApix[indBin+1]) & isCortical & ~excludeSpeech
     quantilesAP[indBin] = thisQuantileAP
     quantilesDV[indBin] = thisQuantileDV
 
@@ -536,5 +549,5 @@ if STATSUMMARY:
 
 
 
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AAtransform = quadrantBoundsDV_AAtransform, quadrantBoundsAP_AAtransform = quadrantBoundsAP_AAtransform, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive, quadrantTotalsByAnimal = quadrantTotalsByAnimal, quadrantsSoundResponsiveByAnimal = quadrantsSoundResponsiveByAnimal, quadrantsSpeechResponsiveByAnimal = quadrantsSpeechResponsiveByAnimal, quadrantsVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal, quadrantsFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal, quadrantsSingleSelectiveByAnimal = quadrantsSingleSelectiveByAnimal, quadrantsMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal )
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AApix = quadrantBoundsDV_AApix, quadrantBoundsAP_AApix = quadrantBoundsAP_AApix, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive, quadrantTotalsByAnimal = quadrantTotalsByAnimal, quadrantsSoundResponsiveByAnimal = quadrantsSoundResponsiveByAnimal, quadrantsSpeechResponsiveByAnimal = quadrantsSpeechResponsiveByAnimal, quadrantsVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal, quadrantsFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal, quadrantsSingleSelectiveByAnimal = quadrantsSingleSelectiveByAnimal, quadrantsMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal )
 print('saved to ' f'{figDataFullPath}')
