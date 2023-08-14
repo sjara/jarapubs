@@ -6,6 +6,7 @@ This creates figure 2 for 2022paspeech:
  D. Scatter plot of recording location of each cell. Add AC areas image in inkscape.
 """
 
+import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,10 +16,13 @@ from jaratoolbox import extraplots
 from jaratoolbox import colorpalette as cp
 import figparams
 import studyparams
+import studyutils
 from scipy import stats
 from importlib import reload
 
 reload(figparams)
+reload(studyutils)
+
 
 FIGNAME = 'selectivityIndices'
 SAVE_FIGURE = 1
@@ -107,43 +111,41 @@ axDonutAudP.annotate('E', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fract
 axDonutDP.annotate('F', xy=(labelPosX[2],labelPosY[2]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 
 
-if 1:
-    # Plot a grid with cell borders and labels
-    plt.sca(axSoundMatrix)
-    corner_labels = [ ['/da/', '/ta/'], ['/ba/', '/pa/'] ]
-    VOTstep = 20
-    VOTvals = np.arange(0, 60+VOTstep, VOTstep)
-    FTstep = 6
-    FTvals = np.arange(-9, 9+FTstep, FTstep)
-    for indFT, thisFT in enumerate(FTvals):
-        for indVOT, thisVOT in enumerate(VOTvals):
-            if indFT in [0, 3] or indVOT in [0, 3]:
-                facecolor = colorStimPresented
-            else:
-                facecolor = 'none'
-            onePatch = axSoundMatrix.add_patch(plt.Rectangle((thisVOT-VOTstep/2, thisFT-FTstep/2),
-                                                             VOTstep, FTstep, lw=0.75, ec='black', fc=facecolor))
-            onePatch.set_clip_on(False)
-            if indFT in [0, 3] and indVOT in [0, 3]:
-                axSoundMatrix.text(thisVOT, thisFT, corner_labels[indFT // 3][indVOT // 3],
-                                   ha='center', va='center', fontsize=fontSizeTicks-2)
-    axSoundMatrix.set_xlim(-10, 70)
-    axSoundMatrix.set_ylim(-12, 12)
-    axSoundMatrix.set_xlabel('VOT (ms)', fontsize=fontSizeLabels-2)
-    axSoundMatrix.set_ylabel('FT (oct/s)', fontsize=fontSizeLabels-2)
-    axSoundMatrix.set_xticks(VOTvals)
-    axSoundMatrix.set_yticks(FTvals)
-    axSoundMatrix.set_aspect(20/6)
-    extraplots.set_ticks_fontsize(axSoundMatrix, fontSizeTicks-2)
-    axSoundMatrix.invert_yaxis()
+# -- Plot a grid with cell borders and labels --
+plt.sca(axSoundMatrix)
+corner_labels = [ ['/da/', '/ta/'], ['/ba/', '/pa/'] ]
+VOTstep = 20
+VOTvals = np.arange(0, 60+VOTstep, VOTstep)
+FTstep = 6
+FTvals = np.arange(-9, 9+FTstep, FTstep)
+for indFT, thisFT in enumerate(FTvals):
+    for indVOT, thisVOT in enumerate(VOTvals):
+        if indFT in [0, 3] or indVOT in [0, 3]:
+            facecolor = colorStimPresented
+        else:
+            facecolor = 'none'
+        onePatch = axSoundMatrix.add_patch(plt.Rectangle((thisVOT-VOTstep/2, thisFT-FTstep/2),
+                                                            VOTstep, FTstep, lw=0.75, ec='black', fc=facecolor))
+        onePatch.set_clip_on(False)
+        if indFT in [0, 3] and indVOT in [0, 3]:
+            axSoundMatrix.text(thisVOT, thisFT, corner_labels[indFT // 3][indVOT // 3],
+                                ha='center', va='center', fontsize=fontSizeTicks-2)
+axSoundMatrix.set_xlim(-10, 70)
+axSoundMatrix.set_ylim(-12, 12)
+axSoundMatrix.set_xlabel('VOT (ms)', fontsize=fontSizeLabels-2)
+axSoundMatrix.set_ylabel('FT (oct/s)', fontsize=fontSizeLabels-2)
+axSoundMatrix.set_xticks(VOTvals)
+axSoundMatrix.set_yticks(FTvals)
+axSoundMatrix.set_aspect(20/6)
+extraplots.set_ticks_fontsize(axSoundMatrix, fontSizeTicks-2)
+axSoundMatrix.invert_yaxis()
 
 
-
+# -- Load responsiveness data --
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 figDataFullPath = os.path.join(figDataDir,figDataFile)
 figData = np.load(figDataFullPath, allow_pickle = True)
-
 
 x_coords = figData['x_coord']
 y_coords = figData['y_coord']
@@ -166,24 +168,59 @@ quadrantTotals = figData['quadrantTotals']
 quadrantsSpeechResponsive = figData['quadrantsSpeechResponsive']
 quadrantsSoundResponsive = figData['quadrantsSoundResponsive']
 
+boundDataFile = 'brain_areas_boundaries.npz'
+boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
+boundData = np.load(boundDataFullPath, allow_pickle = True)
+contours = boundData['contours']
+#contours = boundData['contours_deep']
+
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
-APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
+APtickLabels = np.round(studyutils.pix2mmAP(APtickLocs),1)
 DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
-DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
+DVtickLabels = np.round(studyutils.pix2mmDV(DVtickLocs),1)
 
-
+# -- Plot the locations of the recorded cells -- #
 plt.sca(axCellLocs)
+colorQbounds = '0.8'
+lwQbounds = 1
+qboundsDV = studyutils.mm2pixDV(figData['quadrantBoundsDV'])
+qboundsAP = studyutils.mm2pixAP(figData['quadrantBoundsAP'])
+# -- Create a grid of the bounds for each quadrant -- #
+outerQbounds = axCellLocs.add_patch(plt.Polygon(np.array([[qboundsAP[0], qboundsDV[0]],
+                                    [qboundsAP[-1], qboundsDV[0]],
+                                    [qboundsAP[-1], qboundsDV[-1]],
+                                    [qboundsAP[0], qboundsDV[-1]]]),
+                                     lw=lwQbounds, ec=colorQbounds, fc='none', zorder=-1))
+axCellLocs.plot([qboundsAP[1], qboundsAP[1]], [qboundsDV[0], qboundsDV[-1]],
+                color=colorQbounds, lw=lwQbounds, zorder=-1)
+axCellLocs.plot([qboundsAP[0], qboundsAP[-1]], [qboundsDV[1], qboundsDV[1]],
+                color=colorQbounds, lw=lwQbounds, zorder=-1)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='k', clip_on=False)
+
+# plt.xlim(146, 246)
+# plt.ylim(220,40)
+# plt.show()
+# sys.exit()
+
+
 nonResp = plt.scatter(z_coords_jittered[~soundResponsive & isCortical], y_coords[~soundResponsive & isCortical], c = colorNotAud, s=6)
 soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & isCortical], y_coords[soundResponsive & ~speechResponsive & isCortical], c = colorSoundResp, s = 6)
 speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical] , y_coords[speechResponsive & isCortical], c = colorSpeechResp, s=6)
 plt.xlim(146, 246)
-plt.xticks(APtickLocs, APtickLabels)
 plt.ylim(220,40)
-plt.yticks(DVtickLocs, DVtickLabels)
-plt.xlabel('Posterior-Anterior (mm)', fontsize = fontSizeLabels)
-plt.ylabel('Ventral-Dorsal (mm)', fontsize = fontSizeLabels)
+CHANGE_UNITS_TO_MM = 0
+if CHANGE_UNITS_TO_MM:
+    plt.xticks(APtickLocs, APtickLabels)
+    plt.yticks(DVtickLocs, DVtickLabels)
+    units = 'mm'
+else:
+    units = 'atlas voxels'
+plt.xlabel(f'Posterior-Anterior ({units})', fontsize = fontSizeLabels)
+plt.ylabel(f'Ventral-Dorsal ({units})', fontsize = fontSizeLabels)
 #plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
-plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Sound responsive','Speech responsive'], loc = 'upper center', markerscale=2, handletextpad=0.25, bbox_to_anchor = (0.5, 1.07))
+plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Sound responsive','Speech responsive'], loc = 'upper center', markerscale=2, handletextpad=0.25, bbox_to_anchor = (0.5, 1.04))
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
 axCellLocs.set_aspect('equal')
@@ -286,17 +323,17 @@ if STATSUMMARY:
     oddsratio, pvalFracResponsive_AudPvsAudD = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudD],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveAudD - nSpeechResponsiveAudD]]))
     oddsratio, pvalFracResponsive_AudPvsAudV = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudV],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveAudV - nSpeechResponsiveAudV]]))
     oddsratio, pvalFracResponsive_AudDvsAudV = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveAudV],[nSoundResponsiveAudD - nSpeechResponsiveAudD, nSoundResponsiveAudV - nSpeechResponsiveAudV]]))
-    oddsratio, pvalFracResponsive_AudPvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
-    oddsratio, pvalFracResponsive_AudDvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nSoundResponsiveAudD - nSpeechResponsiveAudD, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
-    oddsratio, pvalFracResponsive_AudVvsTea = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nSoundResponsiveAudV - nSpeechResponsiveAudV, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudPvsTeA = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nSoundResponsiveAudP - nSpeechResponsiveAudP, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudDvsTeA = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nSoundResponsiveAudD - nSpeechResponsiveAudD, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudVvsTeA = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nSoundResponsiveAudV - nSpeechResponsiveAudV, nSoundResponsiveTeA - nSpeechResponsiveTeA]]))
 
     # Test proportion of speech responsive cells between areas (of all cells)
     oddsratio, pvalFracResponsive_AudPvsAudD_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudD],[nCellsAudP - nSpeechResponsiveAudP, nCellsAudD - nSpeechResponsiveAudD]]))
     oddsratio, pvalFracResponsive_AudPvsAudV_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveAudV],[nCellsAudP - nSpeechResponsiveAudP, nCellsAudV - nSpeechResponsiveAudV]]))
     oddsratio, pvalFracResponsive_AudDvsAudV_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveAudV],[nCellsAudD - nSpeechResponsiveAudD, nCellsAudV - nSpeechResponsiveAudV]]))
-    oddsratio, pvalFracResponsive_AudPvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nCellsAudP - nSpeechResponsiveAudP, nCellsTeA - nSpeechResponsiveTeA]]))
-    oddsratio, pvalFracResponsive_AudDvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nCellsAudD - nSpeechResponsiveAudD, nCellsTeA - nSpeechResponsiveTeA]]))
-    oddsratio, pvalFracResponsive_AudVvsTea_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nCellsAudV - nSpeechResponsiveAudV, nCellsTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudPvsTeA_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudP, nSpeechResponsiveTeA],[nCellsAudP - nSpeechResponsiveAudP, nCellsTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudDvsTeA_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudD, nSpeechResponsiveTeA],[nCellsAudD - nSpeechResponsiveAudD, nCellsTeA - nSpeechResponsiveTeA]]))
+    oddsratio, pvalFracResponsive_AudVvsTeA_allcells = stats.fisher_exact(np.array([[nSpeechResponsiveAudV, nSpeechResponsiveTeA],[nCellsAudV - nSpeechResponsiveAudV, nCellsTeA - nSpeechResponsiveTeA]]))
 
     nQuadCompar = 6
     quadAlpha = 0.05/6
@@ -332,45 +369,74 @@ if STATSUMMARY:
             oddsratio, pvalFracSpeechResponsive_soundResp = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
             quadrantComparFracSpeechResponsive_soundResp[a] = pvalFracSpeechResponsive_soundResp
 
+    reload(studyutils)
+    # -- Print LaTeX tables --
+    # NOTE: The following lines using eval() would not be necessary if the data was already
+    #       stored in numpy arrays (or pandas dataframes) when initially calculated.
+    brainAreas = ['AudP', 'AudD', 'AudV', 'TeA']
+    nCellsEachArea = [eval('nCells'+brainArea) for brainArea in brainAreas]
+    nSoundResponsiveEachArea = [eval('nSoundResponsive'+brainArea) for brainArea in brainAreas]
+    nSpeechResponsiveEachArea = [eval('nSpeechResponsive'+brainArea) for brainArea in brainAreas]
+    pvalsFracResponsiveAllCellsEachComp = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    for inda1, area1 in enumerate(brainAreas):
+        for inda2, area2 in enumerate(brainAreas):
+            if inda2 > inda1:
+                pvalsFracResponsiveAllCellsEachComp[inda1,inda2] = eval('pvalFracResponsive_'+
+                                                                       area1+'vs'+area2+'_allcells') 
+    pvalsFracResponsiveEachComp = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    for inda1, area1 in enumerate(brainAreas):
+        for inda2, area2 in enumerate(brainAreas):
+            if inda2 > inda1:
+                pvalsFracResponsiveEachComp[inda1,inda2] = eval('pvalFracResponsive_'+area1+'vs'+area2) 
 
-
-    print('--Stats Summary--')
-    print('--atlas-defined areas')
-    print(f'AudP n: {nCellsAudP}, n any sound responsive: {nSoundResponsiveAudP} ({np.round((nSoundResponsiveAudP/nCellsAudP)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudP}, ({np.round((nSpeechResponsiveAudP/nCellsAudP)*100, 1)}% total, {np.round((nSpeechResponsiveAudP/nSoundResponsiveAudP)*100, 1)}% soundResponsive)')
-    print(f'AudD n: {nCellsAudD}, n any sound responsive: {nSoundResponsiveAudD} ({np.round((nSoundResponsiveAudD/nCellsAudD)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudD}, ({np.round((nSpeechResponsiveAudD/nCellsAudD)*100, 1)}% total, {np.round((nSpeechResponsiveAudD/nSoundResponsiveAudD)*100, 1)}% soundResponsive)')
-    print(f'AudV n: {nCellsAudV}, n any sound responsive: {nSoundResponsiveAudV} ({np.round((nSoundResponsiveAudV/nCellsAudV)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudV}, ({np.round((nSpeechResponsiveAudV/nCellsAudV)*100, 1)}% total, {np.round((nSpeechResponsiveAudV/nSoundResponsiveAudV)*100, 1)}% soundResponsive)')
-    print(f'TeA n: {nCellsTeA}, n any sound responsive: {nSoundResponsiveTeA} ({np.round((nSoundResponsiveTeA/nCellsTeA)*100, 1)}%), n speech responsive: {nSpeechResponsiveTeA}, ({np.round((nSpeechResponsiveTeA/nCellsTeA)*100, 1)}% total, {np.round((nSpeechResponsiveTeA/nSoundResponsiveTeA)*100, 1)}% soundResponsive)')
-    print(f'Bonferroni corrected alpha = 0.05/6 = {np.round(0.05/6,3)}')
-    print('--Frac speech responsive of sound responsive --')
-    print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD,3)}')
-    print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV,3)}')
-    print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV,3)}')
-    print(f'AudP vs Tea p = {np.round(pvalFracResponsive_AudPvsTea,3)}')
-    print(f'AudD vs Tea p = {np.round(pvalFracResponsive_AudDvsTea,3)}')
-    print(f'AudV vs Tea p = {np.round(pvalFracResponsive_AudVvsTea,3)}')
-    print('--Frac speech responsive of total cells --')
-    print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD_allcells,3)}')
-    print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV_allcells,3)}')
-    print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV_allcells,3)}')
-    print(f'AudP vs Tea p = {np.round(pvalFracResponsive_AudPvsTea_allcells,3)}')
-    print(f'AudD vs Tea p = {np.round(pvalFracResponsive_AudDvsTea_allcells,3)}')
-    print(f'AudV vs Tea p = {np.round(pvalFracResponsive_AudVvsTea_allcells,3)}')
-    print('--quadrant-defined areas')
-    print(f'DP Quadrant: total n = {len(quadrantsSoundResponsive[0])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[0])} ({np.round((np.sum(quadrantsSoundResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[0])} ({np.round((np.sum(quadrantsSpeechResponsive[0])/np.sum(quadrantsSoundResponsive[0]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}% of total)')
-    print(f'DA Quadrant: total n = {len(quadrantsSoundResponsive[1])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[1])} ({np.round((np.sum(quadrantsSoundResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[1])} ({np.round((np.sum(quadrantsSpeechResponsive[1])/np.sum(quadrantsSoundResponsive[1]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}% of total)')
-    print(f'VP Quadrant: total n = {len(quadrantsSoundResponsive[2])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[2])} ({np.round((np.sum(quadrantsSoundResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[2])} ({np.round((np.sum(quadrantsSpeechResponsive[2])/np.sum(quadrantsSoundResponsive[2]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}% of total)')
-    print(f'VA Quadrant: total n = {len(quadrantsSoundResponsive[3])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[3])} ({np.round((np.sum(quadrantsSoundResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[3])} ({np.round((np.sum(quadrantsSpeechResponsive[3])/np.sum(quadrantsSoundResponsive[3]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}% of total)')
-    print('--Frac speech responsive of sound responsive --')
-    print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[0],3)}')
-    print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[1],3)}')
-    print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[2],3)}')
-    print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[3],3)}')
-    print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[4],3)}')
-    print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[5],3)}')
-    print('--Frac speech responsive of total cells --')
-    print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_allcells[0],3)}')
-    print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[1],3)}')
-    print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[2],3)}')
-    print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[3],3)}')
-    print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[4],3)}')
-    print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[5],3)}')
+    table1a = studyutils.latex_table_responsive(brainAreas, nSpeechResponsiveEachArea, nCellsEachArea)
+    print(table1a)
+    table1b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveAllCellsEachComp)
+    print(table1b)
+    table2a = studyutils.latex_table_responsive(brainAreas,nSpeechResponsiveEachArea, nSoundResponsiveEachArea)
+    print(table2a)
+    table2b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveEachComp)
+    print(table2b)
+    
+    if 0:
+        # -- Print all stats --
+        print('--Stats Summary--')
+        print('--atlas-defined areas')
+        print(f'AudP n: {nCellsAudP}, n any sound responsive: {nSoundResponsiveAudP} ({np.round((nSoundResponsiveAudP/nCellsAudP)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudP}, ({np.round((nSpeechResponsiveAudP/nCellsAudP)*100, 1)}% total, {np.round((nSpeechResponsiveAudP/nSoundResponsiveAudP)*100, 1)}% soundResponsive)')
+        print(f'AudD n: {nCellsAudD}, n any sound responsive: {nSoundResponsiveAudD} ({np.round((nSoundResponsiveAudD/nCellsAudD)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudD}, ({np.round((nSpeechResponsiveAudD/nCellsAudD)*100, 1)}% total, {np.round((nSpeechResponsiveAudD/nSoundResponsiveAudD)*100, 1)}% soundResponsive)')
+        print(f'AudV n: {nCellsAudV}, n any sound responsive: {nSoundResponsiveAudV} ({np.round((nSoundResponsiveAudV/nCellsAudV)*100, 1)}%), n speech responsive: {nSpeechResponsiveAudV}, ({np.round((nSpeechResponsiveAudV/nCellsAudV)*100, 1)}% total, {np.round((nSpeechResponsiveAudV/nSoundResponsiveAudV)*100, 1)}% soundResponsive)')
+        print(f'TeA n: {nCellsTeA}, n any sound responsive: {nSoundResponsiveTeA} ({np.round((nSoundResponsiveTeA/nCellsTeA)*100, 1)}%), n speech responsive: {nSpeechResponsiveTeA}, ({np.round((nSpeechResponsiveTeA/nCellsTeA)*100, 1)}% total, {np.round((nSpeechResponsiveTeA/nSoundResponsiveTeA)*100, 1)}% soundResponsive)')
+        print(f'Bonferroni corrected alpha = 0.05/6 = {np.round(0.05/6,3)}')
+        print('--Frac speech responsive of sound responsive --')
+        print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD,3)}')
+        print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV,3)}')
+        print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV,3)}')
+        print(f'AudP vs TeA p = {np.round(pvalFracResponsive_AudPvsTeA,3)}')
+        print(f'AudD vs TeA p = {np.round(pvalFracResponsive_AudDvsTeA,3)}')
+        print(f'AudV vs TeA p = {np.round(pvalFracResponsive_AudVvsTeA,3)}')
+        print('--Frac speech responsive of total cells --')
+        print(f'AudP vs AudD p = {np.round(pvalFracResponsive_AudPvsAudD_allcells,3)}')
+        print(f'AudP vs AudV p = {np.round(pvalFracResponsive_AudPvsAudV_allcells,3)}')
+        print(f'AudD vs AudV p = {np.round(pvalFracResponsive_AudDvsAudV_allcells,3)}')
+        print(f'AudP vs TeA p = {np.round(pvalFracResponsive_AudPvsTeA_allcells,3)}')
+        print(f'AudD vs TeA p = {np.round(pvalFracResponsive_AudDvsTeA_allcells,3)}')
+        print(f'AudV vs TeA p = {np.round(pvalFracResponsive_AudVvsTeA_allcells,3)}')
+        print('--quadrant-defined areas')
+        print(f'DP Quadrant: total n = {len(quadrantsSoundResponsive[0])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[0])} ({np.round((np.sum(quadrantsSoundResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[0])} ({np.round((np.sum(quadrantsSpeechResponsive[0])/np.sum(quadrantsSoundResponsive[0]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}% of total)')
+        print(f'DA Quadrant: total n = {len(quadrantsSoundResponsive[1])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[1])} ({np.round((np.sum(quadrantsSoundResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[1])} ({np.round((np.sum(quadrantsSpeechResponsive[1])/np.sum(quadrantsSoundResponsive[1]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}% of total)')
+        print(f'VP Quadrant: total n = {len(quadrantsSoundResponsive[2])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[2])} ({np.round((np.sum(quadrantsSoundResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[2])} ({np.round((np.sum(quadrantsSpeechResponsive[2])/np.sum(quadrantsSoundResponsive[2]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}% of total)')
+        print(f'VA Quadrant: total n = {len(quadrantsSoundResponsive[3])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[3])} ({np.round((np.sum(quadrantsSoundResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[3])} ({np.round((np.sum(quadrantsSpeechResponsive[3])/np.sum(quadrantsSoundResponsive[3]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}% of total)')
+        print('--Frac speech responsive of sound responsive --')
+        print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[0],3)}')
+        print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[1],3)}')
+        print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[2],3)}')
+        print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[3],3)}')
+        print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[4],3)}')
+        print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[5],3)}')
+        print('--Frac speech responsive of total cells --')
+        print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_allcells[0],3)}')
+        print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[1],3)}')
+        print(f'DP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[2],3)}')
+        print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[3],3)}')
+        print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[4],3)}')
+        print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[5],3)}')
