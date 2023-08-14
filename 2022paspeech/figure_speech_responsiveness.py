@@ -159,10 +159,13 @@ recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
 quantilesDV = figData['quantilesDV']
 quantilesAP = figData['quantilesAP']
+
+### ARE THESE USED? ###
 quadrantBoundsDV = figData['quadrantBoundsDV']
 quadrantBoundsAP = figData['quadrantBoundsAP']
 quadrantBoundsDV_AAtransform = figData['quadrantBoundsDV_AAtransform']
 quadrantBoundsAP_AAtransform = figData['quadrantBoundsAP_AAtransform']
+
 quadrantLabels = figData['quadrantLabels']
 quadrantTotals = figData['quadrantTotals']
 quadrantsSpeechResponsive = figData['quadrantsSpeechResponsive']
@@ -173,7 +176,8 @@ boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, 
 boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
 boundData = np.load(boundDataFullPath, allow_pickle = True)
 contours = boundData['contours']
-#contours = boundData['contours_deep']
+extentAP = boundData['extentAP']
+extentDV = boundData['extentDV']
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
 APtickLabels = np.round(studyutils.pix2mmAP(APtickLocs),1)
@@ -184,8 +188,8 @@ DVtickLabels = np.round(studyutils.pix2mmDV(DVtickLocs),1)
 plt.sca(axCellLocs)
 colorQbounds = '0.8'
 lwQbounds = 1
-qboundsDV = studyutils.mm2pixDV(figData['quadrantBoundsDV'])
-qboundsAP = studyutils.mm2pixAP(figData['quadrantBoundsAP'])
+qboundsDV = [extentDV[0], (extentDV[0]+extentDV[-1])//2, extentDV[-1]]
+qboundsAP = [extentAP[0], (extentAP[0]+extentAP[-1])//2, extentAP[-1]]
 # -- Create a grid of the bounds for each quadrant -- #
 outerQbounds = axCellLocs.add_patch(plt.Polygon(np.array([[qboundsAP[0], qboundsDV[0]],
                                     [qboundsAP[-1], qboundsDV[0]],
@@ -398,7 +402,7 @@ if STATSUMMARY:
     table2b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveEachComp)
     print(table2b)
     
-    if 0:
+    if 1:
         # -- Print all stats --
         print('--Stats Summary--')
         print('--atlas-defined areas')
