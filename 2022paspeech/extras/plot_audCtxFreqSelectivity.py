@@ -1,3 +1,4 @@
+import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +7,7 @@ from jaratoolbox import settings
 from jaratoolbox import extraplots
 from jaratoolbox import celldatabase
 from jaratoolbox import colorpalette as cp
+sys.path.append('..')
 import figparams
 import studyparams
 from scipy import stats
