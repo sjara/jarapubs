@@ -114,3 +114,10 @@ Created by `figure_mixed_selectivity.py`, using data generated from `generate_se
 
 
 # Extras
+- `make_feat_cell_reports.py`: generates areport for each cell in the database that shows: spike waveform, best channel, atlas-area, rasters for AM/pure tone sessions, gaussian best fits for best frequency, rasters/psths for speech sounds
+- `make_speech_response_rasters.py`: generates rasters/PSTHs for speech responsive cells sorted for speech sound sessions sorted by Ft and VOT. Requires access to `fulldb_speech_tuning.h5`, `data_selectivity_indices.npz`, `data_shuffledSIs.npz`, and spike sorted ephys data.
+- `recordingSummary.py`: creates a .txt file with summaries of total number of cells and number of cells in each atlas area for each recording session. Requires access to celldb
+- `get_recordingSite_summary.py`
+- `test_rightvsleft.py`
+- `plot_audCtxFreqSelectivity.py`
+- `speech_selectivity_restrictby_BestFreq.py`
