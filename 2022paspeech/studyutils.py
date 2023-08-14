@@ -40,6 +40,53 @@ LATEX_TABLE_PVALS_FOOTER = """
 \\end{tabular}
 """
 
+LATEX_TABLE_SELECTIVE_HEADER ="""
+\\begin{tabular}{|c|c|c|c|c|}
+\\hline
+\\textbf{Area} & \\textbf{Of total} & \\textbf{Sel/Total} & \\textbf{\\makecell{Of sound\\\\[-1ex] responsive}} & \\textbf{\\makecell{Of speech\\\\[-1ex] responsive}} \\\\ \\hline \
+"""
+LATEX_TABLE_SELECTIVE_DATAROW ="""
+{area} & {pcOfTotal:0.1f}\\% & {num}/{denomsTotal} & {pcOfSoundResp:0.1f}\\% & {pcOfSpeechResp:0.1f}\\% \\\\ \\hline \
+"""
+LATEX_TABLE_SELECTIVE_FOOTER ="""
+\end{tabular}
+"""
+
+LATEX_TABLE_MIXSELECTIVE_HEADER ="""
+\\begin{tabular}{|c|c|c|c|c|}
+\\hline
+\\textbf{Area} & \\textbf{Of total} & \\textbf{Sel/Total} & \\textbf{\\makecell{Of sound\\\\[-1ex] responsive}} & \\textbf{\\makecell{Of speech\\\\[-1ex] responsive}} \\\\ \\hline \
+"""
+LATEX_TABLE_MIXSELECTIVE_DATAROW ="""
+{area} & {pcOfTotal:0.1f}\\% & {num}/{denomsTotal} & {pcOfSoundResp:0.1f}\\% & {pcOfSpeechResp:0.1f}\\% \\\\ \\hline \
+"""
+LATEX_TABLE_MIXSELECTIVE_FOOTER ="""
+\end{tabular}
+"""
+
+
+def latex_table_mixselective(areas, numerators, denomsTotal, denomsSoundResp, denomsSpeechResp,
+                             parcellation='Area'):
+    """
+    Args:
+        parcellation (str): Name of parcellation, e.g., 'Area' or 'Region'.
+    """
+    tableStr = ''
+    tableStr += LATEX_TABLE_MIXSELECTIVE_HEADER
+    for inda, oneArea in enumerate(areas):
+        pcOfTotal = 100 * numerators[inda] / denomsTotal[inda]
+        pcOfSoundResp = 100 * numerators[inda] / denomsSoundResp[inda]
+        pcOfSpeechResp = 100 * numerators[inda] / denomsSpeechResp[inda]
+        tableStr += LATEX_TABLE_MIXSELECTIVE_DATAROW.format(area = oneArea,
+                                                         pcOfTotal = pcOfTotal,
+                                                         num = numerators[inda],
+                                                         denomsTotal = denomsTotal[inda],
+                                                         pcOfSoundResp = pcOfSoundResp,
+                                                         pcOfSpeechResp = pcOfSpeechResp)
+    tableStr += LATEX_TABLE_MIXSELECTIVE_FOOTER
+    tableStr.replace('Area', parcellation)
+    return tableStr
+
 def latex_table_responsive(areas, numerators, denominators, parcellation='Area'):
     """
     Args:
@@ -56,6 +103,30 @@ def latex_table_responsive(areas, numerators, denominators, parcellation='Area')
     tableStr += LATEX_TABLE_RESPONSIVE_FOOTER
     tableStr.replace('Area', parcellation)
     return tableStr
+
+
+def latex_table_selective(areas, numerators, denomsTotal, denomsSoundResp, denomsSpeechResp,
+                          parcellation='Area'):
+    """
+    Args:
+        parcellation (str): Name of parcellation, e.g., 'Area' or 'Region'.
+    """
+    tableStr = ''
+    tableStr += LATEX_TABLE_SELECTIVE_HEADER
+    for inda, oneArea in enumerate(areas):
+        pcOfTotal = 100 * numerators[inda] / denomsTotal[inda]
+        pcOfSoundResp = 100 * numerators[inda] / denomsSoundResp[inda]
+        pcOfSpeechResp = 100 * numerators[inda] / denomsSpeechResp[inda]
+        tableStr += LATEX_TABLE_SELECTIVE_DATAROW.format(area = oneArea,
+                                                         pcOfTotal = pcOfTotal,
+                                                         num = numerators[inda],
+                                                         denomsTotal = denomsTotal[inda],
+                                                         pcOfSoundResp = pcOfSoundResp,
+                                                         pcOfSpeechResp = pcOfSpeechResp)
+    tableStr += LATEX_TABLE_SELECTIVE_FOOTER
+    tableStr.replace('Area', parcellation)
+    return tableStr
+
 
 def pval_to_str(pvalue):
     if np.isnan(pvalue):
