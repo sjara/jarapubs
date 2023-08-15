@@ -393,6 +393,28 @@ if STATSUMMARY:
             if inda2 > inda1:
                 pvalsFracResponsiveEachComp[inda1,inda2] = eval('pvalFracResponsive_'+area1+'vs'+area2)
 
+    brainRegions = ['DP', 'DA', 'VP', 'VA']
+    nSpeechResponsiveEachRegion = [eval('nSpeechResponsive'+brainRegion) for brainRegion in brainRegions]
+    nSoundResponsiveEachRegion = [eval('nSoundResponsive'+brainRegion) for brainRegion in brainRegions]
+
+    pvalsQuadComparFracSpeechResponsive_allcells = np.full((len(brainRegions),len(brainRegions)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainRegions):
+        for inda2, area2 in enumerate(brainRegions):
+            if inda2 > inda1:
+                a = a+1
+                pvalsQuadComparFracSpeechResponsive_allcells[inda1,inda2] = quadrantComparFracSpeechResponsive_allcells[a]
+
+
+    pvalsQuadComparFracSpeechResponsive_soundResp = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainRegions):
+        for inda2, area2 in enumerate(brainRegions):
+            if inda2 > inda1:
+                a = a+1
+                pvalsQuadComparFracSpeechResponsive_soundResp[inda1,inda2] = quadrantComparFracSpeechResponsive_soundResp[a]
+
+
     table1a = studyutils.latex_table_responsive(brainAreas, nSpeechResponsiveEachArea, nCellsEachArea)
     print(table1a)
     table1b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveAllCellsEachComp)
@@ -401,6 +423,16 @@ if STATSUMMARY:
     print(table2a)
     table2b = studyutils.latex_table_pvals(brainAreas, pvalsFracResponsiveEachComp)
     print(table2b)
+    table3a = studyutils.latex_table_responsive(brainRegions, nSpeechResponsiveEachRegion, quadrantTotals)
+    print(table3a)
+    table3b = studyutils.latex_table_pvals(brainRegions, pvalsQuadComparFracSpeechResponsive_allcells)
+    print(table3b)
+    table4a = studyutils.latex_table_responsive(brainRegions, nSpeechResponsiveEachRegion, nSoundResponsiveEachRegion)
+    print(table4a)
+    table4b = studyutils.latex_table_pvals(brainRegions, pvalsQuadComparFracSpeechResponsive_soundResp)
+    print(table4b)
+
+
 
     if 1:
         # -- Print all stats --
