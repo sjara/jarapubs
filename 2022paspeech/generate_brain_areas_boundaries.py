@@ -23,9 +23,14 @@ from jaratoolbox import settings
 import studyparams
 import studyutils
 
+SAVE_TO_FIGURESDATA = 0  # Use 0 for testing
+
 FIGNAME = 'selectivityIndices'
 figDataFile = 'brain_areas_boundaries.npz'
-figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+if SAVE_TO_FIGURESDATA:
+    figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+else:
+    figDataDir = settings.TEMP_OUTPUT_PATH  # Save to tmp during testing
 figDataFullPath = os.path.join(figDataDir,figDataFile)
 
 brain_areas = ['AUDp','AUDv','AUDd','AUDpo','TEa']
@@ -61,21 +66,34 @@ extentDV = [indsDV[0], indsDV[-1]]
 # -- Estimate contours of each area --
 print(f'Estimating contours...')
 contours = []
+yz_subset_view = np.copy(yz_background)-2  # Useful for testing
 for inda, oneArea in enumerate(brain_areas):
     areaID = atlas.get_id_from_acronym(oneArea)
     children = atlas.find_children(areaID)
     areaPixels = np.isin(yz_plane_view, children)
+    yz_subset_view[areaPixels] = inda
     # -- Smooth out the area pixels image --
     areaPixelsSmooth = filters.gaussian(areaPixels.astype('float'), sigma=2)
     contours.append(measure.find_contours(areaPixelsSmooth, 0.5)[0])
 
+# -- Extract extent of regions combined (to define quadrants) --
+indsAP = np.flatnonzero((yz_subset_view>=0).sum(axis=0))
+indsDV = np.flatnonzero((yz_subset_view>=0).sum(axis=1))
+extentAP = [indsAP[0], indsAP[-1]]
+extentDV = [indsDV[0], indsDV[-1]]
+
+
 # -- Display the image and plot all contours found for a single level--
 plt.clf()
-#plt.imshow(yz_plane_view, cmap=plt.cm.gray)  # vmax=1400
+#plt.imshow(yz_subset_view, cmap=plt.cm.gray)  # vmax=1400
 plt.imshow(yz_background, cmap=plt.cm.gray)
 for contour in contours:
     plt.plot(contour[:, 1], contour[:, 0], linewidth=1)
 plt.axis('image')
+if 0:
+    pad = 10
+    plt.xlim([extentAP[0]-pad, extentAP[1]+pad])
+    plt.ylim([extentDV[0]-pad, extentDV[1]+pad])
 plt.show()
 
 # -- Save the data --
