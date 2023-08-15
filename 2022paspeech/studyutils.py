@@ -65,25 +65,6 @@ LATEX_TABLE_MIXSELECTIVE_FOOTER ="""
 """
 
 
-def latex_table_mixselective(areas, numerators, denomsSpeechSel, denomsSpeechResp, parcellation='Area'):
-    """
-    Args:
-        parcellation (str): Name of parcellation, e.g., 'Area' or 'Region'.
-    """
-    tableStr = ''
-    tableStr += LATEX_TABLE_MIXSELECTIVE_HEADER
-    for inda, oneArea in enumerate(areas):
-        pcOfSpeechSel = 100 * numerators[inda] / denomsSpeechSel[inda]
-        pcOfSpeechResp = 100 * numerators[inda] / denomsSpeechResp[inda]
-        tableStr += LATEX_TABLE_MIXSELECTIVE_DATAROW.format(area = oneArea,
-                                                            pcOfSpeechSel = pcOfSpeechSel,
-                                                            num = numerators[inda],
-                                                            denomsSpeechSel = denomsSpeechSel[inda],
-                                                            pcOfSpeechResp = pcOfSpeechResp)
-    tableStr += LATEX_TABLE_MIXSELECTIVE_FOOTER
-    tableStr.replace('Area', parcellation)
-    return tableStr
-
 def latex_table_responsive(areas, numerators, denominators, parcellation='Area'):
     """
     Args:
@@ -125,6 +106,26 @@ def latex_table_selective(areas, numerators, denomsTotal, denomsSoundResp, denom
     return tableStr
 
 
+def latex_table_mixselective(areas, numerators, denomsSpeechSel, denomsSpeechResp, parcellation='Area'):
+    """
+    Args:
+        parcellation (str): Name of parcellation, e.g., 'Area' or 'Region'.
+    """
+    tableStr = ''
+    tableStr += LATEX_TABLE_MIXSELECTIVE_HEADER
+    for inda, oneArea in enumerate(areas):
+        pcOfSpeechSel = 100 * numerators[inda] / denomsSpeechSel[inda]
+        pcOfSpeechResp = 100 * numerators[inda] / denomsSpeechResp[inda]
+        tableStr += LATEX_TABLE_MIXSELECTIVE_DATAROW.format(area = oneArea,
+                                                            pcOfSpeechSel = pcOfSpeechSel,
+                                                            num = numerators[inda],
+                                                            denomsSpeechSel = denomsSpeechSel[inda],
+                                                            pcOfSpeechResp = pcOfSpeechResp)
+    tableStr += LATEX_TABLE_MIXSELECTIVE_FOOTER
+    tableStr.replace('Area', parcellation)
+    return tableStr
+
+
 def pval_to_str(pvalue):
     if np.isnan(pvalue):
         pvalStr = '---'
@@ -133,7 +134,8 @@ def pval_to_str(pvalue):
     else:
         pvalStr = f'{pvalue:0.3f}'.rstrip('0').rstrip('.')
     return pvalStr
-    
+
+
 def latex_table_pvals(areas, pvalues):
     """
     """
@@ -146,7 +148,6 @@ def latex_table_pvals(areas, pvalues):
         tableStr += LATEX_TABLE_PVALS_DATAROW.format(area = oneArea, *pvalsList)
     tableStr += LATEX_TABLE_PVALS_FOOTER
     return tableStr
-
 
 
 def select_cells(celldb, restrictND1=False):
