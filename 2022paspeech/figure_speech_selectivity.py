@@ -20,6 +20,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 from scipy import stats
 import studyparams
+import studyutils
 import figparams
 from importlib import reload
 
@@ -581,15 +582,71 @@ if STATSUMMARY:
             oddsratio, pvalFracFTSelective = stats.fisher_exact(np.array([[np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsFtSelective[x + indBin + 1])],[np.sum(quadrantsSpeechResponsive[indBin]) - np.sum(quadrantsFtSelective[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1]) - np.sum(quadrantsFtSelective[x + indBin + 1])]]))
             quadrantComparFracFtSelective_speechResponsive[a] = pvalFracFTSelective
 
+        # -- Print LaTeX tables --
+    brainAreas = ['AudP', 'AudD', 'AudV', 'TeA']
+    nTotalEachArea = [eval('nTotal'+brainArea) for brainArea in brainAreas]
+    nSoundResponsiveEachArea = [eval('nSoundResponsive'+brainArea) for brainArea in brainAreas]
+    nSpeechResponsiveEachArea = [eval('nSpeechResponsive'+brainArea) for brainArea in brainAreas]
+    nVOTselectiveEachArea = [eval('nVOTselective'+brainArea) for brainArea in brainAreas]
+    nFTselectiveEachArea = [eval('nFTselective'+brainArea) for brainArea in brainAreas]
 
-        '''
-        plt.sca(axFtAudP)
-        circle5 = plt.Circle((0,0), 0.7, color = 'white')
-        nFTselectiveAudP = np.sum(ftSelective[recordingAreaName == audCtxAreas[0]])
-        plt.pie([nFTselectiveAudP, nTotalAudP - nFTselectiveAudP], colors = [colorFtSelective, colorNotSelective])
-        axFtAudP.add_artist(circle5)
-        plt.title(f'AudP,\n n = {int(nTotalAudP)}')
-        '''
+
+    pvalsFracVOTselectiveAreas_allCells = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    for inda1, area1 in enumerate(brainAreas):
+        for inda2, area2 in enumerate(brainAreas):
+            if inda2 > inda1:
+                pvalsFracVOTselectiveAreas_allCells[inda1,inda2] = eval('pvalFracVotSelective_'+area1+'vs'+area2)
+
+    pvalsFracFTselectiveAreas_allCells = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    for inda1, area1 in enumerate(brainAreas):
+        for inda2, area2 in enumerate(brainAreas):
+            if inda2 > inda1:
+                pvalsFracFTselectiveAreas_allCells[inda1,inda2] = eval('pvalFracFtSelective_'+area1+'vs'+area2)
+
+
+
+    brainRegions = ['DP', 'DA', 'VP', 'VA']
+    nSpeechResponsiveEachRegion = [eval('nSpeechResponsive'+brainRegion) for brainRegion in brainRegions]
+    nSoundResponsiveEachRegion = [eval('nSoundResponsive'+brainRegion) for brainRegion in brainRegions]
+    nVotSelectiveEachRegion = [eval('nVOTselective'+brainRegion) for brainRegion in brainRegions]
+    nFtSelectiveEachRegion = [eval('nFTselective'+brainRegion) for brainRegion in brainRegions]
+
+    pvalsQuadComparFracVotSelective_allcells = np.full((len(brainRegions),len(brainRegions)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainRegions):
+        for inda2, area2 in enumerate(brainRegions):
+            if inda2 > inda1:
+                a = a+1
+                pvalsQuadComparFracVotSelective_allcells[inda1,inda2] = quadrantComparFracVotSelective_allcells[a]
+
+    pvalsQuadComparFracFtSelective_allcells = np.full((len(brainRegions),len(brainRegions)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainRegions):
+        for inda2, area2 in enumerate(brainRegions):
+            if inda2 > inda1:
+                a = a+1
+                pvalsQuadComparFracFtSelective_allcells[inda1,inda2] = quadrantComparFracFtSelective_allcells[a]
+
+
+
+    table5a = studyutils.latex_table_selective(brainAreas, nVOTselectiveEachArea, nTotalEachArea, nSoundResponsiveEachArea, nSpeechResponsiveEachArea)
+    print(table5a)
+    table5b = studyutils.latex_table_pvals(brainAreas, pvalsFracVOTselectiveAreas_allCells)
+    print(table5b)
+    table6a = studyutils.latex_table_selective(brainAreas, nFTselectiveEachArea, nTotalEachArea, nSoundResponsiveEachArea, nSpeechResponsiveEachArea)
+    print(table6a)
+    table6b = studyutils.latex_table_pvals(brainAreas, pvalsFracFTselectiveAreas_allCells)
+    print(table6b)
+    table7a = studyutils.latex_table_selective(brainRegions, nVotSelectiveEachRegion, quadrantTotals, nSoundResponsiveEachRegion, nSpeechResponsiveEachRegion)
+    print(table7a)
+    table7b = studyutils.latex_table_pvals(brainRegions, pvalsQuadComparFracVotSelective_allcells)
+    print(table7b)
+    table8a = studyutils.latex_table_selective(brainRegions, nFtSelectiveEachRegion, quadrantTotals, nSoundResponsiveEachRegion, nSpeechResponsiveEachRegion)
+    print(table8a)
+    table8b = studyutils.latex_table_pvals(brainRegions, pvalsQuadComparFracFtSelective_allcells)
+    print(table8b)
+
+
 
     print('--Stat Summary --')
     print('--atlas-defined areas--')
