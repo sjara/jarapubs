@@ -362,12 +362,41 @@ if STATSUMMARY:
     nMixselectiveEachArea = [eval('nMixselective'+brainArea) for brainArea in brainAreas]
     nSingleselectiveEachArea = [eval('nSingleselective'+brainArea) for brainArea in brainAreas]
     nSpeechSelectiveEachArea = np.array(nMixselectiveEachArea) + np.array(nSingleselectiveEachArea)
-    
-    table1a = studyutils.latex_table_mixselective(brainAreas, nMixselectiveEachArea, nSpeechSelectiveEachArea,
-                                                  nSpeechResponsiveEachArea)
-    print(table1a)
 
-    
+    pvalsAtlasAreaComparFracMixedSelective = np.full((len(brainAreas),len(brainAreas)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainAreas):
+        for inda2, area2 in enumerate(brainAreas):
+            if inda2 > inda1:
+                a = a+1
+                pvalsAtlasAreaComparFracMixedSelective[inda1,inda2] = atlasAreaComparFracMixedSelective_speechResponsive[a]
+
+    brainRegions = ['DP', 'DA', 'VP', 'VA']
+    nSpeechResponsiveEachRegion = [eval('nSpeechResponsive'+brainRegion) for brainRegion in brainRegions]
+    nSoundResponsiveEachRegion = [eval('nSoundResponsive'+brainRegion) for brainRegion in brainRegions]
+    nSpeechSelectiveEachRegion = [eval('nSpeechSelective'+brainRegion) for brainRegion in brainRegions]
+    nMixselectiveEachRegion = [eval('nMixedSelective'+brainRegion) for brainRegion in brainRegions]
+
+
+    pvalQuadrantComparFracMixedSelective = np.full((len(brainRegions),len(brainRegions)), np.nan)
+    a = -1
+    for inda1, area1 in enumerate(brainRegions):
+        for inda2, area2 in enumerate(brainRegions):
+            if inda2 > inda1:
+                a = a+1
+                pvalQuadrantComparFracMixedSelective[inda1,inda2] = quadrantComparFracMixedSelective_speechResponsive[a]
+
+    table9a = studyutils.latex_table_mixselective(brainAreas, nMixselectiveEachArea, nSpeechSelectiveEachArea, nSpeechResponsiveEachArea)
+    print(table9a)
+    table9b = studyutils.latex_table_pvals(brainAreas, pvalsAtlasAreaComparFracMixedSelective)
+    print(table9b)
+    table10a = studyutils.latex_table_mixselective(brainRegions, nMixselectiveEachRegion, nSpeechSelectiveEachRegion, nSpeechResponsiveEachRegion)
+    print(table10a)
+    table10b = studyutils.latex_table_pvals(brainRegions, pvalQuadrantComparFracMixedSelective)
+    print(table10b)
+
+
+
     print('--Stat Summary --')
     print('--atlas-defined areas--')
     print(f'AudP: n mixed selective = {nMixselectiveAudP} ({np.round(nMixselectiveAudP/(nMixselectiveAudP+nSingleselectiveAudP)*100, 1)}% of speech selective, {np.round(nMixselectiveAudP/(nSpeechResponsiveAudP)*100, 1)}% of speech responsive)')
