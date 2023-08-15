@@ -19,6 +19,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 from scipy import stats
 import studyparams
+import studyutils
 import figparams
 from importlib import reload
 reload(figparams)
@@ -71,8 +72,8 @@ quantilesDV = figData['quantilesDV']
 quantilesAP = figData['quantilesAP']
 quadrantBoundsDV = figData['quadrantBoundsDV']
 quadrantBoundsAP = figData['quadrantBoundsAP']
-quadrantBoundsDV_AApix = figData['quadrantBoundsDV_AApix']
-quadrantBoundsAP_AApix = figData['quadrantBoundsAP_AApix']
+#quadrantBoundsDV_AApix = figData['quadrantBoundsDV_AApix']
+#quadrantBoundsAP_AApix = figData['quadrantBoundsAP_AApix']
 quadrantLabels = figData['quadrantLabels']
 quadrantTotals = figData['quadrantTotals']
 quadrantsVOT = figData['quadrantsVOT']
@@ -354,6 +355,19 @@ if STATSUMMARY:
             oddsratio, pvalFracMixedSelective = stats.fisher_exact(np.array([[np.sum(quadrantsSoundResponsive[indBin])-np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsMixedSelective[x + indBin + 1])],[np.sum(quadrantsMixedSelective[indBin]), np.sum(quadrantsMixedSelective[x + indBin + 1])]]))
             quadrantComparFracMixedSelective_soundResponsive[a] = pvalFracMixedSelective
 
+    # -- Print LaTeX tables --
+    reload(studyutils)
+    brainAreas = ['AudP', 'AudD', 'AudV', 'TeA']
+    nSpeechResponsiveEachArea = [eval('nSpeechResponsive'+brainArea) for brainArea in brainAreas]
+    nMixselectiveEachArea = [eval('nMixselective'+brainArea) for brainArea in brainAreas]
+    nSingleselectiveEachArea = [eval('nSingleselective'+brainArea) for brainArea in brainAreas]
+    nSpeechSelectiveEachArea = np.array(nMixselectiveEachArea) + np.array(nSingleselectiveEachArea)
+    
+    table1a = studyutils.latex_table_mixselective(brainAreas, nMixselectiveEachArea, nSpeechSelectiveEachArea,
+                                                  nSpeechResponsiveEachArea)
+    print(table1a)
+
+    
     print('--Stat Summary --')
     print('--atlas-defined areas--')
     print(f'AudP: n mixed selective = {nMixselectiveAudP} ({np.round(nMixselectiveAudP/(nMixselectiveAudP+nSingleselectiveAudP)*100, 1)}% of speech selective, {np.round(nMixselectiveAudP/(nSpeechResponsiveAudP)*100, 1)}% of speech responsive)')
