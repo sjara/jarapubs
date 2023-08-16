@@ -23,7 +23,9 @@ from jaratoolbox import settings
 import studyparams
 import studyutils
 
-SAVE_TO_FIGURESDATA = 0  # Use 0 for testing
+SAVE_TO_FIGURESDATA = False  # Use False for testing (saved to temp folder)
+
+JOIN_DORSAL_AREAS = True
 
 FIGNAME = 'selectivityIndices'
 figDataFile = 'brain_areas_boundaries.npz'
@@ -34,7 +36,9 @@ else:
 figDataFullPath = os.path.join(figDataDir,figDataFile)
 
 brain_areas = ['AUDp','AUDv','AUDd','AUDpo','TEa']
+nAreas = len(brain_areas)
 cortical_layer = '6a'  # Cortical layer
+areas_to_join = ['AUDd','AUDpo'] if JOIN_DORSAL_AREAS else []
 
 # -- Load the atlas annotations --
 atlas = ha.AllenAnnotation()
@@ -65,16 +69,25 @@ extentDV = [indsDV[0], indsDV[-1]]
 
 # -- Estimate contours of each area --
 print(f'Estimating contours...')
-contours = []
 yz_subset_view = np.copy(yz_background)-2  # Useful for testing
-for inda, oneArea in enumerate(brain_areas):
-    areaID = atlas.get_id_from_acronym(oneArea)
-    children = atlas.find_children(areaID)
-    areaPixels = np.isin(yz_plane_view, children)
+eachAreaPixels = np.empty((nAreas, *yz_plane_view.shape), dtype=bool)
+for inda, areaID in enumerate(areasIDs):
+    areaPixels = np.isin(yz_plane_view, areaID)
     yz_subset_view[areaPixels] = inda
+    eachAreaPixels[inda] = areaPixels
+
+if JOIN_DORSAL_AREAS:
+    inds_to_join = [brain_areas.index(oneArea) for oneArea in areas_to_join]
+    eachAreaPixels[inds_to_join[0]] = np.logical_or(eachAreaPixels[inds_to_join[0]],
+                                                    eachAreaPixels[inds_to_join[1]])
+    eachAreaPixels = np.delete(eachAreaPixels, inds_to_join[1], axis=0)
+   
+contours = []
+for inda, areaPixels in enumerate(eachAreaPixels):
     # -- Smooth out the area pixels image --
     areaPixelsSmooth = filters.gaussian(areaPixels.astype('float'), sigma=2)
     contours.append(measure.find_contours(areaPixelsSmooth, 0.5)[0])
+
 
 # -- Extract extent of regions combined (to define quadrants) --
 indsAP = np.flatnonzero((yz_subset_view>=0).sum(axis=0))
@@ -99,7 +112,7 @@ plt.show()
 # -- Save the data --
 np.savez(figDataFullPath, yz_plane_view=yz_plane_view, yz_background=yz_background,
          contours=contours, brain_areas=brain_areas, cortical_layer=cortical_layer,
-         extentAP=extentAP, extentDV=extentDV)
+         areas_to_join=areas_to_join, extentAP=extentAP, extentDV=extentDV)
 print(f'Saved boundaries data to {figDataFullPath}')
 
 
