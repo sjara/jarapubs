@@ -5,13 +5,14 @@ Run as:
 python add_cartoons.py FIG_NUMBER
  or
 python add_cartoons.py FIG_NUMBER pdf
-(where FIG_NUMBER is the figure number, e.g.: 3)
+(where FIG_NUMBER is the figure number, e.g.: 2)
 """
 
 import sys
 import os
 import svgutils.compose as svgcomp
 from jaratoolbox import settings
+import studyparams
 
 if len(sys.argv) < 2:
     print('Usages:\n python add_cartoons.py FIG_NUMBER \n python add_cartoons.py FIG_NUMBER pdf')
@@ -34,26 +35,14 @@ if fig==1:
 elif fig==2:
     plots_file = 'plots_speech_responsiveness.svg'
     cartoons_file = ['headfixed_mouse_ephys.svg',
-                     'histology.svg',
-                     'ac_boundaries_speech_responsiveness.svg']
-    cartoons_scale = [1.2, 0.45, 1.0]
-    cartoons_pos = [(8, 10), (120, 5), (0, 0)]
-elif fig==3:
+                     'histology.svg']
+    cartoons_scale = [1.2, 0.45]
+    cartoons_pos = [(8, 10), (120, 5)]
+elif fig==100:
     plots_file = ''
     cartoons_file = []
     cartoons_scale = []
     cartoons_pos = []
-elif fig==4:
-    plots_file = 'plots_speech_selectivity.svg'
-    cartoons_file = ['ac_boundaries_speech_selectivity.svg',
-                     'ac_boundaries_speech_selectivity.svg']
-    cartoons_scale = [1.0, 1.0]
-    cartoons_pos = [(0, 0), (0, 336)]
-elif fig==5:
-    plots_file = 'plots_mixed_selectivity.svg'
-    cartoons_file = ['ac_boundaries_mixed_selectivity.svg']
-    cartoons_scale = [1.0]
-    cartoons_pos = [(0, 0)]
 
 ref_svg = svgcomp.SVG(os.path.join(plots_path, plots_file))
 cartoons_svg = []
