@@ -186,20 +186,7 @@ DVtickLabels = np.round(studyutils.pix2mmDV(DVtickLocs),1)
 
 # -- Plot the locations of the recorded cells -- #
 plt.sca(axCellLocs)
-colorQbounds = '0.8'
-lwQbounds = 1
-qboundsDV = [extentDV[0], (extentDV[0]+extentDV[-1])//2, extentDV[-1]]
-qboundsAP = [extentAP[0], (extentAP[0]+extentAP[-1])//2, extentAP[-1]]
-# -- Create a grid of the bounds for each quadrant -- #
-outerQbounds = axCellLocs.add_patch(plt.Polygon(np.array([[qboundsAP[0], qboundsDV[0]],
-                                    [qboundsAP[-1], qboundsDV[0]],
-                                    [qboundsAP[-1], qboundsDV[-1]],
-                                    [qboundsAP[0], qboundsDV[-1]]]),
-                                     lw=lwQbounds, ec=colorQbounds, fc='none', zorder=-1))
-axCellLocs.plot([qboundsAP[1], qboundsAP[1]], [qboundsDV[0], qboundsDV[-1]],
-                color=colorQbounds, lw=lwQbounds, zorder=-1)
-axCellLocs.plot([qboundsAP[0], qboundsAP[-1]], [qboundsDV[1], qboundsDV[1]],
-                color=colorQbounds, lw=lwQbounds, zorder=-1)
+studyutils.plot_quadrants(axCellLocs, extentAP, extentDV, color='0.8')
 for contour in contours:
     plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='k', clip_on=False)
 labelSize = fontSizePanel
@@ -223,7 +210,7 @@ else:
 plt.xlabel(f'Posterior-Anterior ({units})', fontsize = fontSizeLabels)
 plt.ylabel(f'Ventral-Dorsal ({units})', fontsize = fontSizeLabels)
 #plt.legend([nonResp, soundResp, speechResp], ['not sound responsive', 'sound responsive','speech responsive'], loc = 'upper left', markerscale = 2 , bbox_to_anchor = (0, 1.15))
-plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Sound responsive','Speech responsive'], loc = 'upper center', markerscale=2, handletextpad=0.25, bbox_to_anchor = (0.5, 1.04))
+plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Non-speech sound responsive','Speech responsive'], loc = 'upper center', markerscale=2, handletextpad=0.25, bbox_to_anchor = (0.555, 1.04))
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
 axCellLocs.set_aspect('equal')

@@ -31,8 +31,8 @@ shuffledDataFile = 'data_shuffledSIs.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 SAVE_FIGURE = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'plots_speech_selectivity' # Do not include extension
-figFormat = 'svg' # 'pdf' or 'svg'
+figFilename = 'figure_speech_selectivity' # Do not include extension
+figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [7.5, 9] # In inches
 STATSUMMARY = 1
 
@@ -53,6 +53,7 @@ colorRandSI = cp.TangoPalette['Aluminium4']
 colorVotSelective = cp.TangoPalette['ScarletRed2']
 colorFtSelective = cp.TangoPalette['Plum3']
 colorNotSelective = cp.TangoPalette['Aluminium3']
+colorBounds = cp.TangoPalette['Aluminium3'] #'0.75'
 
 
 figDataFullPath = os.path.join(figDataDir,figDataFile)
@@ -101,6 +102,13 @@ quadrantsFtSelectiveByAnimal = figData['quadrantsFtSelectiveByAnimal']
 quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
 quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
+boundDataFile = 'brain_areas_boundaries.npz'
+boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
+boundData = np.load(boundDataFullPath, allow_pickle = True)
+contours = boundData['contours']
+extentAP = boundData['extentAP']
+extentDV = boundData['extentDV']
 
 
 plt.clf()
@@ -149,17 +157,17 @@ for indax, oneax in enumerate([axQuadsVot, axByAnimalVot, axQuadsFt, axByAnimalF
     axpos = oneax.get_position()
     oneax.set_position([axpos.x0, axpos.y0+yoffset, axpos.width, axpos.height])
 
-
 votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
 ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
 
-#plt.show();    sys.exit()
-
-
-
+APtickLocs = np.array([ 156 ,176, 196, 216, 236])
+APtickLabels = np.round(studyutils.pix2mmAP(APtickLocs),1)
+DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
+DVtickLabels = np.round(studyutils.pix2mmDV(DVtickLocs),1)
+'''
 #APtickLocs = np.array([176, 196, 216])
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
 APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
@@ -167,6 +175,7 @@ APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
 DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 #plt.suptitle('VOT selectivity by location', fontsize = fontSizeTitles)
+'''
 
 plt.sca(axColorMapVOT)
 plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive & isCortical],
@@ -189,7 +198,17 @@ htitle.set_position(htitle.get_position()+np.array([0.08, 0]))
 axColorMapVOT.spines["right"].set_visible(False)
 axColorMapVOT.spines["top"].set_visible(False)
 axColorMapVOT.set_aspect('equal')
+studyutils.plot_quadrants(axColorMapVOT, extentAP, extentDV, color=colorBounds)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color=colorBounds, clip_on=False, zorder=-1)
+labelSize = fontSizePanel
+plt.text(234, 119, 'D', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(224, 127, 'P', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 142, 'V', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize, color=colorBounds)
 
+
+# -------------------------------------------------------------------
 titleY = 0.9
 
 plt.sca(axVotAudP)
@@ -306,6 +325,7 @@ for indAnimal, thisAnimal in enumerate(subjects):
 axByAnimalVot.spines["right"].set_visible(False)
 axByAnimalVot.spines["top"].set_visible(False)
 
+# -------------------------------------------------------------------
 
 plt.sca(axColorMapFT)
 #plt.scatter(z_coords_jittered[speechResponsive & isCortical], y_coords[speechResponsive& isCortical], c = bestSelectivityIndexFt[speechResponsive& isCortical], cmap = newMapFT, s = 3)
@@ -329,7 +349,17 @@ htitle.set_position(htitle.get_position()+np.array([0.08, 0]))
 axColorMapFT.set_aspect('equal')
 axColorMapFT.spines["right"].set_visible(False)
 axColorMapFT.spines["top"].set_visible(False)
+studyutils.plot_quadrants(axColorMapFT, extentAP, extentDV, color=colorBounds)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color=colorBounds, clip_on=False, zorder=-1)
+labelSize = fontSizePanel
+plt.text(234, 119, 'D', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(224, 127, 'P', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 142, 'V', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize, color=colorBounds)
 
+
+# -------------------------------------------------------------------
 
 
 plt.sca(axFtAudP)

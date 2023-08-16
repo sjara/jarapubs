@@ -31,8 +31,8 @@ figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FI
 SAVE_FIGURE = 1
 STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
-figFilename = 'plots_mixed_selectivity' # Do not include extension
-figFormat = 'svg' # 'pdf' or 'svg'
+figFilename = 'figure_mixed_selectivity' # Do not include extension
+figFormat = 'pdf' # 'pdf' or 'svg'
 figSize = [7.5, 5.0] # In inches
 
 fontSizeLabels = figparams.fontSizeLabels
@@ -44,6 +44,7 @@ newMap = colors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.f
 colorMixedSelective = cp.TangoPalette['Orange2']
 colorSingleSelective = cp.TangoPalette['SkyBlue2']
 colorNotSelective = cp.TangoPalette['Aluminium3']  # 'Aluminium2'
+colorBounds = cp.TangoPalette['Aluminium3'] #'0.75'
 
 
 figDataFullPath = os.path.join(figDataDir,figDataFile)
@@ -92,6 +93,13 @@ quadrantsFtSelectiveByAnimal = figData['quadrantsFtSelectiveByAnimal']
 quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
 quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
+boundDataFile = 'brain_areas_boundaries.npz'
+boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
+boundData = np.load(boundDataFullPath, allow_pickle = True)
+contours = boundData['contours']
+extentAP = boundData['extentAP']
+extentDV = boundData['extentDV']
 
 plt.clf()
 gsMain = gridspec.GridSpec(4, 3, width_ratios = [0.40, 0.3, 0.3])
@@ -126,9 +134,15 @@ mixedSelective = votSelective & ftSelective
 
 
 APtickLocs = np.array([ 156 ,176, 196, 216, 236])
+APtickLabels = np.round(studyutils.pix2mmAP(APtickLocs),1)
+DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
+DVtickLabels = np.round(studyutils.pix2mmDV(DVtickLocs),1)
+'''
+APtickLocs = np.array([ 156 ,176, 196, 216, 236])
 APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
 DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
+'''
 
 plt.sca(axMixeSelMap)
 respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], y_coords[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], c = colorNotSelective, s = 6)
@@ -148,6 +162,14 @@ axMixeSelMap.set_aspect('equal')
 axMixeSelMap.spines["right"].set_visible(False)
 axMixeSelMap.spines["top"].set_visible(False)
 axMixeSelMap.set_facecolor('none')
+studyutils.plot_quadrants(axMixeSelMap, extentAP, extentDV, color=colorBounds)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color=colorBounds, clip_on=False, zorder=-1)
+labelSize = fontSizePanel
+plt.text(234, 119, 'D', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(224, 127, 'P', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 142, 'V', ha='center', fontsize=labelSize, color=colorBounds)
+plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize, color=colorBounds)
 
 
 plt.sca(axQuadPcts)
@@ -294,6 +316,8 @@ axMixAudD.annotate('B', xy=(labelPosX[1],labelPosY[0]), xycoords='figure fractio
 axQuadPcts.annotate('C', xy=(labelPosX[2],labelPosY[0]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 axByAnimal.annotate('D', xy=(labelPosX[2],labelPosY[1]), xycoords='figure fraction', fontsize=fontSizePanel, fontweight='bold')
 
+plt.show()
+
 
 if STATSUMMARY:
     # --ATLAS AREAS
@@ -437,7 +461,6 @@ if STATSUMMARY:
     print(f'DA vs VP p = {np.round(quadrantComparFracMixedSelective_speechResponsive[3],3)}')
     print(f'DA vs VA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[4],3)}')
     print(f'VP vs VA p = {np.round(quadrantComparFracMixedSelective_speechResponsive[5],3)}')
-plt.show()
 
 if SAVE_FIGURE:
     extraplots.save_figure(figFilename, figFormat, figSize, outputDir)

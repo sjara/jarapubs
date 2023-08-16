@@ -5,6 +5,7 @@ Based on database_generation_funcs.py (by Devin and Matt)
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # -- Methods to convert from pixels of Atlas to mm --
 def pix2mmAP(pixels):
@@ -15,6 +16,22 @@ def pix2mmDV(pixels):
     return (pixels-10)*0.025
 def mm2pixDV(mm):
     return (mm/0.025) + 10
+
+def plot_quadrants(axCellLocs, extentAP, extentDV, color='0.8'):
+    lwQbounds = 1
+    qboundsDV = [extentDV[0], (extentDV[0]+extentDV[-1])//2, extentDV[-1]]
+    qboundsAP = [extentAP[0], (extentAP[0]+extentAP[-1])//2, extentAP[-1]]
+    # -- Create a grid of the bounds for each quadrant -- #
+    outerQbounds = axCellLocs.add_patch(plt.Polygon(np.array([[qboundsAP[0], qboundsDV[0]],
+                                                              [qboundsAP[-1], qboundsDV[0]],
+                                                              [qboundsAP[-1], qboundsDV[-1]],
+                                                              [qboundsAP[0], qboundsDV[-1]]]),
+                                                    lw=lwQbounds, ec=color, fc='none', zorder=-1))
+    midvQbounds = axCellLocs.plot([qboundsAP[1], qboundsAP[1]], [qboundsDV[0], qboundsDV[-1]],
+                                  color=color, lw=lwQbounds, zorder=-1)
+    midhQbounds = axCellLocs.plot([qboundsAP[0], qboundsAP[-1]], [qboundsDV[1], qboundsDV[1]],
+                                  color=color, lw=lwQbounds, zorder=-1)
+    return (outerQbounds, midvQbounds, midhQbounds)
 
 
 LATEX_TABLE_RESPONSIVE_HEADER = """
