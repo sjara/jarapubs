@@ -202,13 +202,12 @@ axCellLocs.plot([qboundsAP[0], qboundsAP[-1]], [qboundsDV[1], qboundsDV[1]],
                 color=colorQbounds, lw=lwQbounds, zorder=-1)
 for contour in contours:
     plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='k', clip_on=False)
-
-# plt.xlim(146, 246)
-# plt.ylim(220,40)
-# plt.show()
-# sys.exit()
-
-
+labelSize = fontSizePanel
+plt.text(234, 119, 'D', ha='center', fontsize=labelSize)
+plt.text(224, 127, 'P', ha='center', fontsize=labelSize)
+plt.text(233, 142, 'V', ha='center', fontsize=labelSize)
+plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize)
+    
 nonResp = plt.scatter(z_coords_jittered[~soundResponsive & isCortical], y_coords[~soundResponsive & isCortical], c = colorNotAud, s=6)
 soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & isCortical], y_coords[soundResponsive & ~speechResponsive & isCortical], c = colorSoundResp, s = 6)
 speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical] , y_coords[speechResponsive & isCortical], c = colorSpeechResp, s=6)
@@ -228,6 +227,9 @@ plt.legend([nonResp, soundResp, speechResp], ['Not sound responsive', 'Sound res
 axCellLocs.spines["right"].set_visible(False)
 axCellLocs.spines["top"].set_visible(False)
 axCellLocs.set_aspect('equal')
+
+#plt.show(); sys.exit()
+
 
 ##-- Donut Plots Atlas-defined Areas--
 nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]))
