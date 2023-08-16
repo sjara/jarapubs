@@ -10,6 +10,7 @@ from jaratoolbox import colorpalette as cp
 sys.path.append('..')
 import figparams
 import studyparams
+import studyutils
 from scipy import stats
 from importlib import reload
 
@@ -21,7 +22,7 @@ STATSUMMARY = 1
 outputDir = settings.TEMP_OUTPUT_PATH
 figFilename = 'audCtxFreqSelectivity' # Do not include extension
 figFormat = 'pdf' # 'pdf' or 'svg'
-figSize = [3.5, 5] # In inches
+figSize = [6, 7] # In inches
 
 figDataFile = 'data_selectivity_indices.npz'
 figDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
@@ -30,6 +31,15 @@ figData = np.load(figDataFullPath, allow_pickle = True)
 databaseDir = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
 dbPath = os.path.join(databaseDir, 'fulldb_speech_tuning.h5')
 celldb = celldatabase.load_hdf(dbPath)
+
+boundDataFile = 'brain_areas_boundaries.npz'
+boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
+boundData = np.load(boundDataFullPath, allow_pickle = True)
+contours = boundData['contours']
+extentAP = boundData['extentAP']
+extentDV = boundData['extentDV']
+colorBounds = cp.TangoPalette['Aluminium3'] #'0.75'
 
 fontSizeLabels = figparams.fontSizeLabels
 fontSizeTicks = figparams.fontSizeTicks
@@ -70,23 +80,34 @@ APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
 DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
+logFreq = np.log2(celldb.toneCharactFreq[isCortical])
+possibleLogFreq = np.log2(possibleFreqs)
+possibleLogFreqStrings = [f'{(2**freq)/1000:0.1f}' for freq in possibleLogFreq]
 
-fig = plt.figure()
-ax = fig.add_subplot()
-plt.scatter(z_coords_jittered[isCortical], y_coords[isCortical], c = celldb.toneCharactFreq[isCortical], cmap = 'rainbow', s = 8)
+plt.clf()
+ax = plt.gca()
+#cmap = 'viridis'
+cmap = 'brg_r'
+#cmap = 'rainbow'
+plt.scatter(z_coords_jittered[isCortical], y_coords[isCortical], c=logFreq, cmap=cmap, s=8)
 plt.xlim(146, 246)
 plt.xticks(APtickLocs, APtickLabels)
 plt.ylim(220,40)
 plt.yticks(DVtickLocs, DVtickLabels)
 plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
 plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
-cbar = plt.colorbar(ticks = possibleFreqs)
+#cbar = plt.colorbar()
+cbar = plt.colorbar(ticks = possibleLogFreq)
+cbar.set_ticklabels(possibleLogFreqStrings)
 cbar.set_label('Best Frequency (kHz)', rotation=270, labelpad=12)
-cbar.ax.set_yticklabels(np.round(possibleFreqs/1000,1))
+#cbar.ax.set_yticklabels(np.round(possibleFreqs/1000,1))
 ax.spines["right"].set_visible(False)
 ax.spines["top"].set_visible(False)
 ax.set_aspect('equal')
-
+studyutils.plot_quadrants(ax, extentAP, extentDV, color=colorBounds)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color=colorBounds, clip_on=False, zorder=-1)
+plt.tight_layout()
 plt.show()
 
 extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
