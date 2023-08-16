@@ -45,24 +45,38 @@ APtickLabels = np.round(-0.94 - (280-APtickLocs)*0.025,1)
 DVtickLocs = np.array([210, 190, 170, 150, 130, 110, 90, 70, 50])
 DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 
+boundDataFile = 'brain_areas_boundaries.npz'
+boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
+boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
+boundData = np.load(boundDataFullPath, allow_pickle = True)
+contours = boundData['contours']
+#contours = boundData['contours_deep']
 
-fig = plt.figure()
-ax = fig.add_subplot()
+#fig = plt.figure()
+fig = plt.gcf()
+fig.clf()
+ax = plt.gcf().add_subplot()
 
 plt.scatter(z_coords_jittered[recordingAreaName == audCtxAreas[0]], y_coords[recordingAreaName==audCtxAreas[0]], s=6)
 plt.scatter(z_coords_jittered[recordingAreaName == audCtxAreas[1]], y_coords[recordingAreaName==audCtxAreas[1]], s=6)
 plt.scatter(z_coords_jittered[recordingAreaName == audCtxAreas[2]], y_coords[recordingAreaName==audCtxAreas[2]], s=6)
 plt.scatter(z_coords_jittered[recordingAreaName == audCtxAreas[3]], y_coords[recordingAreaName==audCtxAreas[3]], s=6)
 plt.xlim(146, 246)
-plt.xticks(APtickLocs, APtickLabels)
 plt.ylim(220,40)
-plt.yticks(DVtickLocs, DVtickLabels)
-plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
-plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
+if 0:
+    plt.xticks(APtickLocs, APtickLabels)
+    plt.yticks(DVtickLocs, DVtickLabels)
+    plt.xlabel('Posterior (mm)', fontsize = fontSizeLabels)
+    plt.ylabel('Ventral (mm)', fontsize = fontSizeLabels)
+else:
+    plt.xlabel('Posterior (voxels)', fontsize = fontSizeLabels)
+    plt.ylabel('Ventral (voxels)', fontsize = fontSizeLabels)
+for contour in contours:
+    plt.plot(contour[:, 1], contour[:, 0], linewidth=1.5, color='k', clip_on=False)
 plt.legend(['AudP', 'AudD', 'AudV', 'TeA'])
 ax.spines["right"].set_visible(False)
 ax.spines["top"].set_visible(False)
 ax.set_aspect('equal')
+plt.show()
 
-
-extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
+#extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
