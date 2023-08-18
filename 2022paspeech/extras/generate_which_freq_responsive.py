@@ -125,7 +125,7 @@ for indMouse, thisMouse in enumerate(allSubjects):
 
 
 
-np.savez(figDataFullPath, tonePvalRespEachFreq = tonePvalRespEachFreq)
+np.savez(figDataFullPath, tonePvalRespEachFreq = tonePvalRespEachFreq, toneCharactFreq = celldb.toneCharactFreq, possibleToneFreqs = possibleFreq)
 print('saved to ' f'{figDataFullPath}')
 
 #fulldb['tonePvalRespEachFreq'] = tonePvalRespEachFreq
