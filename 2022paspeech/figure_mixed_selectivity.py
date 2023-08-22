@@ -410,11 +410,11 @@ if STATSUMMARY:
                 a = a+1
                 pvalQuadrantComparFracMixedSelective[inda1,inda2] = quadrantComparFracMixedSelective_speechResponsive[a]
 
-    table9a = studyutils.latex_table_mixselective(brainAreas, nMixselectiveEachArea, nSpeechSelectiveEachArea, nSpeechResponsiveEachArea)
+    table9a = studyutils.latex_table_mixselective(brainAreas, nMixselectiveEachArea, nSpeechResponsiveEachArea, nSpeechSelectiveEachArea)
     print(table9a)
     table9b = studyutils.latex_table_pvals(brainAreas, pvalsAtlasAreaComparFracMixedSelective)
     print(table9b)
-    table10a = studyutils.latex_table_mixselective(brainRegions, nMixselectiveEachRegion, nSpeechSelectiveEachRegion, nSpeechResponsiveEachRegion)
+    table10a = studyutils.latex_table_mixselective(brainRegions, nMixselectiveEachRegion, nSpeechResponsiveEachRegion, nSpeechSelectiveEachRegion)
     print(table10a)
     table10b = studyutils.latex_table_pvals(brainRegions, pvalQuadrantComparFracMixedSelective)
     print(table10b)
