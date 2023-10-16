@@ -131,3 +131,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VS Code
+.vscode/
+
+# Allen Mouse Atlas folders
+mouse_connectivity/
+
+# Temporary old folders
+old/
