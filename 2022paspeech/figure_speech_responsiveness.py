@@ -11,6 +11,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import argparse
 from jaratoolbox import settings
 from jaratoolbox import extraplots
 from jaratoolbox import colorpalette as cp
@@ -159,6 +160,45 @@ recordingAreaName = figData['recordingAreaName']
 audCtxAreas = figData['audCtxAreas']
 quantilesDV = figData['quantilesDV']
 quantilesAP = figData['quantilesAP']
+layersDeep = figData['layersDeep']
+layer4 = figData['layer4']
+layersSuperficial = figData['layersSuperficial']
+
+'''
+parser= argparse.ArgumentParser()
+parser.add_argument('-d','--layerDeep', help = "only includes cells from layers 5 and 6", required = False, action='store_true')
+parser.add_argument('-f','--layer4', help = "only includes cells from layer 4", required = False, action='store_true')
+parser.add_argument('-s','--layerSuperficial', help = "only includes cells from layers 1 and 2/3", required = False, action='store_true')
+args = parser.parse_args()
+if args.layerDeep:
+    useLayers = figData['layersDeep']
+    print('only including layer 5 and layer 6 cells')
+elif args.layer4:
+    useLayers = figData['layer4']
+    print('only including layer 4 cells')
+elif args.layerSuperficial:
+    useLayers = figData['layersSuperficial']
+    print('only including layer 1 and layer 2/3 cells')
+else:
+    useLayers = np.ones(len(x_coords), dtype = bool)
+'''
+parser= argparse.ArgumentParser()
+parser.add_argument('-d','--layerDeep', help = "only includes cells from layers 5 and 6", required = False, action='store_true')
+parser.add_argument('-f','--layer4', help = "only includes cells from layer 4", required = False, action='store_true')
+parser.add_argument('-s','--layerSuperficial', help = "only includes cells from layers 1 and 2/3", required = False, action='store_true')
+args = parser.parse_args()
+if args.layerDeep:
+    useLayers = figData['layersDeep']
+    print('only including cells in layers 5 & 6')
+elif args.layer4:
+    useLayers = figData['layer4']
+    print('only including layer 4 cells')
+elif args.layerSuperficial:
+    useLayers = figData['layersSuperficial'] | figData['layer4']
+    print('only including cells in layers 1-4')
+else:
+    useLayers = np.ones(len(x_coords), dtype = bool)
+
 
 ### ARE THESE USED? ###
 quadrantBoundsDV = figData['quadrantBoundsDV']
@@ -194,10 +234,10 @@ plt.text(234, 119, 'D', ha='center', fontsize=labelSize)
 plt.text(224, 127, 'P', ha='center', fontsize=labelSize)
 plt.text(233, 142, 'V', ha='center', fontsize=labelSize)
 plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize)
-    
-nonResp = plt.scatter(z_coords_jittered[~soundResponsive & isCortical], y_coords[~soundResponsive & isCortical], c = colorNotAud, s=6)
-soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & isCortical], y_coords[soundResponsive & ~speechResponsive & isCortical], c = colorSoundResp, s = 6)
-speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical] , y_coords[speechResponsive & isCortical], c = colorSpeechResp, s=6)
+
+nonResp = plt.scatter(z_coords_jittered[~soundResponsive & isCortical & useLayers], y_coords[~soundResponsive & isCortical & useLayers], c = colorNotAud, s=6)
+soundResp = plt.scatter(z_coords_jittered[soundResponsive & ~speechResponsive & isCortical & useLayers], y_coords[soundResponsive & ~speechResponsive & isCortical & useLayers], c = colorSoundResp, s = 6)
+speechResp = plt.scatter(z_coords_jittered[speechResponsive & isCortical & useLayers] , y_coords[speechResponsive & isCortical & useLayers], c = colorSpeechResp, s=6)
 plt.xlim(146, 246)
 plt.ylim(220,40)
 SHOW_UNITS_IN_MM = 1
@@ -219,21 +259,30 @@ axCellLocs.set_aspect('equal')
 
 
 ##-- Donut Plots Atlas-defined Areas--
-nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]))
-nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1]))
-nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2]) )
-nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3]))
+nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]) & useLayers)
+nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1]) & useLayers)
+nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2]) & useLayers)
+nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3]) & useLayers)
 
-nSoundResponsiveAudP = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[0]))
-nSoundResponsiveAudD = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[1]))
-nSoundResponsiveAudV = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[2]))
-nSoundResponsiveTeA = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[3]))
+nSoundResponsiveAudP = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[0]) & useLayers)
+nSoundResponsiveAudD = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[1]) & useLayers)
+nSoundResponsiveAudV = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[2]) & useLayers)
+nSoundResponsiveTeA = np.sum(soundResponsive & (recordingAreaName == audCtxAreas[3]) & useLayers)
 
-nCellsAudP = np.sum((recordingAreaName == audCtxAreas[0]))
-nCellsAudD = np.sum((recordingAreaName == audCtxAreas[1]))
-nCellsAudV = np.sum((recordingAreaName == audCtxAreas[2]))
-nCellsTeA = np.sum((recordingAreaName == audCtxAreas[3]))
+nCellsAudP = np.sum((recordingAreaName == audCtxAreas[0]) & useLayers)
+nCellsAudD = np.sum((recordingAreaName == audCtxAreas[1]) & useLayers)
+nCellsAudV = np.sum((recordingAreaName == audCtxAreas[2]) & useLayers)
+nCellsTeA = np.sum((recordingAreaName == audCtxAreas[3]) & useLayers)
 
+nCellsDeepAudP = np.sum((recordingAreaName == audCtxAreas[0]) & layersDeep)
+nCellsDeepAudD = np.sum((recordingAreaName == audCtxAreas[1]) & layersDeep)
+nCellsDeepAudV = np.sum((recordingAreaName == audCtxAreas[2]) & layersDeep)
+nCellsDeepTeA = np.sum((recordingAreaName == audCtxAreas[3]) & layersDeep)
+
+nCellsSuperficialAudP = np.sum((recordingAreaName == audCtxAreas[0]) & (layersSuperficial|layer4))
+nCellsSuperficialAudD = np.sum((recordingAreaName == audCtxAreas[1]) & (layersSuperficial|layer4))
+nCellsSuperficialAudV = np.sum((recordingAreaName == audCtxAreas[2]) & (layersSuperficial|layer4))
+nCellsSuperficialTeA = np.sum((recordingAreaName == audCtxAreas[3]) & (layersSuperficial|layer4))
 
 titleY = 0.95
 titlePad = -0
@@ -265,20 +314,37 @@ plt.title(f'TeA\n n = {nCellsTeA}', y=titleY, pad=titlePad, fontsize = fontSizeT
 
 
 ##-- Donut Plots Quartiles--
-nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0])
-nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1])
-nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2])
-nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3])
+quadrantsUseLayers = []
+quadrantsLayersDeep = []
+#quadrantsLayer4 = []
+quadrantsLayersSuperficial = []
 
-nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0])
-nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1])
-nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2])
-nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3])
+a = -1
+for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+    for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+        a = a+1
+        quadrantsUseLayers.append(useLayers[thisQuantileDV & thisQuantileAP])
+        quadrantsLayersDeep.append(layersDeep[thisQuantileDV & thisQuantileAP])
+        #quadrantsLayer4.append(layer4[thisQuantileDV & thisQuantileAP])
+        quadrantsLayersSuperficial.append(layersSuperficial[thisQuantileDV & thisQuantileAP]|layer4[thisQuantileDV & thisQuantileAP])
 
-nCellsDP = quadrantTotals[0]
-nCellsDA = quadrantTotals[1]
-nCellsVP = quadrantTotals[2]
-nCellsVA = quadrantTotals[3]
+nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0] & quadrantsUseLayers[0])
+nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1] & quadrantsUseLayers[1])
+nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2] & quadrantsUseLayers[2])
+nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3] & quadrantsUseLayers[3])
+
+nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0] & quadrantsUseLayers[0])
+nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1] & quadrantsUseLayers[1])
+nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2] & quadrantsUseLayers[2])
+nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3] & quadrantsUseLayers[3])
+
+nCellsDP = quadrantTotals[0] - np.sum(~quadrantsUseLayers[0])
+nCellsDA = quadrantTotals[1] - np.sum(~quadrantsUseLayers[1])
+nCellsVP = quadrantTotals[2] - np.sum(~quadrantsUseLayers[2])
+nCellsVA = quadrantTotals[3] - np.sum(~quadrantsUseLayers[3])
+
+
+
 
 plt.sca(axDonutDP)
 circle5 = plt.Circle((0,0), 0.7, color = 'white')
@@ -349,7 +415,7 @@ if STATSUMMARY:
         nBinCompar = 4 - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracSpeechResponsive_allcells = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[len(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), len(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            oddsratio, pvalFracSpeechResponsive_allcells = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin] & quadrantsUseLayers[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1] & quadrantsUseLayers[x + indBin + 1])],[len(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin] & quadrantsUseLayers[indBin]), len(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1] & quadrantsUseLayers[x + indBin + 1])]]))
             quadrantComparFracSpeechResponsive_allcells[a] = pvalFracSpeechResponsive_allcells
 
     ##--Test frac speech responsive out of soundResponsive
@@ -359,7 +425,7 @@ if STATSUMMARY:
         nBinCompar = 4 - indBin -1
         for x in range(nBinCompar):
             a = a+1
-            oddsratio, pvalFracSpeechResponsive_soundResp = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin]) -np.sum(quadrantsSpeechResponsive[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1])]]))
+            oddsratio, pvalFracSpeechResponsive_soundResp = stats.fisher_exact(np.array([[np.sum(quadrantsSpeechResponsive[indBin]  & quadrantsUseLayers[indBin]), np.sum(quadrantsSpeechResponsive[x + indBin + 1] & quadrantsUseLayers[x + indBin + 1])],[np.sum(quadrantsSoundResponsive[indBin] & quadrantsUseLayers[indBin]) -np.sum(quadrantsSpeechResponsive[indBin] & quadrantsUseLayers[indBin]  & quadrantsUseLayers[indBin]), np.sum(quadrantsSoundResponsive[x + indBin + 1] & quadrantsUseLayers[x + indBin + 1]) - np.sum(quadrantsSpeechResponsive[x + indBin + 1]  & quadrantsUseLayers[x + indBin + 1])]]))
             quadrantComparFracSpeechResponsive_soundResp[a] = pvalFracSpeechResponsive_soundResp
 
     reload(studyutils)
@@ -447,10 +513,10 @@ if STATSUMMARY:
         print(f'AudD vs TeA p = {np.round(pvalFracResponsive_AudDvsTeA_allcells,3)}')
         print(f'AudV vs TeA p = {np.round(pvalFracResponsive_AudVvsTeA_allcells,3)}')
         print('--quadrant-defined areas')
-        print(f'DP Quadrant: total n = {len(quadrantsSoundResponsive[0])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[0])} ({np.round((np.sum(quadrantsSoundResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[0])} ({np.round((np.sum(quadrantsSpeechResponsive[0])/np.sum(quadrantsSoundResponsive[0]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[0])/len(quadrantsSoundResponsive[0]))*100,1)}% of total)')
-        print(f'DA Quadrant: total n = {len(quadrantsSoundResponsive[1])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[1])} ({np.round((np.sum(quadrantsSoundResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[1])} ({np.round((np.sum(quadrantsSpeechResponsive[1])/np.sum(quadrantsSoundResponsive[1]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[1])/len(quadrantsSoundResponsive[1]))*100,1)}% of total)')
-        print(f'VP Quadrant: total n = {len(quadrantsSoundResponsive[2])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[2])} ({np.round((np.sum(quadrantsSoundResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[2])} ({np.round((np.sum(quadrantsSpeechResponsive[2])/np.sum(quadrantsSoundResponsive[2]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[2])/len(quadrantsSoundResponsive[2]))*100,1)}% of total)')
-        print(f'VA Quadrant: total n = {len(quadrantsSoundResponsive[3])}, n soundResponsive = {np.sum(quadrantsSoundResponsive[3])} ({np.round((np.sum(quadrantsSoundResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}%), n speech responsive = {np.sum(quadrantsSpeechResponsive[3])} ({np.round((np.sum(quadrantsSpeechResponsive[3])/np.sum(quadrantsSoundResponsive[3]))*100,1)}% of sound responsive, {np.round((np.sum(quadrantsSpeechResponsive[3])/len(quadrantsSoundResponsive[3]))*100,1)}% of total)')
+        print(f'DP Quadrant: total n = {nCellsDP}, n soundResponsive = {nSoundResponsiveDP} ({np.round((nSoundResponsiveDP/nCellsDP)*100,1)}%), n speech responsive = {nSpeechResponsiveDP} ({np.round((nSpeechResponsiveDP/nSoundResponsiveDP)*100,1)}% of sound responsive, {np.round((nSpeechResponsiveDP/nCellsDP)*100,1)}% of total)')
+        print(f'DA Quadrant: total n = {nCellsDA}, n soundResponsive = {nSoundResponsiveDA} ({np.round((nSoundResponsiveDA/nCellsDA)*100,1)}%), n speech responsive = {nSpeechResponsiveDA} ({np.round((nSpeechResponsiveDA/nSoundResponsiveDA)*100,1)}% of sound responsive, {np.round((nSpeechResponsiveDA/nCellsDA)*100,1)}% of total)')
+        print(f'VP Quadrant: total n = {nCellsVP}, n soundResponsive = {nSoundResponsiveVP} ({np.round((nSoundResponsiveVP/nCellsVP)*100,1)}%), n speech responsive = {nSpeechResponsiveVP} ({np.round((nSpeechResponsiveVP/nSoundResponsiveVP)*100,1)}% of sound responsive, {np.round((nSpeechResponsiveVP/nCellsVP)*100,1)}% of total)')
+        print(f'VA Quadrant: total n = {nCellsVA}, n soundResponsive = {nSoundResponsiveVA} ({np.round((nSoundResponsiveVA/nCellsVA)*100,1)}%), n speech responsive = {nSpeechResponsiveVA} ({np.round((nSpeechResponsiveVA/nSoundResponsiveVA)*100,1)}% of sound responsive, {np.round((nSpeechResponsiveVA/nCellsVA)*100,1)}% of total)')
         print('--Frac speech responsive of sound responsive --')
         print(f'DP vs DA p = {np.round(quadrantComparFracSpeechResponsive_soundResp[0],3)}')
         print(f'DP vs VP p = {np.round(quadrantComparFracSpeechResponsive_soundResp[1],3)}')
@@ -465,3 +531,12 @@ if STATSUMMARY:
         print(f'DA vs VP p = {np.round(quadrantComparFracSpeechResponsive_allcells[3],3)}')
         print(f'DA vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[4],3)}')
         print(f'VP vs VA p = {np.round(quadrantComparFracSpeechResponsive_allcells[5],3)}')
+        print('-- nCells in deep vs. superficial layers --')
+        print(f'DP: nTotal:{len(quadrantsLayersDeep[0])}, nL1-4:{np.sum(quadrantsLayersSuperficial[0])}, nL5-6:{np.sum(quadrantsLayersDeep[0])}')
+        print(f'DA: nTotal:{len(quadrantsLayersDeep[1])}, nL1-4:{np.sum(quadrantsLayersSuperficial[1])}, nL5-6:{np.sum(quadrantsLayersDeep[1])}')
+        print(f'VP: nTotal:{len(quadrantsLayersDeep[2])}, nL1-4:{np.sum(quadrantsLayersSuperficial[2])}, nL5-6:{np.sum(quadrantsLayersDeep[2])}')
+        print(f'VA: nTotal:{len(quadrantsLayersDeep[3])}, nL1-4:{np.sum(quadrantsLayersSuperficial[3])}, nL5-6:{np.sum(quadrantsLayersDeep[3])}')
+        print(f'AudP: nTotal:{np.sum(recordingAreaName == audCtxAreas[0])}, nL1-4:{nCellsSuperficialAudP}, nL5-6:{nCellsDeepAudP}')
+        print(f'AudD: nTotal:{np.sum(recordingAreaName == audCtxAreas[1])}, nL1-4:{nCellsSuperficialAudD}, nL5-6:{nCellsDeepAudD}')
+        print(f'AudV: nTotal:{np.sum(recordingAreaName == audCtxAreas[2])}, nL1-4:{nCellsSuperficialAudV}, nL5-6:{nCellsDeepAudV}')
+        print(f'TeA: nTotal:{np.sum(recordingAreaName == audCtxAreas[3])}, nL1-4:{nCellsSuperficialTeA}, nL5-6:{nCellsDeepTeA}')

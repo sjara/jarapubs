@@ -82,6 +82,7 @@ Created by `figure_behavior.py`.
 
 ## Figure 2 (Ephys methods and cell responsiveness)
 Created by `figure_speech_responsiveness.py`
+If you want to create a figure restricting by layers, you run with the flags: "--layerSuperficial" for layer 1 and layer 2/3, "--layer4" for layer 4, or "--layerDeep" for layer 5 and layer 6. If you omit a flag it will include all layers.
 - Panel A: Cartoon of head-fixed, awake mouse ephys presenting sounds contralateral to recording site
 - Panel B: Histology image of recording track
 - Panel C: Diagram of sound matrix
@@ -118,4 +119,4 @@ Created by `figure_mixed_selectivity.py`, using data generated from `generate_se
 - `make_speech_response_rasters.py`: generates rasters/PSTHs for speech responsive cells sorted for speech sound sessions sorted by Ft and VOT. Requires access to `fulldb_speech_tuning.h5`, `data_selectivity_indices.npz`, `data_shuffledSIs.npz`, and spike sorted ephys data.
 - `recordingSummary.py`: creates a .txt file with summaries of total number of cells and number of cells in each atlas area for each recording session. Requires access to celldb
 - `plot_audCtxFreqSelectivity.py`: creates a plot of locations of cells, colored by best frequency  
-- `speech_selectivity_restrictby_BestFreq.py`: compares the proportion of ftSelective cells between quadrants restricting by cells that respond to frequencies in the F2/F3 frequency range. 
+- `speech_selectivity_restrictby_BestFreq.py`: compares the proportion of ftSelective cells between quadrants restricting by cells that respond to frequencies in the F2/F3 frequency range.

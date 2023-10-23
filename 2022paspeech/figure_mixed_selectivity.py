@@ -11,6 +11,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import argparse
 from jaratoolbox import settings
 from jaratoolbox import extraplots
 from jaratoolbox import celldatabase
@@ -93,6 +94,25 @@ quadrantsFtSelectiveByAnimal = figData['quadrantsFtSelectiveByAnimal']
 quadrantsSingleSelectiveByAnimal = figData['quadrantsSingleSelectiveByAnimal']
 quadrantsMixedSelectiveByAnimal = figData['quadrantsMixedSelectiveByAnimal']
 
+parser= argparse.ArgumentParser()
+parser.add_argument('-d','--layerDeep', help = "only includes cells from layers 5 and 6", required = False, action='store_true')
+parser.add_argument('-f','--layer4', help = "only includes cells from layer 4", required = False, action='store_true')
+parser.add_argument('-s','--layerSuperficial', help = "only includes cells from layers 1 and 2/3", required = False, action='store_true')
+args = parser.parse_args()
+if args.layerDeep:
+    useLayers = figData['layersDeep']
+    print('only including layer 5 and layer 6 cells')
+elif args.layer4:
+    useLayers = figData['layer4']
+    print('only including layer 4 cells')
+elif args.layerSuperficial:
+    useLayers = figData['layersSuperficial']
+    print('only including layer 1 and layer 2/3 cells')
+else:
+    useLayers = np.ones(len(x_coords), dtype = bool)
+
+
+
 boundDataFile = 'brain_areas_boundaries.npz'
 boundDataDir = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME, FIGNAME)
 boundDataFullPath = os.path.join(boundDataDir,boundDataFile)
@@ -127,8 +147,8 @@ for indax, oneax in enumerate([axQuadPcts, axByAnimal]):
 
 #plt.subplots_adjust(top = 0.9, bottom = 0.1, hspace = 0.45, left = 0.05)
 
-votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive
-ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive
+votSelective = (pvalPermutationtestVot < 0.05) & speechResponsive & useLayers
+ftSelective = (pvalPermutationtestFt < 0.05) & speechResponsive  & useLayers
 singleSelective = np.logical_xor(votSelective, ftSelective)
 mixedSelective = votSelective & ftSelective
 
@@ -145,7 +165,7 @@ DVtickLabels = np.round((DVtickLocs-10)*0.025,1)
 '''
 
 plt.sca(axMixeSelMap)
-respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], y_coords[speechResponsive & ~mixedSelective & ~singleSelective & isCortical], c = colorNotSelective, s = 6)
+respNonSel = plt.scatter(z_coords_jittered[speechResponsive & ~mixedSelective & ~singleSelective & isCortical  & useLayers], y_coords[speechResponsive & ~mixedSelective & ~singleSelective & isCortical  & useLayers], c = colorNotSelective, s = 6)
 singSel = plt.scatter(z_coords_jittered[speechResponsive & singleSelective & isCortical], y_coords[speechResponsive & singleSelective & isCortical], c = colorSingleSelective, s = 6)
 mixSel = plt.scatter(z_coords_jittered[speechResponsive & mixedSelective & isCortical], y_coords[speechResponsive & mixedSelective & isCortical], c = colorMixedSelective, s = 6)
 plt.ylim(220,40)
@@ -173,38 +193,52 @@ plt.text(233, 165, 'TeA', ha='center', fontsize=labelSize, color=colorBounds)
 
 
 plt.sca(axQuadPcts)
+quadrantsUseLayers = []
+quadrantsMixedSelective = []
+quadrantsSingleSelective = []
+
+a = -1
+for indBinDV, thisQuantileDV in enumerate(quantilesDV):
+    for indBinAP, thisQuantileAP in enumerate(quantilesAP):
+        a = a+1
+        quadrantsUseLayers.append(useLayers[thisQuantileDV & thisQuantileAP])
+        quadrantsMixedSelective.append(mixedSelective[thisQuantileDV & thisQuantileAP])
+        quadrantsSingleSelective.append(singleSelective[thisQuantileDV & thisQuantileAP])
+
+
+
 nMixedSelectiveDP = np.sum(quadrantsMixedSelective[0])
 nSpeechSelectiveDP = np.sum(quadrantsMixedSelective[0]) + np.sum(quadrantsSingleSelective[0])
-nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0])
-nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0])
-nTotalDP = quadrantTotals[0]
+nSpeechResponsiveDP = np.sum(quadrantsSpeechResponsive[0] & quadrantsUseLayers[0])
+nSoundResponsiveDP = np.sum(quadrantsSoundResponsive[0]& quadrantsUseLayers[0])
+nTotalDP = quadrantTotals[0] - np.sum(~quadrantsUseLayers[0])
 #fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechSelectiveDP
 fracMixedSelectiveDP = nMixedSelectiveDP/nSpeechResponsiveDP
 DPalphaMix = 1
 
 nMixedSelectiveDA = np.sum(quadrantsMixedSelective[1])
 nSpeechSelectiveDA = np.sum(quadrantsMixedSelective[1]) + np.sum(quadrantsSingleSelective[1])
-nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1])
-nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1])
-nTotalDA = quadrantTotals[1]
+nSpeechResponsiveDA = np.sum(quadrantsSpeechResponsive[1] & quadrantsUseLayers[1])
+nSoundResponsiveDA = np.sum(quadrantsSoundResponsive[1]& quadrantsUseLayers[1])
+nTotalDA = quadrantTotals[1] - np.sum(~quadrantsUseLayers[1])
 #fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechSelectiveDA
 fracMixedSelectiveDA = nMixedSelectiveDA/nSpeechResponsiveDA
 DAalphaMix = fracMixedSelectiveDA/fracMixedSelectiveDP
 
 nMixedSelectiveVP = np.sum(quadrantsMixedSelective[2])
 nSpeechSelectiveVP = np.sum(quadrantsMixedSelective[2]) + np.sum(quadrantsSingleSelective[2])
-nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2])
-nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2])
-nTotalVP = quadrantTotals[2]
+nSpeechResponsiveVP = np.sum(quadrantsSpeechResponsive[2] & quadrantsUseLayers[2])
+nSoundResponsiveVP = np.sum(quadrantsSoundResponsive[2] & quadrantsUseLayers[2])
+nTotalVP = quadrantTotals[2] - np.sum(~quadrantsUseLayers[2])
 #fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechSelectiveVP
 fracMixedSelectiveVP = nMixedSelectiveVP/nSpeechResponsiveVP
 VPalphaMix = fracMixedSelectiveVP/fracMixedSelectiveDP
 
 nMixedSelectiveVA = np.sum(quadrantsMixedSelective[3])
 nSpeechSelectiveVA = np.sum(quadrantsMixedSelective[3]) + np.sum(quadrantsSingleSelective[3])
-nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3])
-nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3])
-nTotalVA = quadrantTotals[3]
+nSpeechResponsiveVA = np.sum(quadrantsSpeechResponsive[3]& quadrantsUseLayers[3])
+nSoundResponsiveVA = np.sum(quadrantsSoundResponsive[3]& quadrantsUseLayers[3])
+nTotalVA = quadrantTotals[3] - np.sum(~quadrantsUseLayers[3])
 #fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechSelectiveVA
 fracMixedSelectiveVA = nMixedSelectiveVA/nSpeechResponsiveVA
 VAalphaMix = fracMixedSelectiveVA/fracMixedSelectiveDP
@@ -261,7 +295,7 @@ titleY = 0.9
 
 plt.sca(axMixAudP)
 circle1 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0] ))
+nSpeechResponsiveAudP = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[0]) & useLayers)
 nMixselectiveAudP = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveAudP = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
 plt.pie([nMixselectiveAudP, nSingleselectiveAudP, nSpeechResponsiveAudP - (nMixselectiveAudP + nSingleselectiveAudP)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
@@ -274,7 +308,7 @@ plt.title(f'AudP (n={int(nSpeechResponsiveAudP)})', y=titleY, fontsize=fontSizeL
 
 plt.sca(axMixAudD)
 circle2 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1] ))
+nSpeechResponsiveAudD = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[1]) & useLayers)
 nMixselectiveAudD = np.sum(mixedSelective[recordingAreaName == audCtxAreas[1]])
 nSingleselectiveAudD = np.sum(singleSelective[recordingAreaName == audCtxAreas[1]])
 plt.pie([nMixselectiveAudD, nSingleselectiveAudD, nSpeechResponsiveAudD - (nMixselectiveAudD + nSingleselectiveAudD)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
@@ -286,7 +320,7 @@ plt.title(f'AudD (n={int(nSpeechResponsiveAudD)})', y=titleY, fontsize=fontSizeL
 
 plt.sca(axMixAudV)
 circle3 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2] ))
+nSpeechResponsiveAudV = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[2]) & useLayers)
 nMixselectiveAudV = np.sum(mixedSelective[recordingAreaName == audCtxAreas[2]])
 nSingleselectiveAudV = np.sum(singleSelective[recordingAreaName == audCtxAreas[2]])
 plt.pie([nMixselectiveAudV, nSingleselectiveAudV, nSpeechResponsiveAudV - (nMixselectiveAudV + nSingleselectiveAudV)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])
@@ -297,7 +331,7 @@ plt.title(f'AudV (n={int(nSpeechResponsiveAudV)})', y=titleY, fontsize=fontSizeL
 
 plt.sca(axMixTeA)
 circle4 = plt.Circle((0,0), 0.7, color = 'white')
-nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3] ))
+nSpeechResponsiveTeA = np.sum(speechResponsive & (recordingAreaName == audCtxAreas[3]) & useLayers)
 nMixselectiveTeA = np.sum(mixedSelective[recordingAreaName == audCtxAreas[0]])
 nSingleselectiveTeA = np.sum(singleSelective[recordingAreaName == audCtxAreas[0]])
 plt.pie([nMixselectiveTeA, nSingleselectiveTeA, nSpeechResponsiveTeA - (nMixselectiveTeA + nSingleselectiveTeA)], colors = [colorMixedSelective, colorSingleSelective, colorNotSelective])

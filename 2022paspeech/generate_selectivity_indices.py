@@ -43,9 +43,17 @@ recordingAreaName = recordingAreaName.str.replace('Posterior auditory area', 'Do
 recordingAreaName = np.array(recordingAreaName)
 isAudArea = celldb.recordingAreaName.str.contains('auditory area')
 ctxAreas = ['Anterolateral visual area', 'Dorsal auditory area', 'Ectorhinal area', 'Endopiriform nucleus', 'Lateral visual area', 'Laterointermediate area', 'Perirhinal area', 'Posterior auditory area', 'Primary auditory area', 'Supplemental somatosensory area', 'Temporal association areas', 'Ventral auditory area', 'auditory radiation', 'optic radiation', 'corpus callosum', 'external capsule']
+
 isCortical = np.zeros(len(isAudArea), dtype = bool)
 for indArea, thisArea in enumerate(ctxAreas):
     isCortical[recordingAreaName == thisArea] = True
+
+
+layersDeep = celldb.recordingSiteName.str.contains('layer 5|layer 6') & isCortical
+layer4 =  celldb.recordingSiteName.str.contains('layer 4') & isCortical
+layersSuperficial =  celldb.recordingSiteName.str.contains('layer 1|layer 2| layer 3') & isCortical
+layersDeep[isCortical & ~(layersDeep|layer4|layersSuperficial)] = True
+
 
 
 selectivityIndexFT_VOTmin = (celldb['maxFiringRate_FT_VOTmin'] - celldb['minFiringRate_FT_VOTmin'])/(celldb['maxFiringRate_FT_VOTmin'] + celldb['minFiringRate_FT_VOTmin'])
@@ -233,7 +241,6 @@ singleSelectivebyArea = []
 notSelectivebyArea = []
 y_coordsbyArea = []
 z_coordsbyArea = []
-
 
 for indArea, thisArea in enumerate(audCtxAreas):
     bestFtSIbyArea.append(bestSelectivityIndexFt[recordingAreaName == thisArea])
@@ -553,5 +560,5 @@ if STATSUMMARY:
 
 
 
-np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, whichFT_labels = whichFT_labels, whichVOT_labels = whichVOT_labels, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AApix = quadrantBoundsDV_AApix, quadrantBoundsAP_AApix = quadrantBoundsAP_AApix, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive, quadrantTotalsByAnimal = quadrantTotalsByAnimal, quadrantsSoundResponsiveByAnimal = quadrantsSoundResponsiveByAnimal, quadrantsSpeechResponsiveByAnimal = quadrantsSpeechResponsiveByAnimal, quadrantsVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal, quadrantsFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal, quadrantsSingleSelectiveByAnimal = quadrantsSingleSelectiveByAnimal, quadrantsMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal )
+np.savez(figDataFullPath, selectivityIndexFT_VOTmin = selectivityIndexFT_VOTmin, selectivityIndexFT_VOTmax = selectivityIndexFT_VOTmax, selectivityIndexVOT_FTmin = selectivityIndexVOT_FTmin, selectivityIndexVOT_FTmax = selectivityIndexVOT_FTmax, bestSelectivityIndexFt = bestSelectivityIndexFt, bestSelectivityIndexVot = bestSelectivityIndexVot, audCtxAreas = audCtxAreas, recordingAreaName = recordingAreaName, exclusionCriterion = exclusionCriterion, excludeSpeech = excludeSpeech, pValKruskalBestFT = pValKruskalBestFT, pValKruskalBestVOT = pValKruskalBestVOT, speechResponsive = speechResponsive, amResponsive = amResponsive, toneResponsive = toneResponsive, soundResponsive = soundResponsive, amSelective = amSelective, toneSelective = toneSelective, maxFiringRateSpeechEvoked = maxFiringRateSpeechEvoked, isAudArea = isAudArea, y_coord = y_coords, z_coord = z_coords, x_coord = x_coords, z_coords_jittered = z_coords_jittered, x_coords_jittered = x_coords_jittered, subject = celldb.subject, date = celldb.date, cluster = celldb.cluster, pvalPermutationtestFt = pvalPermutationtestFt, pvalPermutationtestVot = pvalPermutationtestVot, shuffledVotBest = shuffledVotBest, shuffledFtBest = shuffledFtBest, whichFT = whichFT, whichVOT = whichVOT, whichFT_labels = whichFT_labels, whichVOT_labels = whichVOT_labels, isCortical = isCortical, quantilesDV = quantilesDV, quantilesAP = quantilesAP, quadrantBoundsDV = quadrantBoundsDV, quadrantBoundsAP = quadrantBoundsAP, quadrantBoundsDV_AApix = quadrantBoundsDV_AApix, quadrantBoundsAP_AApix = quadrantBoundsAP_AApix, quadrantLabels = quadrantLabels, quadrantTotals = quadrantTotals, quadrantsVOT = quadrantsVOT, quadrantsFT = quadrantsFT, quadrantsVotSelective = quadrantsVotSelective, quadrantsFtSelective = quadrantsFtSelective, quadrantsMixedSelective = quadrantsMixedSelective, quadrantsSingleSelective = quadrantsSingleSelective, quadrantsSpeechResponsive = quadrantsSpeechResponsive, quadrantsSoundResponsive = quadrantsSoundResponsive, quadrantTotalsByAnimal = quadrantTotalsByAnimal, quadrantsSoundResponsiveByAnimal = quadrantsSoundResponsiveByAnimal, quadrantsSpeechResponsiveByAnimal = quadrantsSpeechResponsiveByAnimal, quadrantsVotSelectiveByAnimal = quadrantsVotSelectiveByAnimal, quadrantsFtSelectiveByAnimal = quadrantsFtSelectiveByAnimal, quadrantsSingleSelectiveByAnimal = quadrantsSingleSelectiveByAnimal, quadrantsMixedSelectiveByAnimal = quadrantsMixedSelectiveByAnimal, layersDeep = layersDeep, layer4 = layer4, layersSuperficial = layersSuperficial )
 print('saved to ' f'{figDataFullPath}')
