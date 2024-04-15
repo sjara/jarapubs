@@ -43,7 +43,7 @@ colorEachCond = [figparams.colors['activeOnly'],
                  figparams.colors['activePassive'],
                  figparams.colors['passiveThenActive']]
 eachCondLabel = ['A only', 'A + P', 'P : A']
-
+nCond = len(eachCondLabel)
 
 # -- Plot results --
 fig = plt.gcf()
@@ -55,6 +55,9 @@ gsMain.update(left=0.075, right=0.98, top=0.95, bottom=0.1, wspace=0.3, hspace=0
 
 periods = ['early', 'late']
 panelLabels = [['A','B','C','D','E'], ['F','G','H','I','J']]
+
+
+avgCorrectEachCondEachPeriod = []
 
 for indperiod, period in enumerate(periods):
     # -- Load early psycurves --
@@ -72,6 +75,9 @@ for indperiod, period in enumerate(periods):
     correctExtreme = correctEachFMslope[:,[0,5]].mean(axis=1)
     correctNonExtreme = correctEachFMslope[:,1:5].mean(axis=1)
     correctMidStim = correctEachFMslope[:,2:4].mean(axis=1)
+
+    #avgCorrectEachPeriod.append(avgCorrect)
+    #subjectsEachPeriod.append(subjects)
     
     fastSubjectsEachCond, eachCond = studyutils.mice_each_condition('fast')
     assert eachCond==['activeOnly', 'activePassive', 'passiveThenActive']
@@ -107,6 +113,8 @@ for indperiod, period in enumerate(periods):
     avgCorrectEachCond = [avgCorrect[miceIndEachCond[0]],
                           avgCorrect[miceIndEachCond[1]],
                           avgCorrect[miceIndEachCond[2]]]
+    avgCorrectEachCondEachPeriod.append(avgCorrectEachCond)
+    
     '''
     asympPerfAll = 1 - psyCurveParams[:,2:4].mean(axis=1)
     asympPerfEachCond = [asympPerfAll[miceIndEachCond[0]],
@@ -381,6 +389,28 @@ for indperiod, period in enumerate(periods):
         
     plt.show()
 
+avgCorrectEachCondEachPeriod = [np.stack((avgCorrectEachCondEachPeriod[0][indc],
+                                          avgCorrectEachCondEachPeriod[1][indc])) for indc in range(nCond)]
+
+print('Comparison of Avg performance between early and late')
+for indc in range(nCond):
+    (avgCorrectEachCondEachPeriod[indc][0], avgCorrectEachCondEachPeriod[indc][1])
+    wtat, pVal = stats.wilcoxon(avgCorrectEachCondEachPeriod[indc][0], avgCorrectEachCondEachPeriod[indc][1])
+    print(f'{eachCondLabel[indc]} p={pVal}')
 
 if SAVE_FIGURE:
     extraplots.save_figure(figFilename, figFormat, figSize, outputDir)
+
+'''
+plt.figure(2)
+plt.clf()
+for indc in range(nCond):
+    plt.subplot(1,nCond,indc+1)
+    plt.plot(100*avgCorrectEachCondEachPeriod[indc],'-o')
+    plt.ylim(50,100)
+    plt.ylabel('Average Perf (%)')
+    plt.ylabel('Period')
+    plt.title(eachCondLabel[indc])
+    plt.xticks([0,1], periods)
+plt.show()
+'''
