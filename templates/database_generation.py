@@ -33,15 +33,15 @@ if __name__ == "__main__":
     clusteringObj.process_all_experiments()
     '''
     
-    # -- Generate cell database (this function excludes clusters with isi>0.05, spikeQuality<2 --
-    celldb = celldatabase.generate_cell_database_from_subjects(studyparams.MICE_LIST)
+    # -- Generate cell database (this function excludes bad cells by default, see docs) --
+    celldb = celldatabase.generate_cell_database_from_subjects(studyparams.SUBJECTS)
 
     # -- Compute the base stats and indices for each cell --
     celldb = calculate_base_stats(celldb)  # Calculated for all cells
     celldb = calculate_indices(celldb)     # Calculated for a selected subset of cells
 
-    dbPath = os.path.join(settings.FIGURES_DATA_PATH, studyparams.STUDY_NAME)
-    dbFilename = os.path.join(dbPath,'celldb_{}.h5'.format(studyparams.STUDY_NAME))
+    dbPath = os.path.join(settings.DATABASE_PATH, studyparams.STUDY_NAME)
+    dbFilename = os.path.join(dbPath,'celldb_{}_basic.h5'.format(studyparams.STUDY_NAME))
     if os.path.isdir(dbPath):
         celldatabase.save_hdf(celldb, dbFilename)
         print('Saved database to {}'.format(dbFilename))
