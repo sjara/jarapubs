@@ -18,27 +18,27 @@ relevant file paths and parameters for the database calculations.
 ** `database_freq_tuning.py notrunning`
 
 # Fig.1
-## panel_spike_templates.py: plot templates for example neurons
-## database_spikes_snr.py: calculate StdDev and spike amplitudes for included neurons.
-## panel_spike_amplitude_histogram.py: plot histogram of spike amplitudes and voltage StdDev.
-## panel_spike_traces.py: to plot trace of spikes
+* panel_spike_templates.py: plot templates for example neurons
+* database_spikes_snr.py: calculate StdDev and spike amplitudes for included neurons.
+* panel_spike_amplitude_histogram.py: plot histogram of spike amplitudes and voltage StdDev.
+* panel_spike_traces.py: to plot trace of spikes
 
 # Fig.2
-## Cartoon
-## figure_overall_firing.py
-## python add_cartoons.py 1 pdf
+* Cartoon
+* figure_overall_firing.py
+* python add_cartoons.py 1 pdf
 
 # Fig.3
-## figure_freqtuning.py
-## python add_cartoons.py 2 pdf
+* figure_freqtuning.py
+* python add_cartoons.py 2 pdf
 
 # Fig.4
-## figure_oddball_enhancement.py
-## python add_cartoons.py 3 pdf
+* figure_oddball_enhancement.py
+* python add_cartoons.py 3 pdf
 
 # Fig.5
-## figure_modulation_oddball_vs_standard.py
+* figure_modulation_oddball_vs_standard.py
 
 # Fig.6
-## figure_early_vs_late_days.py
-## extras/generate_early_vs_late_samples.py: Resample 100 times and evaluate OEIsaline>OEIdoi
+* figure_early_vs_late_days.py
+* extras/generate_early_vs_late_samples.py: Resample 100 times and evaluate OEIsaline>OEIdoi
