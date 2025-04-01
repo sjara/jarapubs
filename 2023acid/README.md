@@ -14,8 +14,8 @@ relevant file paths and parameters for the database calculations.
 
 ## Quantify responses to sounds
 * `database_freq_tuning.py`: estimate the responses to pure tones (including frequency tuning). You need to also run this for 'running' and 'notrunning' trials.
-** `database_freq_tuning.py running`
-** `database_freq_tuning.py notrunning`
+  * `database_freq_tuning.py running`
+  * `database_freq_tuning.py notrunning`
 
 ## Fig.1
 * `panel_spike_templates.py`: plot templates for example neurons
