@@ -1,10 +1,13 @@
 """
 Show an image with the recording locations for all subjects in the database.
 
-You first need to run database_cell_locations and save the resulting database.
-You also need to run this script inside the allensdk environment.
+USAGE:
+- You first need to run database_cell_locations and save the resulting database.
+- You also need to run this script inside the allensdk environment.
 
-You can also specify a single subject as an argument to the script.
+python figure_recording_locations.py [subject] [session]
+python figure_recording_locations.py [subject]
+python figure_recording_locations.py
 """
 
 import os

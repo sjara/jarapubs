@@ -5,7 +5,7 @@ This is used to get a better estimate of the location of electrodes.
 USAGE:
 python generate_average_LFP_per_channel.py [subject]
 
-If no subject is specified, it will use a default subject+session 'feat017'.
+If no subject is specified, it will use a default subject+session.
 """
 
 import os
@@ -19,7 +19,7 @@ from jaratoolbox import behavioranalysis
 from matplotlib import pyplot as plt
 
 
-SAVE_DATA = 1
+SAVE_DATA = True
 
 if len(sys.argv)>1:
     subject = sys.argv[1]
@@ -149,7 +149,7 @@ for experiment in experimentsToProcess:
                          sortedChannels=sortedChannels, maxVarStim=maxVarStim)
 
             # -- Plot baseline-subtracted average LFP for each stimulus condition --
-            if 0:
+            if 1:
                 print('Plotting responses for all stimuli...')
                 plt.clf()
                 for indStim in range(len(possibleStim)):
@@ -163,7 +163,7 @@ for experiment in experimentsToProcess:
                 plt.show()
 
             # -- Plot baseline-subtracted average LFP for best stimulus --
-            if 1:
+            if 0:
                 print('Plotting responses for stimulus with max response...')
                 plt.clf()
                 ax1 = plt.gca()
