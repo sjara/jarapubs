@@ -27,11 +27,18 @@ Reads the raw data and calculates the sound-evoked average LFP for each channel 
 
 # Extras:
 
-## `extras/figure_recording_locations.py`
-Creates a figure showing the cell locations across all subjects.
+## `extras/report_recording_locations.py`
+Show cell locations across all subjects.
 
 ## `extras/report_lfp_and_histology.py`
-Creates reports with average LFP for each channel and location of cells in brain slices.
+Show average LFP for each channel and location of cells in brain slices.
+
+## `extras/report_areas_in_penetration.py'
+Show brain areas crossed by each penetration.
+
+## `extras/report_cell_locations_lateral_view.py`
+Show location of recorded cells on lateral view of the auditory cortex surface.
+
 
 
 # Database contents

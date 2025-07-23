@@ -20,3 +20,13 @@ def get_onset_offset_bins(spkData):
     offsetBin = np.flatnonzero(spkData['binEdges']<spkData['soundDuration'])[-1]
     return onsetBin, offsetBin
 
+# -- Methods to convert from pixels of Atlas to mm (from Bregma)--
+def pix2mmAP(pixels):
+    return -0.94 - (280-pixels)*0.025
+def mm2pixAP(mm):
+    return ((mm+0.94) / 0.025) + 280
+def pix2mmDV(pixels):
+    return (pixels-10)*0.025
+def mm2pixDV(mm):
+    return (mm/0.025) + 10
+
