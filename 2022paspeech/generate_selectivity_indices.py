@@ -47,7 +47,8 @@ ctxAreas = ['Anterolateral visual area', 'Dorsal auditory area', 'Ectorhinal are
 isCortical = np.zeros(len(isAudArea), dtype = bool)
 for indArea, thisArea in enumerate(ctxAreas):
     isCortical[recordingAreaName == thisArea] = True
-
+# BUG (sjara 2025-07-21): The previous code doesn't find "Cortical" since some names contain layer info.
+#    Use instead: isCortical[celldb.recordingSiteName.str.contains(thisArea)] = True
 
 layersDeep = celldb.recordingSiteName.str.contains('layer 5|layer 6') & isCortical
 layer4 =  celldb.recordingSiteName.str.contains('layer 4') & isCortical
